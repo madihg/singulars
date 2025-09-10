@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Slipnote</title>
+<style>
+  :root {
+    --primary: #000000;
+    --bg: #FFFFFF;
+    --text: #000000;
+    --divider: #000000;
+    --pad: 10px;
+  }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Times New Roman", Times, serif;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  /* Background text field */
+  .wall {
+    position: fixed;
+    inset: 0;
+    padding: 40px;
+    line-height: 1.6;
+    font-size: 18px;
+    user-select: none;
+    overflow: visible;
+    white-space: pre-wrap;
+  }
+
+  /* Overlay canvas that hides text at start.
+     We erase from it to reveal the text below. */
+  #revealCanvas {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2; /* below the modal */
+  }
+
+  /* Modal that shows the timer */
+  .modal {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    transform: translate(50vw, 50vh) translate(-50%, -50%);
+    width: clamp(280px, 80vw, 400px);
+    background: #fff;
+    border: 1px solid var(--primary);
+    z-index: 3;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(14px, 4vw, 18px);
+  }
+  
+  /* Mobile responsive adjustments */
+  @media (max-width: 768px) {
+    .modal {
+      width: clamp(250px, 85vw, 350px);
+      padding: 12px;
+    }
+    
+    .wall {
+      font-size: 16px;
+      padding: 16px;
+    }
+  }
+
+  /* Retro table-like layout for the timer */
+  .kv {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 16px;
+  }
+  .kv tr + tr td {
+    border-top: 1px solid var(--divider);
+  }
+  .kv td {
+    padding: 8px 6px;
+    vertical-align: top;
+  }
+  .kv td.k {
+    width: 40%;
+    font-weight: 600;
+  }
+  .kv td.v code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono",
+                 "Courier New", monospace;
+    font-size: 15px;
+    background: #fafafa;
+    padding: 2px 4px;
+    border: 1px solid var(--divider);
+  }
+
+  /* Help strip */
+  .help {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--divider);
+    font-size: 12px;
+    color: #333;
+  }
+
+  /* Subtle classic footer divider at the bottom */
+  .footerline {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    height: 1px;
+    background: var(--divider);
+    opacity: .2;
+    z-index: 4;
+  }
+</style>
+</head>
+<body>
+
+  <!-- Background text -->
+  <div class="wall" id="wall">
+the father's body splayed on the ground. the mother heading back from the kitchen. The boy's body splayed on the bed. the father's body splayed on the ground. the mother heading back from the kitchen. The boy's body splayed on the bed.
+
+the father's body splayed on the ground. the mother heading back from the kitchen. The boy's body splayed on the bed. the father's body splayed on the ground. the mother heading back from the kitchen. The boy's body splayed on the bed.
+
+the father's body splayed on the ground. the mother heading back from the kitchen. The boy's body splayed on the bed. the father's body splayed on the ground. the mother heading back from the kitchen. The boy's body splayed on the bed.
+
+the father's body splayed on the ground. the mother heading back from the kitchen. The boy's body splayed on the bed. the father's body splayed on the ground. the mother heading back from the kitchen. The boy's body splayed on the bed.
+
+the father's body splayed on the ground. the mother heading back from the kitchen. The boy's body splayed on the bed. the father's body splayed on the ground. the mother heading back from the kitchen. The boy's body splayed on the bed.
+
+the father's body splayed on the ground. the mother heading back from the kitchen. The boy's body splayed on the bed. the father's body splayed on the ground. the mother heading back from the kitchen. The boy's body splayed on the bed.
+
+the father's body splayed on the ground. the mother heading back from the kitchen. The boy's body splayed on the bed. the father's body splayed on the ground. the mother heading back from the kitchen. The boy's body splayed on the bed.
+  </div>
+
+  <!-- Overlay canvas that we erase from as the modal moves -->
+  <canvas id="revealCanvas"></canvas>
+
+  <!-- Modal with timer -->
+  <div class="modal" id="modal">
+    <code id="timeVal" aria-live="polite" aria-atomic="true">0 days 0 hours 0 minutes 0 seconds</code>
+  </div>
+
+  <div class="footerline"></div>
+
+<script>
+(function(){
+  // Target moment: 03 Jul 2023 at 00:00:00 in the viewer's local time
+  const anchor = new Date(2023, 6, 3, 0, 0, 0, 0); // month is 0-indexed
+
+  // Timer update
+  const timeEl = document.getElementById('timeVal');
+
+  function updateTimer(){
+    const now = new Date();
+    let diff = Math.max(0, Math.floor((now - anchor) / 1000)); // seconds
+    const days = Math.floor(diff / 86400);
+    const hours = Math.floor((diff % 86400) / 3600);
+    const minutes = Math.floor((diff % 3600) / 60);
+    const seconds = diff % 60;
+
+    timeEl.textContent = `${days} days ${hours} hours ${minutes} minutes ${seconds} seconds`;
+  }
+  updateTimer();
+  setInterval(updateTimer, 1000);
+
+  // Reverse eraser system
+  const canvas = document.getElementById('revealCanvas');
+  const ctx = canvas.getContext('2d');
+  function sizeCanvas(){
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+    canvas.width  = Math.floor(innerWidth * dpr);
+    canvas.height = Math.floor(innerHeight * dpr);
+    canvas.style.width  = innerWidth + 'px';
+    canvas.style.height = innerHeight + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    // Fill overlay fully white to hide the wall
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, innerWidth, innerHeight);
+    // Switch to destination-out for erasing strokes
+    ctx.globalCompositeOperation = 'destination-out';
+  }
+  window.addEventListener('resize', sizeCanvas, {passive:true});
+  sizeCanvas();
+
+  // Modal physics and unpredictable drift
+  const modal = document.getElementById('modal');
+
+  // Track input position (mouse or gyroscope)
+  let inputPos = { x: innerWidth * 0.5, y: innerHeight * 0.5 };
+  let gyroData = { x: 0, y: 0 };
+  let isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+  function setInputPosFromEvent(e){
+    if (e.touches && e.touches[0]) {
+      inputPos.x = e.touches[0].clientX;
+      inputPos.y = e.touches[0].clientY;
+    } else {
+      inputPos.x = e.clientX;
+      inputPos.y = e.clientY;
+    }
+  }
+  
+  // Gyroscope handling for mobile
+  function handleOrientation(event) {
+    if (isMobile) {
+      // Convert gyroscope data to screen coordinates
+      const beta = event.beta || 0;  // front-to-back rotation
+      const gamma = event.gamma || 0; // left-to-right rotation
+      
+      // Scale and map gyroscope data to screen position
+      const sensitivity = 0.5;
+      gyroData.x = Math.max(-1, Math.min(1, gamma * sensitivity));
+      gyroData.y = Math.max(-1, Math.min(1, beta * sensitivity));
+      
+      // Convert to screen coordinates
+      inputPos.x = innerWidth * 0.5 + (gyroData.x * innerWidth * 0.4);
+      inputPos.y = innerHeight * 0.5 + (gyroData.y * innerHeight * 0.4);
+    }
+  }
+  
+  // Event listeners
+  if (isMobile) {
+    // Request permission for device orientation on iOS 13+
+    if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+      document.addEventListener('click', () => {
+        DeviceOrientationEvent.requestPermission()
+          .then(response => {
+            if (response === 'granted') {
+              window.addEventListener('deviceorientation', handleOrientation, true);
+            }
+          })
+          .catch(console.error);
+      }, { once: true });
+    } else {
+      window.addEventListener('deviceorientation', handleOrientation, true);
+    }
+  } else {
+    window.addEventListener('mousemove', setInputPosFromEvent);
+    window.addEventListener('touchmove', setInputPosFromEvent, {passive:false});
+  }
+
+  // Animation loop
+  let t0 = performance.now();
+
+  // Erase shape at modal location on the canvas
+  function eraseAtModal(){
+    const rect = modal.getBoundingClientRect();
+    const radius = 16; // rounded erase region
+    const pad = 6;
+
+    const x = rect.left - pad;
+    const y = rect.top  - pad;
+    const w = rect.width  + pad*2;
+    const h = rect.height + pad*2;
+
+    // Rounded rectangle path
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    ctx.lineTo(x + w - radius, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+    ctx.lineTo(x + w, y + h - radius);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+    ctx.lineTo(x + radius, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.closePath();
+
+    ctx.fill(); // with destination-out this permanently reveals the wall
+  }
+
+  function tick(now){
+    t0 = now;
+
+    // Calculate position based on input
+    const rect = modal.getBoundingClientRect();
+    const halfW = rect.width * 0.5;
+    const halfH = rect.height * 0.5;
+    
+    // Position modal based on input with larger movement range for full reveal
+    const centerX = innerWidth * 0.5;
+    const centerY = innerHeight * 0.5;
+    
+    let offsetX, offsetY;
+    
+    if (isMobile) {
+      // For mobile, use gyroscope data directly with larger range
+      offsetX = gyroData.x * innerWidth * 0.4; // larger range for full reveal
+      offsetY = gyroData.y * innerHeight * 0.4;
+    } else {
+      // For desktop, move opposite to mouse with maximum range
+      offsetX = (inputPos.x - centerX) * -0.8; // opposite direction, maximum range
+      offsetY = (inputPos.y - centerY) * -0.8;
+    }
+    
+    const targetX = centerX + offsetX;
+    const targetY = centerY + offsetY;
+
+    // Keep modal on screen with minimal margins for maximum movement
+    const margin = 10; // minimal margin
+    const x = Math.min(innerWidth - halfW - margin, Math.max(halfW + margin, targetX));
+    const y = Math.min(innerHeight - halfH - margin, Math.max(halfH + margin, targetY));
+
+    modal.style.transform = `translate(${Math.round(x - halfW)}px, ${Math.round(y - halfH)}px)`;
+
+    // Erase where the modal currently sits
+    eraseAtModal();
+
+    requestAnimationFrame(tick);
+  }
+  // Reset default transform so we can set absolute translation directly
+  modal.style.left = '0px';
+  modal.style.top = '0px';
+  // Kick off the loop after first layout so getBoundingClientRect is valid
+  requestAnimationFrame((t)=>{
+    // Center to start - position at screen center
+    const startX = innerWidth * 0.5;
+    const startY = innerHeight * 0.5;
+    const rect = modal.getBoundingClientRect();
+    modal.style.transform = `translate(${Math.round(startX - rect.width*0.5)}px, ${Math.round(startY - rect.height*0.5)}px)`;
+    // Switch to absolute translate control
+    requestAnimationFrame(tick);
+  });
+
+  // Accessibility: if user is idle for a while, do a gentle autonomous drift
+  let idleTimer;
+  function poke(){
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(()=>{
+      // Nudge input position a bit to keep things alive
+      inputPos.x = Math.min(innerWidth - 40, Math.max(40, inputPos.x + (Math.random()*200 - 100)));
+      inputPos.y = Math.min(innerHeight - 40, Math.max(40, inputPos.y + (Math.random()*160 - 80)));
+    }, 3500);
+  }
+  
+  // Add event listeners for poke function
+  const events = isMobile ? ['touchstart','keydown','click'] : ['mousemove','touchmove','keydown','click'];
+  events.forEach(evt=>{
+    window.addEventListener(evt, poke, {passive:true});
+  });
+  poke();
+
+  // If the user presses R, reset the overlay to hide everything again
+  window.addEventListener('keydown', (e)=>{
+    if (e.key.toLowerCase() === 'r'){
+      sizeCanvas();
+    }
+  });
+})();
+</script>
+</body>
+</html>
