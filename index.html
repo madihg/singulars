@@ -49,7 +49,8 @@
     top: 0px;
     left: 0px;
     transform: translate(50vw, 50vh) translate(-50%, -50%);
-    width: clamp(280px, 80vw, 400px);
+    width: clamp(250px, 60vw, 350px);
+    height: clamp(250px, 60vw, 350px);
     background: #fff;
     border: 1px solid var(--primary);
     z-index: 3;
@@ -57,14 +58,17 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: clamp(14px, 4vw, 18px);
+    font-size: clamp(12px, 3.5vw, 16px);
+    text-align: center;
   }
   
   /* Mobile responsive adjustments */
   @media (max-width: 768px) {
     .modal {
-      width: clamp(250px, 85vw, 350px);
-      padding: 12px;
+      width: clamp(200px, 70vw, 280px);
+      height: clamp(200px, 70vw, 280px);
+      padding: 10px;
+      font-size: clamp(11px, 3vw, 14px);
     }
     
     .wall {
@@ -123,15 +127,15 @@
 
   <!-- Background text -->
   <div class="wall" id="wall">
-the father's body splayed on the ground. the mother heading back from the kitchen. the boy's body splayed on the bed. the father's body splayed on the ground. the mother heading back from the kitchen. the boy's body splayed on the bed.
+the father's body splayed on the ground. the mother heading back from the kitchen. <strong>18th of July 1993</strong>. the boy's body splayed on the bed. the father's body splayed on the ground. the mother heading back from the kitchen. <strong>18th of July 1993</strong>. the boy's body splayed on the bed.
 
-the father spread like a gecko deciding where to go. the mother screaming, Josh, stop joking around. the boy sleeps the way a gecko hugs the wall. the father's jaw carving the sun against his Italian neck. the boy's body splayed on the bed. the father's body splayed on the ground.
+the father (born <strong>16 novembre 1958</strong>) spread like a gecko deciding where to go. the mother screaming, Josh, stop joking around. the boy sleeps the way a gecko hugs the wall. the father's jaw carving the sun against his Italian neck. the boy's body splayed on the bed. the father's body splayed on the ground.
 
-death is a prank. gravity has lost its prospect of motherhood. the child decides to have everything. the boy's body splayed on the bed. the father's body nailed to the ground. the mother heading back from the kitchen. the boy's body splayed on the bed. the father's body splayed on the ground.
+death is a prank. gravity has lost its prospect of motherhood. the child decides to have everything. the boy's body splayed on the bed. the father's body nailed to the ground. the mother heading back from the kitchen. <strong>18th of July 1993</strong>. the boy's body splayed on the bed. the father's body splayed on the ground.
 
 because there is something he will never have, the child decides to be God. he takes ownership of the genetics of maximalism. the gecko's skin crumpled on the floor. out of the reptilian costume emerges the man. the boy's body shaking without interruption. the boy's body splayed on the bed. the father's body splayed on the ground.
 
-the father's body splayed on the ground. the mother heading back from the kitchen. the boy's body splayed on the bed. the father's body splayed on the ground. the mother heading back from the kitchen. the boy's body splayed on the bed.
+the father's body splayed on the ground. the mother heading back from the kitchen. <strong>18th of July 1993</strong>. the boy's body splayed on the bed. the father's body splayed on the ground. the mother heading back from the kitchen. <strong>18th of July 1993</strong>. the boy's body splayed on the bed.
   </div>
 
   <!-- Overlay canvas that we erase from as the modal moves -->
@@ -210,10 +214,10 @@ the father's body splayed on the ground. the mother heading back from the kitche
       const beta = event.beta || 0;  // front-to-back rotation
       const gamma = event.gamma || 0; // left-to-right rotation
       
-      // Scale and map gyroscope data to screen position
+      // Scale and map gyroscope data to screen position (counter-intuitive)
       const sensitivity = 0.15; // Much less sensitive
-      gyroData.x = Math.max(-1, Math.min(1, gamma * sensitivity));
-      gyroData.y = Math.max(-1, Math.min(1, beta * sensitivity));
+      gyroData.x = Math.max(-1, Math.min(1, -gamma * sensitivity)); // Negative for counter-intuitive
+      gyroData.y = Math.max(-1, Math.min(1, -beta * sensitivity));  // Negative for counter-intuitive
       
       // Convert to screen coordinates
       inputPos.x = innerWidth * 0.5 + (gyroData.x * innerWidth * 0.4);
