@@ -49,26 +49,26 @@
     top: 0px;
     left: 0px;
     transform: translate(50vw, 50vh) translate(-50%, -50%);
-    width: clamp(250px, 60vw, 350px);
-    height: clamp(250px, 60vw, 350px);
+    width: clamp(180px, 45vw, 250px);
+    height: clamp(180px, 45vw, 250px);
     background: #fff;
     border: 1px solid var(--primary);
     z-index: 3;
-    padding: 15px;
+    padding: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: clamp(12px, 3.5vw, 16px);
+    font-size: clamp(10px, 2.8vw, 14px);
     text-align: center;
   }
   
   /* Mobile responsive adjustments */
   @media (max-width: 768px) {
     .modal {
-      width: clamp(200px, 70vw, 280px);
-      height: clamp(200px, 70vw, 280px);
-      padding: 10px;
-      font-size: clamp(11px, 3vw, 14px);
+      width: clamp(150px, 55vw, 200px);
+      height: clamp(150px, 55vw, 200px);
+      padding: 8px;
+      font-size: clamp(9px, 2.5vw, 12px);
     }
     
     .wall {
@@ -159,12 +159,36 @@ the father's body splayed on the ground. the mother heading back from the kitche
   function updateTimer(){
     const now = new Date();
     let diff = Math.max(0, Math.floor((now - anchor) / 1000)); // seconds
+    
+    // Calculate years, months, weeks, days, hours, minutes, seconds
+    const years = Math.floor(diff / (365.25 * 24 * 3600));
+    diff -= years * (365.25 * 24 * 3600);
+    
+    const months = Math.floor(diff / (30.44 * 24 * 3600));
+    diff -= months * (30.44 * 24 * 3600);
+    
+    const weeks = Math.floor(diff / (7 * 24 * 3600));
+    diff -= weeks * (7 * 24 * 3600);
+    
     const days = Math.floor(diff / 86400);
-    const hours = Math.floor((diff % 86400) / 3600);
-    const minutes = Math.floor((diff % 3600) / 60);
+    diff -= days * 86400;
+    
+    const hours = Math.floor(diff / 3600);
+    diff -= hours * 3600;
+    
+    const minutes = Math.floor(diff / 60);
     const seconds = diff % 60;
 
-    timeEl.textContent = `${days} days ${hours} hours ${minutes} minutes ${seconds} seconds`;
+    const parts = [];
+    if (years > 0) parts.push(`${years} year${years !== 1 ? 's' : ''}`);
+    if (months > 0) parts.push(`${months} month${months !== 1 ? 's' : ''}`);
+    if (weeks > 0) parts.push(`${weeks} week${weeks !== 1 ? 's' : ''}`);
+    if (days > 0) parts.push(`${days} day${days !== 1 ? 's' : ''}`);
+    if (hours > 0) parts.push(`${hours} hour${hours !== 1 ? 's' : ''}`);
+    if (minutes > 0) parts.push(`${minutes} minute${minutes !== 1 ? 's' : ''}`);
+    parts.push(`${seconds} second${seconds !== 1 ? 's' : ''}`);
+    
+    timeEl.textContent = parts.join(', ');
   }
   updateTimer();
   setInterval(updateTimer, 1000);
