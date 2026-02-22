@@ -154,9 +154,15 @@ export default async function SingularsPage() {
           {performances.map((perf) => {
             const isUpcoming = perf.status === "upcoming";
             const perfA11yColor = accessibleTextColor(perf.color);
+            const reverseNameFallback =
+              perf.name.trim().toLowerCase() === "reverse.exe"
+                ? HERO_IMAGES.performance["reverse-exe"]
+                : null;
 
             const heroImg =
-              getPerformanceHeroImage(perf.slug) ?? HERO_IMAGES.landing;
+              getPerformanceHeroImage(perf.slug) ??
+              reverseNameFallback ??
+              HERO_IMAGES.landing;
             const isLogoImage = Boolean(heroImg.src);
             const cardContent = (
               <div
