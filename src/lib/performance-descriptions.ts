@@ -66,8 +66,8 @@ export const HERO_IMAGES = {
       alt: "Carnation.exe performance installation with printed poems displayed side by side",
     },
     "reverse-exe": {
-      src: "https://commons.wikimedia.org/wiki/Special:FilePath/DAM%20New%20Logo.svg",
-      alt: "Denver Art Museum logo in black and white",
+      src: "/mal-logo.svg",
+      alt: "Media Archaeology Lab logo in black and white",
     },
   } as Record<string, HeroImage>,
 };
