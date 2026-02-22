@@ -1,4 +1,26 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" fill="#000"/>
-  <path fill="#fff" d="M22 4H8v11h14v3H8v10h14V18H8v-3h14z M12 8h6v3h-6zm0 13h6v3h-6z"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <style>
+      @font-face {
+        font-family: "Terminal Grotesque";
+        src: url("https://type.cargo.site/files/TerminalGrotesque.woff")
+          format("woff");
+        font-style: normal;
+        font-weight: normal;
+      }
+    </style>
+  </defs>
+  <rect width="64" height="64" fill="#000" />
+  <text
+    x="32"
+    y="35"
+    fill="#fff"
+    font-family="'Terminal Grotesque', sans-serif"
+    font-size="52"
+    font-weight="400"
+    text-anchor="middle"
+    dominant-baseline="middle"
+  >
+    s
+  </text>
 </svg>
