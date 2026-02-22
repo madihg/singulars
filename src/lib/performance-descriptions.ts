@@ -40,6 +40,10 @@ export function heroImgSrc(image: HeroImage, width = 1500): string {
   return cargoImg(image.hash, image.filename, width);
 }
 
+function normalizePerformanceSlug(slug: string): string {
+  return slug.trim().toLowerCase().replace(/[._\s]+/g, "-");
+}
+
 /** Hero images for landing (below Singulars) and performance pages. Same aspect ratio for alignment. */
 export const HERO_IMAGES = {
   /** Landing page: reinforcement's first image (open cube) */
@@ -75,7 +79,10 @@ export const HERO_IMAGES = {
 export function getPerformanceHeroImage(
   slug: string,
 ): HeroImage | null {
-  return HERO_IMAGES.performance[slug] ?? null;
+  const exact = HERO_IMAGES.performance[slug];
+  if (exact) return exact;
+  const normalized = HERO_IMAGES.performance[normalizePerformanceSlug(slug)];
+  return normalized ?? null;
 }
 
 const descriptions: Record<string, PerformanceDescription> = {
