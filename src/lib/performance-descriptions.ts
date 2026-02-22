@@ -46,11 +46,11 @@ function normalizePerformanceSlug(slug: string): string {
 
 /** Hero images for landing (below Singulars) and performance pages. Same aspect ratio for alignment. */
 export const HERO_IMAGES = {
-  /** Landing page: reinforcement's first image (open cube) */
+  /** Landing page: reinforcement installation scene */
   landing: {
-    hash: "Z2682094116426327375476450218851",
-    filename: "_MG_5037.jpg",
-    alt: "The open cube installation where the poet writes during Reinforcement.exe",
+    hash: "X2682094696207493612167657509731",
+    filename: "IGAC-exhibition-photography-048.jpg",
+    alt: "Reinforcement.exe installation with poet in the cube and audience voting",
   },
   /** Performance page heroes: slug -> image. Reinforcement uses different from landing; others use landing image. */
   performance: {

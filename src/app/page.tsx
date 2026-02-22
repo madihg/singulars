@@ -115,6 +115,7 @@ export default async function SingularsPage() {
             height: "100%",
             objectFit: "cover",
             display: "block",
+            filter: "grayscale(100%)",
           }}
         />
       </div>
