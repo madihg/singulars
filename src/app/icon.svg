@@ -10,16 +10,33 @@
       }
     </style>
   </defs>
-  <rect width="64" height="64" fill="#000" />
+  <rect width="64" height="64" fill="#fff" />
+  <g shape-rendering="crispEdges">
+    <text
+      x="33"
+      y="35"
+      fill="#000"
+      opacity="0.2"
+      font-family="'Terminal Grotesque', sans-serif"
+      font-size="52"
+      font-weight="700"
+      text-anchor="middle"
+      dominant-baseline="middle"
+      letter-spacing="-1"
+    >
+      s
+    </text>
+  </g>
   <text
     x="32"
     y="35"
-    fill="#fff"
+    fill="#000"
     font-family="'Terminal Grotesque', sans-serif"
     font-size="52"
-    font-weight="400"
+    font-weight="700"
     text-anchor="middle"
     dominant-baseline="middle"
+    letter-spacing="-1"
   >
     s
   </text>
