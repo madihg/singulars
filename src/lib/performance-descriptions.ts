@@ -45,7 +45,10 @@ function normalizePerformanceSlug(slug: string): string {
 }
 
 /** Hero images for landing (below Singulars) and performance pages. Same aspect ratio for alignment. */
-export const HERO_IMAGES = {
+export const HERO_IMAGES: {
+  landing: HeroImage;
+  performance: Record<string, HeroImage>;
+} = {
   /** Landing page: reinforcement installation scene */
   landing: {
     hash: "X2682094696207493612167657509731",
@@ -73,7 +76,7 @@ export const HERO_IMAGES = {
       src: "/mal-logo.svg",
       alt: "Media Archaeology Lab logo in black and white",
     },
-  } as Record<string, HeroImage>,
+  },
 };
 
 export function getPerformanceHeroImage(
