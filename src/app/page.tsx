@@ -3,7 +3,7 @@ import { getServiceClient, getSupabase } from "@/lib/supabase";
 import MiniVoting from "@/components/MiniVoting";
 import { accessibleTextColor, getStatusPillStyle } from "@/lib/color-utils";
 import {
-  cargoImg,
+  heroImgSrc,
   HERO_IMAGES,
   getPerformanceHeroImage,
 } from "@/lib/performance-descriptions";
@@ -108,11 +108,7 @@ export default async function SingularsPage() {
         }}
       >
         <img
-          src={cargoImg(
-            HERO_IMAGES.landing.hash,
-            HERO_IMAGES.landing.filename,
-            1600,
-          )}
+          src={heroImgSrc(HERO_IMAGES.landing, 1600)}
           alt={HERO_IMAGES.landing.alt}
           style={{
             width: "100%",
@@ -161,6 +157,7 @@ export default async function SingularsPage() {
 
             const heroImg =
               getPerformanceHeroImage(perf.slug) ?? HERO_IMAGES.landing;
+            const isLogoImage = Boolean(heroImg.src);
             const cardContent = (
               <div
                 key={perf.id}
@@ -182,14 +179,17 @@ export default async function SingularsPage() {
                   }}
                 >
                   <img
-                    src={cargoImg(heroImg.hash, heroImg.filename, 800)}
+                    src={heroImgSrc(heroImg, 800)}
                     alt={heroImg.alt}
                     style={{
                       width: "100%",
                       height: "100%",
-                      objectFit: "cover",
+                      objectFit: isLogoImage ? "contain" : "cover",
                       display: "block",
-                      filter: "grayscale(100%)",
+                      background: isLogoImage ? "#fff" : undefined,
+                      filter: isLogoImage
+                        ? "grayscale(100%) contrast(140%)"
+                        : "grayscale(100%)",
                     }}
                   />
                 </div>

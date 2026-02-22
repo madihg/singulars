@@ -5,7 +5,7 @@ import { accessibleTextColor, getStatusPillStyle } from "@/lib/color-utils";
 import {
   hasDescription,
   getPerformanceDescription,
-  cargoImg,
+  heroImgSrc,
   HERO_IMAGES,
   getPerformanceHeroImage,
 } from "@/lib/performance-descriptions";
@@ -263,7 +263,7 @@ export default async function PerformancePage({
         }}
       >
         <img
-          src={cargoImg(heroImg.hash, heroImg.filename, 1600)}
+          src={heroImgSrc(heroImg, 1600)}
           alt={heroImg.alt}
           style={{
             width: "100%",

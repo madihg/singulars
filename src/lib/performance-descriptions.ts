@@ -21,11 +21,24 @@ export interface PerformanceDescription {
   content: ContentBlock[];
 }
 
+export interface HeroImage {
+  alt: string;
+  hash?: string;
+  filename?: string;
+  src?: string;
+}
+
 function cargoImg(hash: string, filename: string, width = 1500): string {
   return `https://freight.cargo.site/w/${width}/i/${hash}/${filename}`;
 }
 
 export { cargoImg };
+
+export function heroImgSrc(image: HeroImage, width = 1500): string {
+  if (image.src) return image.src;
+  if (!image.hash || !image.filename) return "";
+  return cargoImg(image.hash, image.filename, width);
+}
 
 /** Hero images for landing (below Singulars) and performance pages. Same aspect ratio for alignment. */
 export const HERO_IMAGES = {
@@ -52,12 +65,16 @@ export const HERO_IMAGES = {
       filename: "IMG_8458.JPG",
       alt: "Carnation.exe performance installation with printed poems displayed side by side",
     },
-  } as Record<string, { hash: string; filename: string; alt: string }>,
+    "reverse-exe": {
+      src: "https://commons.wikimedia.org/wiki/Special:FilePath/DAM%20New%20Logo.svg",
+      alt: "Denver Art Museum logo in black and white",
+    },
+  } as Record<string, HeroImage>,
 };
 
 export function getPerformanceHeroImage(
   slug: string,
-): { hash: string; filename: string; alt: string } | null {
+): HeroImage | null {
   return HERO_IMAGES.performance[slug] ?? null;
 }
 
