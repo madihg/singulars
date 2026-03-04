@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { getServiceClient, getSupabase } from "@/lib/supabase";
+
+export const dynamic = "force-dynamic";
 import MiniVoting from "@/components/MiniVoting";
 import { accessibleTextColor, getStatusPillStyle } from "@/lib/color-utils";
 import {
