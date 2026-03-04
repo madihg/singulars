@@ -34,14 +34,18 @@ export function getSupabase(): SupabaseClient | null {
       supabaseUrl,
       supabaseAnonKey,
       SCHEMA,
-    ) as SupabaseClient;
+    ) as unknown as SupabaseClient;
   }
   return _supabase;
 }
 
 // Default export for convenience
 export const supabase = isSupabaseConfigured()
-  ? (createClient(supabaseUrl, supabaseAnonKey, SCHEMA) as SupabaseClient)
+  ? (createClient(
+      supabaseUrl,
+      supabaseAnonKey,
+      SCHEMA,
+    ) as unknown as SupabaseClient)
   : null;
 
 /**
@@ -57,7 +61,7 @@ export function getServiceClient(): SupabaseClient | null {
       supabaseUrl,
       supabaseServiceKey,
       SCHEMA,
-    ) as SupabaseClient;
+    ) as unknown as SupabaseClient;
   }
   return _serviceClient;
 }

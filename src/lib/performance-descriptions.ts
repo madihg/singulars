@@ -41,7 +41,10 @@ export function heroImgSrc(image: HeroImage, width = 1500): string {
 }
 
 function normalizePerformanceSlug(slug: string): string {
-  return slug.trim().toLowerCase().replace(/[._\s]+/g, "-");
+  return slug
+    .trim()
+    .toLowerCase()
+    .replace(/[._\s]+/g, "-");
 }
 
 /** Hero images for landing (below Singulars) and performance pages. Same aspect ratio for alignment. */
@@ -79,9 +82,7 @@ export const HERO_IMAGES: {
   },
 };
 
-export function getPerformanceHeroImage(
-  slug: string,
-): HeroImage | null {
+export function getPerformanceHeroImage(slug: string): HeroImage | null {
   const exact = HERO_IMAGES.performance[slug];
   if (exact) return exact;
   const normalized = HERO_IMAGES.performance[normalizePerformanceSlug(slug)];
