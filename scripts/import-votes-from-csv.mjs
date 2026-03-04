@@ -39,7 +39,9 @@ if (!supabaseUrl || !supabaseServiceKey) {
   process.exit(1);
 }
 
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+  db: { schema: "singulars" },
+});
 
 // Map CSV (Iteration, Theme) -> performance slug + theme_slug
 const ITERATION_TO_SLUG = {

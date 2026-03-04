@@ -43,7 +43,9 @@ async function getThemeData(
     });
     return null;
   }
-  const supabase = createClient(url, key);
+  const supabase = createClient(url, key, {
+    db: { schema: "singulars" },
+  });
 
   const { data: performance, error: perfError } = await supabase
     .from("performances")

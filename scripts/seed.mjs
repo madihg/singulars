@@ -108,7 +108,9 @@ if (!supabaseUrl || !supabaseServiceKey) {
   process.exit(1);
 }
 
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+  db: { schema: "singulars" },
+});
 
 // Load seed data from CLI argument or default to seed-data.json
 const jsonArg = process.argv[2];

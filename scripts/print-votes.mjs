@@ -34,7 +34,9 @@ if (!supabaseUrl || !supabaseServiceKey) {
   process.exit(1);
 }
 
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+  db: { schema: "singulars" },
+});
 
 async function main() {
   const { data: perf } = await supabase

@@ -26,14 +26,18 @@ let _supabase: SupabaseClient | null = null;
 export function getSupabase(): SupabaseClient | null {
   if (!isSupabaseConfigured()) return null;
   if (!_supabase) {
-    _supabase = createClient(supabaseUrl, supabaseAnonKey);
+    _supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      db: { schema: "singulars" },
+    });
   }
   return _supabase;
 }
 
 // Default export for convenience
 export const supabase = isSupabaseConfigured()
-  ? createClient(supabaseUrl, supabaseAnonKey)
+  ? createClient(supabaseUrl, supabaseAnonKey, {
+      db: { schema: "singulars" },
+    })
   : null;
 
 /**
@@ -45,7 +49,9 @@ let _serviceClient: SupabaseClient | null = null;
 export function getServiceClient(): SupabaseClient | null {
   if (!isServiceKeyConfigured()) return null;
   if (!_serviceClient) {
-    _serviceClient = createClient(supabaseUrl, supabaseServiceKey);
+    _serviceClient = createClient(supabaseUrl, supabaseServiceKey, {
+      db: { schema: "singulars" },
+    });
   }
   return _serviceClient;
 }
