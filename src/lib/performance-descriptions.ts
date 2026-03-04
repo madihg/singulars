@@ -82,6 +82,27 @@ export const HERO_IMAGES: {
   },
 };
 
+/** Short card descriptions for the landing page grid. */
+export const CARD_DESCRIPTIONS: Record<string, string> = {
+  "reverse-exe":
+    "A live poetry duel at the Media Archaeology Lab. The poet writes among vintage machines while the model trains on the archive of past performances.",
+  "hard-exe":
+    "The machine learns in real time. Audience votes on each poem pair shape the model\u2019s next generation \u2014 artisanal RLHF performed live on stage.",
+  "reinforcement-exe":
+    "Inside an open cube, the poet writes a new poem every thirty minutes. Red and blue stickers pile up as the audience becomes the trainer.",
+  "versus-exe":
+    "Guest poets join the duel. The circle widens across languages \u2014 Arabic, French, English, Spanish \u2014 and the model absorbs every collision.",
+  "carnation-exe":
+    "The first Singulars performance. A pink dot beneath the poem that moved you most. The carnation, in English, means: I will never forget you.",
+};
+
+export function getCardDescription(slug: string): string | null {
+  const exact = CARD_DESCRIPTIONS[slug];
+  if (exact) return exact;
+  const normalized = CARD_DESCRIPTIONS[normalizePerformanceSlug(slug)];
+  return normalized ?? null;
+}
+
 export function getPerformanceHeroImage(slug: string): HeroImage | null {
   const exact = HERO_IMAGES.performance[slug];
   if (exact) return exact;

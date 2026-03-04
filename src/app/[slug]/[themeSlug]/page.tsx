@@ -153,9 +153,15 @@ export default async function ThemeVotingPage({
             display: "inline-block",
             fontFamily: '"Diatype Mono Variable", monospace',
             fontSize: "0.7rem",
-            letterSpacing: "0.03em",
-            padding: "0.2rem 0.6rem",
+            letterSpacing: "0.05em",
+            textTransform: "uppercase",
+            padding: "0.25rem 0.7rem",
+            borderRadius: "2px",
             border: `1px solid ${getStatusPillStyle(performance.status, performance.color).border}`,
+            backgroundColor: getStatusPillStyle(
+              performance.status,
+              performance.color,
+            ).background,
             color: getStatusPillStyle(performance.status, performance.color)
               .color,
           }}

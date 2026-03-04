@@ -8,6 +8,7 @@ import {
   heroImgSrc,
   HERO_IMAGES,
   getPerformanceHeroImage,
+  getCardDescription,
 } from "@/lib/performance-descriptions";
 
 interface Performance {
@@ -99,6 +100,38 @@ export default async function SingularsPage() {
         Human vs Machine Poetry Performances
       </p>
 
+      {/* Intro description */}
+      <p
+        style={{
+          fontSize: "1rem",
+          color: "rgba(0,0,0,0.85)",
+          lineHeight: 1.5,
+          marginBottom: "2rem",
+        }}
+      >
+        Singulars is a series of live poetry duels between a human poet and a
+        machine. The audience votes to decide the winner — and their votes train
+        the machine for the next performance. A project by{" "}
+        <a
+          href="https://www.halimmadi.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ color: "rgba(0,0,0,0.85)", textDecoration: "underline" }}
+        >
+          Halim Madi
+        </a>
+        .{" "}
+        <Link
+          href="/about"
+          style={{ color: "rgba(0,0,0,0.85)", textDecoration: "none" }}
+        >
+          <span style={{ textDecoration: "underline" }}>
+            Learn more about it
+          </span>
+          .
+        </Link>
+      </p>
+
       {/* Hero image — from reinforcement.exe, above blue line */}
       <div
         style={{
@@ -173,7 +206,7 @@ export default async function SingularsPage() {
                 data-testid="performance-card"
                 data-performance-name={perf.name}
                 style={{
-                  borderTop: `2px solid ${perf.color}`,
+                  borderTop: `4px solid ${perf.color}`,
                   cursor: isUpcoming ? "default" : "pointer",
                   transition: "opacity 0.3s ease",
                 }}
@@ -223,9 +256,12 @@ export default async function SingularsPage() {
                         display: "inline-block",
                         fontFamily: '"Diatype Mono Variable", monospace',
                         fontSize: "0.7rem",
-                        letterSpacing: "0.03em",
-                        padding: "0.2rem 0.6rem",
+                        letterSpacing: "0.05em",
+                        textTransform: "uppercase",
+                        padding: "0.25rem 0.7rem",
+                        borderRadius: "2px",
                         border: `1px solid ${pill.border}`,
+                        backgroundColor: pill.background,
                         color: pill.color,
                         marginBottom: "0.75rem",
                       }}
@@ -258,6 +294,22 @@ export default async function SingularsPage() {
                     {formatDate(perf.date)}
                   </p>
                 )}
+
+                {(() => {
+                  const desc = getCardDescription(perf.slug);
+                  return desc ? (
+                    <p
+                      style={{
+                        fontSize: "0.85rem",
+                        color: "rgba(0,0,0,0.55)",
+                        lineHeight: 1.5,
+                        marginTop: "0.5rem",
+                      }}
+                    >
+                      {desc}
+                    </p>
+                  ) : null;
+                })()}
               </div>
             );
 
@@ -293,41 +345,6 @@ export default async function SingularsPage() {
             }
           }
         `}</style>
-      </section>
-
-      <hr />
-
-      {/* About section */}
-      <section>
-        <p
-          style={{
-            fontSize: "1rem",
-            color: "rgba(0,0,0,0.85)",
-            lineHeight: 1.4,
-            marginBottom: "1rem",
-          }}
-        >
-          Singulars is a series of live poetry duels between a human poet and a
-          machine. The audience votes to decide the winner — and their votes
-          train the machine for the next performance.{" "}
-          <Link
-            href="/about"
-            style={{ color: "rgba(0,0,0,0.85)", textDecoration: "underline" }}
-          >
-            Learn more about it.
-          </Link>
-        </p>
-        <p style={{ marginBottom: "1rem", fontSize: "1rem" }}>
-          by{" "}
-          <a
-            href="https://www.halimmadi.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ color: "rgba(0,0,0,0.85)", textDecoration: "underline" }}
-          >
-            Halim Madi
-          </a>
-        </p>
       </section>
     </main>
   );

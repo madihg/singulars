@@ -209,9 +209,15 @@ export default function MiniVoting() {
             display: "inline-block",
             fontFamily: '"Diatype Mono Variable", monospace',
             fontSize: "0.65rem",
-            letterSpacing: "0.03em",
-            padding: "0.15rem 0.5rem",
+            letterSpacing: "0.05em",
+            textTransform: "uppercase",
+            padding: "0.2rem 0.5rem",
+            borderRadius: "2px",
             border: `1px solid ${getStatusPillStyle(performance.status, performance.color).border}`,
+            backgroundColor: getStatusPillStyle(
+              performance.status,
+              performance.color,
+            ).background,
             color: getStatusPillStyle(performance.status, performance.color)
               .color,
           }}
