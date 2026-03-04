@@ -1,8 +1,10 @@
-import { createClient, SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@supabase/supabase-js";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+
+const DB_OPTIONS = { db: { schema: "singulars" as const } };
 
 /**
  * Check if Supabase is configured with required environment variables
@@ -22,22 +24,18 @@ export function isServiceKeyConfigured(): boolean {
  * Public client for browser-side operations (respects RLS).
  * Returns null if Supabase is not configured.
  */
-let _supabase: SupabaseClient | null = null;
-export function getSupabase(): SupabaseClient | null {
+let _supabase: ReturnType<typeof createClient> | null = null;
+export function getSupabase() {
   if (!isSupabaseConfigured()) return null;
   if (!_supabase) {
-    _supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      db: { schema: "singulars" },
-    });
+    _supabase = createClient(supabaseUrl, supabaseAnonKey, DB_OPTIONS);
   }
   return _supabase;
 }
 
 // Default export for convenience
 export const supabase = isSupabaseConfigured()
-  ? createClient(supabaseUrl, supabaseAnonKey, {
-      db: { schema: "singulars" },
-    })
+  ? createClient(supabaseUrl, supabaseAnonKey, DB_OPTIONS)
   : null;
 
 /**
@@ -45,13 +43,11 @@ export const supabase = isSupabaseConfigured()
  * Only use in API routes and server components.
  * Returns null if service key is not configured.
  */
-let _serviceClient: SupabaseClient | null = null;
-export function getServiceClient(): SupabaseClient | null {
+let _serviceClient: ReturnType<typeof createClient> | null = null;
+export function getServiceClient() {
   if (!isServiceKeyConfigured()) return null;
   if (!_serviceClient) {
-    _serviceClient = createClient(supabaseUrl, supabaseServiceKey, {
-      db: { schema: "singulars" },
-    });
+    _serviceClient = createClient(supabaseUrl, supabaseServiceKey, DB_OPTIONS);
   }
   return _serviceClient;
 }
