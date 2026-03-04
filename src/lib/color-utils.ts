@@ -131,7 +131,6 @@ export const STATUS_PILL_COLORS = {
 
 export function getStatusPillStyle(
   status: "upcoming" | "training" | "trained",
-  ..._rest: unknown[]
 ): { background: string; border: string; color: string } {
   const base = STATUS_PILL_COLORS[status];
   return { background: base.background, border: base.border, color: base.text };

@@ -157,13 +157,9 @@ export default async function ThemeVotingPage({
             textTransform: "uppercase",
             padding: "0.25rem 0.7rem",
             borderRadius: "2px",
-            border: `1px solid ${getStatusPillStyle(performance.status, performance.color).border}`,
-            backgroundColor: getStatusPillStyle(
-              performance.status,
-              performance.color,
-            ).background,
-            color: getStatusPillStyle(performance.status, performance.color)
-              .color,
+            border: `1px solid ${getStatusPillStyle(performance.status).border}`,
+            backgroundColor: getStatusPillStyle(performance.status).background,
+            color: getStatusPillStyle(performance.status).color,
           }}
         >
           {performance.status}

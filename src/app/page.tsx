@@ -249,7 +249,7 @@ export default async function SingularsPage() {
 
                 {/* Status pill */}
                 {(() => {
-                  const pill = getStatusPillStyle(perf.status, perf.color);
+                  const pill = getStatusPillStyle(perf.status);
                   return (
                     <span
                       style={{

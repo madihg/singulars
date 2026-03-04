@@ -213,13 +213,9 @@ export default function MiniVoting() {
             textTransform: "uppercase",
             padding: "0.2rem 0.5rem",
             borderRadius: "2px",
-            border: `1px solid ${getStatusPillStyle(performance.status, performance.color).border}`,
-            backgroundColor: getStatusPillStyle(
-              performance.status,
-              performance.color,
-            ).background,
-            color: getStatusPillStyle(performance.status, performance.color)
-              .color,
+            border: `1px solid ${getStatusPillStyle(performance.status).border}`,
+            backgroundColor: getStatusPillStyle(performance.status).background,
+            color: getStatusPillStyle(performance.status).color,
           }}
         >
           {performance.status}

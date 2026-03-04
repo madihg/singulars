@@ -310,10 +310,7 @@ export default async function PerformancePage({
 
         {/* Status pill */}
         {(() => {
-          const pill = getStatusPillStyle(
-            performance.status,
-            performance.color,
-          );
+          const pill = getStatusPillStyle(performance.status);
           return (
             <span
               style={{
