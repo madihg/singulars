@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { notFound } from "next/navigation";
 import VotingPoemPair from "./VotingPoemPair";
 import { accessibleTextColor, getStatusPillStyle } from "@/lib/color-utils";
@@ -45,7 +45,7 @@ async function getThemeData(
   }
   const supabase = createClient(url, key, {
     db: { schema: "singulars" },
-  });
+  }) as SupabaseClient;
 
   const { data: performance, error: perfError } = await supabase
     .from("performances")
