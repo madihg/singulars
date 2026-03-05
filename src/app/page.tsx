@@ -110,7 +110,7 @@ export default async function SingularsPage() {
         }}
       >
         Singulars is a series of live poetry duels between a human poet and a
-        machine. The audience votes to decide the winner — and their votes train
+        machine. The audience votes to decide the winner, and their votes train
         the machine for the next performance. A project by{" "}
         <a
           href="https://www.halimmadi.com"
@@ -132,7 +132,7 @@ export default async function SingularsPage() {
         </Link>
       </p>
 
-      {/* Hero image — from reinforcement.exe, above blue line */}
+      {/* Hero image - from reinforcement.exe, above line */}
       <div
         style={{
           width: "100%",
@@ -161,7 +161,7 @@ export default async function SingularsPage() {
       <hr
         style={{
           border: "none",
-          borderTop: "2px solid #2563eb",
+          borderTop: "2px solid #171717",
           margin: "3rem 0",
         }}
       />
@@ -211,7 +211,7 @@ export default async function SingularsPage() {
                   transition: "opacity 0.3s ease",
                 }}
               >
-                {/* Image above each performance — ui-ux-pro-max: black & white, minimal */}
+                {/* Image above each performance - black & white, minimal */}
                 <div
                   style={{
                     width: "100%",

@@ -87,11 +87,11 @@ export const CARD_DESCRIPTIONS: Record<string, string> = {
   "reverse-exe":
     "A live poetry duel at the Media Archaeology Lab. The poet writes among vintage machines while the model trains on the archive of past performances.",
   "hard-exe":
-    "The machine learns in real time. Audience votes on each poem pair shape the model\u2019s next generation \u2014 artisanal RLHF performed live on stage.",
+    "The machine learns in real time. Audience votes on each poem pair shape the model\u2019s next generation: artisanal RLHF performed live on stage.",
   "reinforcement-exe":
     "Inside an open cube, the poet writes a new poem every thirty minutes. Red and blue stickers pile up as the audience becomes the trainer.",
   "versus-exe":
-    "Guest poets join the duel. The circle widens across languages \u2014 Arabic, French, English, Spanish \u2014 and the model absorbs every collision.",
+    "Guest poets join the duel. The circle widens across languages (Arabic, French, English, Spanish) and the model absorbs every collision.",
   "carnation-exe":
     "The first Singulars performance. A pink dot beneath the poem that moved you most. The carnation, in English, means: I will never forget you.",
 };
@@ -203,7 +203,7 @@ const descriptions: Record<string, PerformanceDescription> = {
       },
       {
         type: "paragraph",
-        text: "Carnation.exe is not about proving superiority. It stages an ecology of feedback, a ritual of exchange, a flower passed between mouths. A duel that is also a dance. Whether human or machine \u201cwins,\u201d what endures is the trace\u2009\u2014\u2009the memory of the poem, the pink mark of attention, the vow not to forget.",
+        text: "Carnation.exe is not about proving superiority. It stages an ecology of feedback, a ritual of exchange, a flower passed between mouths. A duel that is also a dance. Whether human or machine \u201cwins,\u201d what endures is the trace: the memory of the poem, the pink mark of attention, the vow not to forget.",
       },
     ],
   },
@@ -236,7 +236,7 @@ const descriptions: Record<string, PerformanceDescription> = {
       },
       {
         type: "paragraph",
-        text: "In some sessions, the circle widens. Guest poets including Elise Liu and Theory have participated, introducing varied linguistic and emotional registers that shift audience response patterns across different languages \u2014 Arabic, French, English, Spanish.",
+        text: "In some sessions, the circle widens. Guest poets including Elise Liu and Theory have participated, introducing varied linguistic and emotional registers that shift audience response patterns across different languages: Arabic, French, English, Spanish.",
       },
       {
         type: "gallery",
@@ -260,7 +260,7 @@ const descriptions: Record<string, PerformanceDescription> = {
       },
       {
         type: "paragraph",
-        text: "Rather than collaboration, Versus.exe represents fine tuning as craft and iteration as sculpture. Behind the scenes, dashboards track votes, themes, and decision patterns within the model\u2019s probability distributions. Each audience vote influences future iterations \u2014 winning human poems enter the training corpus, while successful model outputs become lessons for the poet.",
+        text: "Rather than collaboration, Versus.exe represents fine tuning as craft and iteration as sculpture. Behind the scenes, dashboards track votes, themes, and decision patterns within the model\u2019s probability distributions. Each audience vote influences future iterations. Winning human poems enter the training corpus, while successful model outputs become lessons for the poet.",
       },
       {
         type: "gallery",
@@ -294,7 +294,7 @@ const descriptions: Record<string, PerformanceDescription> = {
       },
       {
         type: "paragraph",
-        text: "Human participants experience what the artist calls \u201csoft humiliation\u201d when losing to the machine \u2014 spending hours crafting poetry only to be outpaced by automated generation, yet recognizing this technological dynamic as the medium itself.",
+        text: "Human participants experience what the artist calls \u201csoft humiliation\u201d when losing to the machine, spending hours crafting poetry only to be outpaced by automated generation, yet recognizing this technological dynamic as the medium itself.",
       },
       {
         type: "gallery",

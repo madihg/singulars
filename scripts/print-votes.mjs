@@ -61,7 +61,7 @@ async function main() {
     return;
   }
 
-  console.log("\n=== reinforcement.exe poems — vote_count ===\n");
+  console.log("\n=== reinforcement.exe poems - vote_count ===\n");
   console.log("Performance:", perf.name, "| id:", perf.id);
   console.log("Total poems:", poems?.length ?? 0);
   console.log("");

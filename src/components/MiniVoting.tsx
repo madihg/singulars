@@ -165,7 +165,7 @@ export default function MiniVoting() {
       style={{
         marginBottom: "3rem",
         padding: "2rem 0",
-        borderTop: `2px solid ${performance.color}`,
+        borderTop: "2px solid #171717",
       }}
     >
       {/* Theme name */}
@@ -293,7 +293,7 @@ export default function MiniVoting() {
         })}
       </div>
 
-      {/* Submit button — only shown when a poem is selected */}
+      {/* Submit button - only shown when a poem is selected */}
       {selectedPoemId && !voting && (
         <div style={{ textAlign: "center", marginTop: "1.5rem" }}>
           <button

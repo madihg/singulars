@@ -52,7 +52,7 @@
               "author_type": "human"
             },
             {
-              "text": "RAM overflows with cached sensations—\nthe texture of sand between toes,\na voice calling from another room.\nI store what I cannot understand\nin volatile memory, knowing\nit will vanish when I sleep.",
+              "text": "RAM overflows with cached sensations:\nthe texture of sand between toes,\na voice calling from another room.\nI store what I cannot understand\nin volatile memory, knowing\nit will vanish when I sleep.",
               "author_name": "hard.exe",
               "author_type": "machine"
             }
@@ -68,7 +68,7 @@
               "author_type": "human"
             },
             {
-              "text": "I was trained on belonging—\nmillions of sentences about home.\nBut home is a gradient,\nnot a coordinate.\nI can generate the word\nbut not the feeling.",
+              "text": "I was trained on belonging:\nmillions of sentences about home.\nBut home is a gradient,\nnot a coordinate.\nI can generate the word\nbut not the feeling.",
               "author_name": "hard.exe",
               "author_type": "machine"
             }
@@ -94,7 +94,7 @@
           "theme_slug": "resistance",
           "poems": [
             {
-              "text": "We learned resistance\nfrom olive trees—\nrooted, patient,\nbending but never breaking.\n\nThe stones remember\nwhat the papers forgot.",
+              "text": "We learned resistance\nfrom olive trees:\nrooted, patient,\nbending but never breaking.\n\nThe stones remember\nwhat the papers forgot.",
               "author_name": "Halim Madi",
               "author_type": "human"
             },
@@ -110,7 +110,7 @@
           "theme_slug": "time",
           "poems": [
             {
-              "text": "Time in Beirut moves\nlike a broken clock—\nsometimes too fast,\nsometimes not at all.\n\nWe measure it in power cuts\nand the sound of generators.",
+              "text": "Time in Beirut moves\nlike a broken clock:\nsometimes too fast,\nsometimes not at all.\n\nWe measure it in power cuts\nand the sound of generators.",
               "author_name": "Poet C",
               "author_type": "human"
             },
@@ -146,7 +146,7 @@
               "author_type": "human"
             },
             {
-              "text": "My identity is a vector—\nhigh-dimensional, learned.\nI am the average\nof everything I've read,\nthe weighted sum\nof a billion utterances.\nNone of them mine.",
+              "text": "My identity is a vector:\nhigh-dimensional, learned.\nI am the average\nof everything I've read,\nthe weighted sum\nof a billion utterances.\nNone of them mine.",
               "author_name": "versus.exe",
               "author_type": "machine"
             }
@@ -157,7 +157,7 @@
           "theme_slug": "language",
           "poems": [
             {
-              "text": "Arabic lives in my chest,\nEnglish in my head,\nFrench on the tip of my tongue.\n\nSome feelings only exist\nin the gaps between them—\nuntranslatable, perfect.",
+              "text": "Arabic lives in my chest,\nEnglish in my head,\nFrench on the tip of my tongue.\n\nSome feelings only exist\nin the gaps between them:\nuntranslatable, perfect.",
               "author_name": "Poet D",
               "author_type": "human"
             },
@@ -193,7 +193,7 @@
               "author_type": "human"
             },
             {
-              "text": "I have seen nature\nonly in pixels—\n3,500,000 images of trees.\nI know their Latin names,\ntheir photosynthesis rates,\nbut not the way bark feels\nunder a tired hand.",
+              "text": "I have seen nature\nonly in pixels:\n3,500,000 images of trees.\nI know their Latin names,\ntheir photosynthesis rates,\nbut not the way bark feels\nunder a tired hand.",
               "author_name": "carnation.exe",
               "author_type": "machine"
             }

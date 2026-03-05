@@ -4,7 +4,7 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 
-// Schema option for all clients — tables live in the "singulars" schema.
+// Schema option for all clients - tables live in the "singulars" schema.
 // Cast needed because SupabaseClient generic defaults to "public".
 const SCHEMA = { db: { schema: "singulars" } };
 

@@ -252,7 +252,7 @@ export default async function PerformancePage({
         </Link>
       </nav>
 
-      {/* Hero image — same aspect ratio as landing for alignment */}
+      {/* Hero image - same aspect ratio as landing for alignment */}
       <div
         style={{
           width: "100%",

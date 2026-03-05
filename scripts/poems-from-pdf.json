@@ -2,13 +2,13 @@
   "_extraction_notes": {
     "source": "Carnation Poems.pdf",
     "human_machine_method": "Content analysis + PDF markers (* = human, HUMAN/MACHINE vote labels for versus)",
-    "line_breaks": "Preserved from PDF layout — may need reformatting",
+    "line_breaks": "Preserved from PDF layout - may need reformatting",
     "vote_counts": "Set to 0 (live performance counts noted in comments, not imported)",
-    "author_note": "All human poems attributed to Halim Madi — user will correct non-Halim poems later",
+    "author_note": "All human poems attributed to Halim Madi - user will correct non-Halim poems later",
     "ambiguities": [
       "Touch Grass (reinforcement): first poem appears to be MACHINE based on content (garbled words like 'intlights', 'imam')",
-      "Versus Solitude has 4 poems (2 pairs) — split into Solitude and Solitude II",
-      "Versus Anger has a longer draft version in PDF — only final edited version included",
+      "Versus Solitude has 4 poems (2 pairs) - split into Solitude and Solitude II",
+      "Versus Anger has a longer draft version in PDF - only final edited version included",
       "Enfance (carnation): Winner label says MACHINE but content strongly suggests first poem is HUMAN (Arabic reference)"
     ]
   },

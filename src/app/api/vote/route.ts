@@ -231,7 +231,7 @@ export async function POST(request: Request) {
       voted_poem_id: poem_id,
     });
   } catch (err: unknown) {
-    // Log full error server-side only — never expose to client
+    // Log full error server-side only - never expose to client
     console.error(
       "Unexpected error in vote API:",
       err instanceof Error ? err.message : "Unknown error",

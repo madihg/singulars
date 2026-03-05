@@ -189,7 +189,7 @@ export default async function ThemeVotingPage({
             marginBottom: "1.5rem",
           }}
         >
-          Coming soon — voting has not yet begun.
+          Coming soon. Voting has not yet begun.
         </p>
       )}
 

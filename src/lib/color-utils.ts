@@ -45,7 +45,7 @@ function contrastRatio(hex1: string, hex2: string): number {
 }
 
 /**
- * Darken a hex color by a given factor (0–1).
+ * Darken a hex color by a given factor (0-1).
  * factor=1 returns the same color; factor=0.5 halves each channel.
  */
 function darken(hex: string, factor: number): string {
@@ -56,7 +56,7 @@ function darken(hex: string, factor: number): string {
 /**
  * Return a darkened variant of `color` that meets `minRatio` contrast
  * against `background`. If the color already passes, it is returned
- * unchanged. The hue is preserved — only brightness is reduced.
+ * unchanged. The hue is preserved; only brightness is reduced.
  */
 export function ensureContrast(
   color: string,
@@ -109,7 +109,7 @@ export function accessibleUIColor(
 }
 
 /**
- * Status pill colors — filled backgrounds for visual prominence.
+ * Status pill colors - filled backgrounds for visual prominence.
  */
 export const STATUS_PILL_COLORS = {
   upcoming: {
@@ -118,9 +118,9 @@ export const STATUS_PILL_COLORS = {
     text: "#4b5563",
   },
   training: {
-    background: "#dcfce7",
-    border: "#86efac",
-    text: "#166534",
+    background: "#ffffff",
+    border: "#171717",
+    text: "#171717",
   },
   trained: {
     background: "#171717",

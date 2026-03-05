@@ -125,7 +125,7 @@ export default function VotingPoemPair({
 
   return (
     <div>
-      {/* Instruction text — above poems */}
+      {/* Instruction text - above poems */}
       {canVote && !isVoting && (
         <p
           style={{
@@ -188,7 +188,7 @@ export default function VotingPoemPair({
                 {poem.text}
               </div>
 
-              {/* Vote results — always show count; "Your vote" and dots when voted/trained */}
+              {/* Vote results - always show count; "Your vote" and dots when voted/trained */}
               <div
                 aria-live="polite"
                 aria-label={`Vote results: ${count} ${count === 1 ? "vote" : "votes"}${isVotedPoem ? ", your vote" : ""}`}
@@ -229,7 +229,7 @@ export default function VotingPoemPair({
                   )}
                 </div>
 
-                {/* Vote dots — show when voted or trained */}
+                {/* Vote dots - show when voted or trained */}
                 {showResults && (
                   <div
                     aria-hidden="true"

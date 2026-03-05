@@ -1,9 +1,9 @@
 import Link from "next/link";
 
 export const metadata = {
-  title: "About Singulars — Human vs Machine Poetry",
+  title: "About Singulars | Human vs Machine Poetry",
   description:
-    "Learn about the Singulars project — a series of live human-vs-machine poetry duels.",
+    "Learn about the Singulars project: a series of live human-vs-machine poetry duels.",
 };
 
 const substackCards = [
@@ -74,8 +74,8 @@ export default function AboutPage() {
         <p style={{ marginBottom: "1.5rem" }}>
           Each performance uses a different AI model, trained or fine-tuned on
           poetry. The audience votes are collected and used to further train the
-          machine for the next round—a form of artisanal RLHF (reinforcement
-          learning from human feedback)—creating a feedback loop between human
+          machine for the next round, a form of artisanal RLHF (reinforcement
+          learning from human feedback), creating a feedback loop between human
           taste and machine output.
         </p>
 
