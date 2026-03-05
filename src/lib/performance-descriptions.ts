@@ -4,11 +4,11 @@
 type ContentBlock =
   | { type: "paragraph"; text: string }
   | { type: "italic"; text: string }
-  | { type: "image"; hash: string; filename: string; alt: string }
+  | { type: "image"; src: string; alt: string }
   | { type: "video"; hash: string; filename: string }
   | {
       type: "gallery";
-      items: { hash: string; filename: string; alt: string }[];
+      items: { src: string; alt: string }[];
     };
 
 export interface PerformanceDescription {
@@ -23,21 +23,11 @@ export interface PerformanceDescription {
 
 export interface HeroImage {
   alt: string;
-  hash?: string;
-  filename?: string;
-  src?: string;
+  src: string;
 }
 
-function cargoImg(hash: string, filename: string, width = 1500): string {
-  return `https://freight.cargo.site/w/${width}/i/${hash}/${filename}`;
-}
-
-export { cargoImg };
-
-export function heroImgSrc(image: HeroImage, width = 1500): string {
-  if (image.src) return image.src;
-  if (!image.hash || !image.filename) return "";
-  return cargoImg(image.hash, image.filename, width);
+export function heroImgSrc(image: HeroImage): string {
+  return image.src;
 }
 
 function normalizePerformanceSlug(slug: string): string {
@@ -52,27 +42,21 @@ export const HERO_IMAGES: {
   landing: HeroImage;
   performance: Record<string, HeroImage>;
 } = {
-  /** Landing page: reinforcement installation scene */
   landing: {
-    hash: "X2682094696207493612167657509731",
-    filename: "IGAC-exhibition-photography-048.jpg",
+    src: "/images/landing/IGAC-exhibition-photography-048.jpg",
     alt: "Reinforcement.exe installation with poet in the cube and audience voting",
   },
-  /** Performance page heroes: slug -> image. Reinforcement uses different from landing; others use landing image. */
   performance: {
     "reinforcement-exe": {
-      hash: "U2682094274422690366798759809891",
-      filename: "_MG_5036.jpg",
+      src: "/images/reinforcement-exe/_MG_5036.jpg",
       alt: "Printed poems with red and blue voting stickers from audience",
     },
     "versus-exe": {
-      hash: "L2651923156110863383776773624675",
-      filename: "IMG_9920.JPG",
+      src: "/images/versus-exe/IMG_9920.JPG",
       alt: "Versus.exe performance at Mozilla AI Residency, San Francisco",
     },
     "carnation-exe": {
-      hash: "K2586476299518304130969389847395",
-      filename: "IMG_8458.JPG",
+      src: "/images/carnation-exe/IMG_8458.JPG",
       alt: "Carnation.exe performance installation with printed poems displayed side by side",
     },
     "reverse-exe": {
@@ -121,8 +105,7 @@ const descriptions: Record<string, PerformanceDescription> = {
     content: [
       {
         type: "image",
-        hash: "K2586476299518304130969389847395",
-        filename: "IMG_8458.JPG",
+        src: "/images/carnation-exe/IMG_8458.JPG",
         alt: "Carnation.exe performance installation with printed poems displayed side by side",
       },
       {
@@ -137,18 +120,15 @@ const descriptions: Record<string, PerformanceDescription> = {
         type: "gallery",
         items: [
           {
-            hash: "Y2586477661662780021830100276067",
-            filename: "IMG_8498.JPG",
+            src: "/images/carnation-exe/IMG_8498.JPG",
             alt: "Close-up of printed poems with pink voting dots",
           },
           {
-            hash: "X2586477713959299470796679107427",
-            filename: "IMG_8497.JPG",
+            src: "/images/carnation-exe/IMG_8497.JPG",
             alt: "Audience reading printed poems during the performance",
           },
           {
-            hash: "L2586478123126529769748243501923",
-            filename: "IMG_8478.JPG",
+            src: "/images/carnation-exe/IMG_8478.JPG",
             alt: "Poems displayed on the wall with visitor votes",
           },
         ],
@@ -161,18 +141,15 @@ const descriptions: Record<string, PerformanceDescription> = {
         type: "gallery",
         items: [
           {
-            hash: "A2586477290643416467309888623459",
-            filename: "IMG_8470.JPG",
+            src: "/images/carnation-exe/IMG_8470.JPG",
             alt: "Performance documentation showing the poet writing",
           },
           {
-            hash: "P2586477339139906637092299821923",
-            filename: "IMG_8474.JPG",
+            src: "/images/carnation-exe/IMG_8474.JPG",
             alt: "Printed poems being placed for audience viewing",
           },
           {
-            hash: "O2586480870197210482500960605027",
-            filename: "IMG_8490.JPG",
+            src: "/images/carnation-exe/IMG_8490.JPG",
             alt: "Audience interacting with the installation",
           },
         ],
@@ -185,18 +162,15 @@ const descriptions: Record<string, PerformanceDescription> = {
         type: "gallery",
         items: [
           {
-            hash: "J2586480587851345690302563570531",
-            filename: "IMG_8481.JPG",
+            src: "/images/carnation-exe/IMG_8481.JPG",
             alt: "Detail of pink voting stickers on printed poems",
           },
           {
-            hash: "K2586480654370304820099206697827",
-            filename: "IMG_8488.JPG",
+            src: "/images/carnation-exe/IMG_8488.JPG",
             alt: "Overview of the Carnation.exe installation space",
           },
           {
-            hash: "U2586481015096385181489488548707",
-            filename: "IMG_8494.JPG",
+            src: "/images/carnation-exe/IMG_8494.JPG",
             alt: "Close-up of handwritten and machine-generated poems",
           },
         ],
@@ -230,8 +204,7 @@ const descriptions: Record<string, PerformanceDescription> = {
       },
       {
         type: "image",
-        hash: "L2651923156110863383776773624675",
-        filename: "IMG_9920.JPG",
+        src: "/images/versus-exe/IMG_9920.JPG",
         alt: "Versus.exe performance at Mozilla AI Residency, San Francisco",
       },
       {
@@ -242,18 +215,15 @@ const descriptions: Record<string, PerformanceDescription> = {
         type: "gallery",
         items: [
           {
-            hash: "U2651930032743459413444553692003",
-            filename: "2831d8c8-b769-4e0d-ba6c-c1c838b4d131.JPG",
+            src: "/images/versus-exe/2831d8c8-b769-4e0d-ba6c-c1c838b4d131.JPG",
             alt: "Audience voting during the Versus.exe performance",
           },
           {
-            hash: "L2651928450750687652113407103843",
-            filename: "IMG_1738.JPG",
+            src: "/images/versus-exe/IMG_1738.JPG",
             alt: "Printed poems displayed for audience reading",
           },
           {
-            hash: "B2651928763902615047406755337059",
-            filename: "IMG_1718.JPG",
+            src: "/images/versus-exe/IMG_1718.JPG",
             alt: "Close-up of voting stickers on poems",
           },
         ],
@@ -266,28 +236,23 @@ const descriptions: Record<string, PerformanceDescription> = {
         type: "gallery",
         items: [
           {
-            hash: "H2651928886887057786828335960931",
-            filename: "IMG_1714.JPG",
+            src: "/images/versus-exe/IMG_1714.JPG",
             alt: "Performance documentation",
           },
           {
-            hash: "I2651929209520611636008393724771",
-            filename: "IMG_1700.JPG",
+            src: "/images/versus-exe/IMG_1700.JPG",
             alt: "Poet writing during the performance",
           },
           {
-            hash: "S2651929377976278517124019082083",
-            filename: "IMG_1694.JPG",
+            src: "/images/versus-exe/IMG_1694.JPG",
             alt: "Audience engaging with printed poems",
           },
           {
-            hash: "V2651929601753730875294589735779",
-            filename: "IMG_1685.JPG",
+            src: "/images/versus-exe/IMG_1685.JPG",
             alt: "Installation overview",
           },
           {
-            hash: "D2651926755421120301910775386979",
-            filename: "IMG_9911.JPG",
+            src: "/images/versus-exe/IMG_9911.JPG",
             alt: "Detail of poems on display",
           },
         ],
@@ -300,28 +265,23 @@ const descriptions: Record<string, PerformanceDescription> = {
         type: "gallery",
         items: [
           {
-            hash: "J2651926755642481230795290006371",
-            filename: "IMG_9912.JPG",
+            src: "/images/versus-exe/IMG_9912.JPG",
             alt: "Printed poem sheets with audience votes",
           },
           {
-            hash: "L2651926755660927974868999557987",
-            filename: "IMG_9913.JPG",
+            src: "/images/versus-exe/IMG_9913.JPG",
             alt: "Voting stickers close-up",
           },
           {
-            hash: "Z2651926755679374718942709109603",
-            filename: "IMG_9915.JPG",
+            src: "/images/versus-exe/IMG_9915.JPG",
             alt: "Poems displayed on the wall",
           },
           {
-            hash: "U2651926755697821463016418661219",
-            filename: "IMG_9916.JPG",
+            src: "/images/versus-exe/IMG_9916.JPG",
             alt: "Performance space overview",
           },
           {
-            hash: "K2651927273940649469812561761123",
-            filename: "IMG_9917.JPG",
+            src: "/images/versus-exe/IMG_9917.JPG",
             alt: "Audience reading poems",
           },
         ],
@@ -334,18 +294,15 @@ const descriptions: Record<string, PerformanceDescription> = {
         type: "gallery",
         items: [
           {
-            hash: "U2651927538264045301996726866787",
-            filename: "IMG_9921.jpg",
+            src: "/images/versus-exe/IMG_9921.jpg",
             alt: "Final installation view",
           },
           {
-            hash: "K2651927964715874798014141125475",
-            filename: "IMG_9940.jpg",
+            src: "/images/versus-exe/IMG_9940.jpg",
             alt: "Documentation of the performance series",
           },
           {
-            hash: "G2651928122656897557115322061667",
-            filename: "IMG_9925.jpg",
+            src: "/images/versus-exe/IMG_9925.jpg",
             alt: "Close-up of the performance materials",
           },
         ],
@@ -368,8 +325,7 @@ const descriptions: Record<string, PerformanceDescription> = {
       },
       {
         type: "image",
-        hash: "Z2682094116426327375476450218851",
-        filename: "_MG_5037.jpg",
+        src: "/images/reinforcement-exe/_MG_5037.jpg",
         alt: "The open cube installation where the poet writes during Reinforcement.exe",
       },
       {
@@ -378,8 +334,7 @@ const descriptions: Record<string, PerformanceDescription> = {
       },
       {
         type: "image",
-        hash: "U2682094274422690366798759809891",
-        filename: "_MG_5036.jpg",
+        src: "/images/reinforcement-exe/_MG_5036.jpg",
         alt: "Printed poems with red and blue voting stickers from audience",
       },
       {
@@ -388,8 +343,7 @@ const descriptions: Record<string, PerformanceDescription> = {
       },
       {
         type: "image",
-        hash: "A2682094523859563731499316761443",
-        filename: "DSC01755.jpg",
+        src: "/images/reinforcement-exe/DSC01755.jpg",
         alt: "Audience voting with colored stickers during the performance",
       },
       {
@@ -398,8 +352,7 @@ const descriptions: Record<string, PerformanceDescription> = {
       },
       {
         type: "image",
-        hash: "X2682094696207493612167657509731",
-        filename: "IGAC-exhibition-photography-048.jpg",
+        src: "/images/landing/IGAC-exhibition-photography-048.jpg",
         alt: "The performance cube at DevConnect Buenos Aires",
       },
       {
@@ -410,43 +363,35 @@ const descriptions: Record<string, PerformanceDescription> = {
         type: "gallery",
         items: [
           {
-            hash: "O2682097520570031993763395883875",
-            filename: "Untitled-2-01.jpg",
+            src: "/images/reinforcement-exe/Untitled-2-01.jpg",
             alt: "Performance detail",
           },
           {
-            hash: "Y2682097520754499434500491400035",
-            filename: "Untitled-2-02.jpg",
+            src: "/images/reinforcement-exe/Untitled-2-02.jpg",
             alt: "Performance detail",
           },
           {
-            hash: "O2682097520772946178574200951651",
-            filename: "Untitled-2-03.jpg",
+            src: "/images/reinforcement-exe/Untitled-2-03.jpg",
             alt: "Performance detail",
           },
           {
-            hash: "O2682097520791392922647910503267",
-            filename: "Untitled-2-04.jpg",
+            src: "/images/reinforcement-exe/Untitled-2-04.jpg",
             alt: "Performance detail",
           },
           {
-            hash: "U2682097520809839666721620054883",
-            filename: "Untitled-2-05.jpg",
+            src: "/images/reinforcement-exe/Untitled-2-05.jpg",
             alt: "Performance detail",
           },
           {
-            hash: "J2682097520828286410795329606499",
-            filename: "Untitled-2-06.jpg",
+            src: "/images/reinforcement-exe/Untitled-2-06.jpg",
             alt: "Performance detail",
           },
           {
-            hash: "C2682097520846733154869039158115",
-            filename: "Untitled-2-07.jpg",
+            src: "/images/reinforcement-exe/Untitled-2-07.jpg",
             alt: "Performance detail",
           },
           {
-            hash: "L2682097520865179898942748709731",
-            filename: "Untitled-2-08.jpg",
+            src: "/images/reinforcement-exe/Untitled-2-08.jpg",
             alt: "Performance detail",
           },
         ],
@@ -461,8 +406,7 @@ const descriptions: Record<string, PerformanceDescription> = {
       },
       {
         type: "image",
-        hash: "C2682095106020359953699056210787",
-        filename: "IGAC-exhibition-photography-049.jpg",
+        src: "/images/reinforcement-exe/IGAC-exhibition-photography-049.jpg",
         alt: "Close-up of printed poems accumulating during the performance",
       },
       {
@@ -481,18 +425,15 @@ const descriptions: Record<string, PerformanceDescription> = {
         type: "gallery",
         items: [
           {
-            hash: "Y2682096433946125587828548391779",
-            filename: "L1002255.jpg",
+            src: "/images/reinforcement-exe/L1002255.jpg",
             alt: "Final installation view at DevConnect Buenos Aires",
           },
           {
-            hash: "G2682096571245241728448741069667",
-            filename: "L1001674.jpg",
+            src: "/images/reinforcement-exe/L1001674.jpg",
             alt: "Documentation of the Reinforcement.exe performance",
           },
           {
-            hash: "V2682096736011559794822456103779",
-            filename: "L1002259.jpg",
+            src: "/images/reinforcement-exe/L1002259.jpg",
             alt: "Overview of the performance space",
           },
         ],

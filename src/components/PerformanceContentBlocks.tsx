@@ -1,4 +1,3 @@
-import { cargoImg } from "@/lib/performance-descriptions";
 import type { PerformanceDescription } from "@/lib/performance-descriptions";
 
 interface PerformanceContentBlocksProps {
@@ -58,7 +57,7 @@ export default function PerformanceContentBlocks({
             return (
               <figure key={i} style={{ margin: "2rem 0" }}>
                 <img
-                  src={cargoImg(block.hash, block.filename)}
+                  src={block.src}
                   alt={block.alt}
                   loading="lazy"
                   style={{
@@ -88,11 +87,7 @@ export default function PerformanceContentBlocks({
                 {block.items.map((item, j) => (
                   <img
                     key={j}
-                    src={cargoImg(
-                      item.hash,
-                      item.filename,
-                      isDense ? 600 : 1000,
-                    )}
+                    src={item.src}
                     alt={item.alt}
                     loading="lazy"
                     style={{

@@ -263,7 +263,7 @@ export default async function PerformancePage({
         }}
       >
         <img
-          src={heroImgSrc(heroImg, 1600)}
+          src={heroImgSrc(heroImg)}
           alt={heroImg.alt}
           style={{
             width: "100%",

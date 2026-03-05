@@ -143,7 +143,7 @@ export default async function SingularsPage() {
         }}
       >
         <img
-          src={heroImgSrc(HERO_IMAGES.landing, 1600)}
+          src={heroImgSrc(HERO_IMAGES.landing)}
           alt={HERO_IMAGES.landing.alt}
           style={{
             width: "100%",
@@ -221,7 +221,7 @@ export default async function SingularsPage() {
                   }}
                 >
                   <img
-                    src={heroImgSrc(heroImg, 800)}
+                    src={heroImgSrc(heroImg)}
                     alt={heroImg.alt}
                     style={{
                       width: "100%",
