@@ -141,6 +141,7 @@ export default async function PerformancePage({
           maxWidth: "800px",
           margin: "0 auto",
           padding: "4rem 2rem",
+          cursor: `url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20'><circle cx='10' cy='10' r='8' fill='${encodeURIComponent(performance.color)}'/></svg>") 10 10, auto`,
           ...cssVars,
         }}
         data-performance-color={performance.color}
@@ -236,6 +237,7 @@ export default async function PerformancePage({
         maxWidth: "800px",
         margin: "0 auto",
         padding: "4rem 2rem",
+        cursor: `url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20'><circle cx='10' cy='10' r='8' fill='${encodeURIComponent(performance.color)}'/></svg>") 10 10, auto`,
         ...cssVars,
       }}
       data-performance-color={performance.color}

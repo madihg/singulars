@@ -132,8 +132,9 @@ export default async function SingularsPage() {
         </Link>
       </p>
 
-      {/* Hero image - from reinforcement.exe, above line */}
+      {/* Hero image - B&W by default, color + green cursor on hover */}
       <div
+        className="hero-image-container"
         style={{
           width: "100%",
           aspectRatio: "16/9",
@@ -150,7 +151,6 @@ export default async function SingularsPage() {
             height: "100%",
             objectFit: "cover",
             display: "block",
-            filter: "grayscale(100%)",
           }}
         />
       </div>
@@ -207,7 +207,9 @@ export default async function SingularsPage() {
                 data-performance-name={perf.name}
                 style={{
                   borderTop: `4px solid ${perf.color}`,
-                  cursor: isUpcoming ? "default" : "pointer",
+                  cursor: isUpcoming
+                    ? "default"
+                    : `url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20'><circle cx='10' cy='10' r='8' fill='${encodeURIComponent(perf.color)}'/></svg>") 10 10, pointer`,
                   transition: "opacity 0.3s ease",
                 }}
               >

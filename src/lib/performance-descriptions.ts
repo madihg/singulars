@@ -43,8 +43,8 @@ export const HERO_IMAGES: {
   performance: Record<string, HeroImage>;
 } = {
   landing: {
-    src: "/images/landing/IGAC-exhibition-photography-048.jpg",
-    alt: "Reinforcement.exe installation with poet in the cube and audience voting",
+    src: "/images/reinforcement-exe/IGAC-exhibition-photography-049.jpg",
+    alt: "Reinforcement.exe performance with poet writing inside the cube and audience voting on the wall",
   },
   performance: {
     "reinforcement-exe": {

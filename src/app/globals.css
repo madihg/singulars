@@ -97,3 +97,18 @@ hr {
   outline: 3px solid var(--performance-color, rgba(0, 0, 0, 0.85));
   outline-offset: 2px;
 }
+
+/* Hero image: B&W by default, color on hover, green dot cursor */
+.hero-image-container img {
+  transition: filter 0.5s ease;
+  filter: grayscale(100%);
+}
+.hero-image-container:hover img {
+  filter: grayscale(0%);
+}
+.hero-image-container:hover {
+  cursor:
+    url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20'><circle cx='10' cy='10' r='8' fill='%2300c853'/></svg>")
+      10 10,
+    pointer;
+}
