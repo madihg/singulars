@@ -68,6 +68,8 @@ export const HERO_IMAGES: {
 
 /** Short card descriptions for the landing page grid. */
 export const CARD_DESCRIPTIONS: Record<string, string> = {
+  "ground-exe":
+    "The duel moves to the desert. At the Currents New Media Festival, the poet and machine write under the light of Santa Fe.",
   "reverse-exe":
     "A live poetry duel at the Media Archaeology Lab. The poet writes among vintage machines while the model trains on the archive of past performances.",
   "hard-exe":
@@ -95,6 +97,33 @@ export function getPerformanceHeroImage(slug: string): HeroImage | null {
 }
 
 const descriptions: Record<string, PerformanceDescription> = {
+  "reverse-exe": {
+    title: "Reverse.exe",
+    date: "Mar '26",
+    location: "Media Archaeology Lab, University of Colorado Boulder",
+    series: "Part IV of Singulars",
+    liveUrl: "",
+    datasetUrl: "",
+    content: [
+      {
+        type: "paragraph",
+        text: "Reverse.exe unfolds at the Media Archaeology Lab, surrounded by vintage computers, printers, and media artifacts that hold the memory of computing's early eras. The poet writes at a desk flanked by machines from decades past. The language model, trained on an anthology of English poetry and every prior Singulars performance, responds in seconds. Both poems are printed, hung on the wall, and kept anonymous. The audience votes with stickers. When the human wins, the model is retrained. When the machine wins, the poet adjusts.",
+      },
+      {
+        type: "paragraph",
+        text: "This is the fourth installment of Singulars. By now the feedback loop has tightened. The model carries forward the traces of Carnation, Versus, and Reinforcement in its weights. The poet carries them in memory. Each new performance reverses the flow. What was learned becomes the ground for what comes next.",
+      },
+      {
+        type: "paragraph",
+        text: "The title points backward. Reverse as in rewind, as in undo, as in the opposite direction. The lab itself is a place where technologies go to be remembered rather than discarded. Writing poetry among these machines asks what endures. The printer still prints. The stickers still stick. The audience still chooses. The loop continues.",
+      },
+      {
+        type: "paragraph",
+        text: "What emerges is reinforcement learning made tangible. Not a fight but a mutual adjustment. Not a contest but a feedback ecology where readers become trainers and taste becomes the tuning function. A model, both human and artificial, trained not to win but to listen.",
+      },
+    ],
+  },
+
   "carnation-exe": {
     title: "Carnation.exe",
     date: "May '25",

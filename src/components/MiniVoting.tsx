@@ -49,7 +49,7 @@ export default function MiniVoting() {
   useEffect(() => {
     async function fetchRandomTheme() {
       try {
-        const res = await fetch("/api/performances/hard-exe");
+        const res = await fetch("/api/performances/reverse-exe");
         if (!res.ok) {
           throw new Error("Failed to fetch performance data");
         }
