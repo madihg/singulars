@@ -8,24 +8,15 @@ export const metadata = {
 
 const substackCards = [
   {
+    title: "What I Learned Inside a Poetry Cage in Buenos Aires",
+    subtitle:
+      "Notes from a performance where an audience became the training loop.",
+    url: "https://halimmadi.substack.com/p/what-i-learned-inside-a-poetry-cage",
+  },
+  {
     title: "Eat.exe",
     subtitle: "Drawing a Latent Future with Electric Lines of Desire",
     url: "https://secondvoice.substack.com/p/eatexe",
-  },
-  {
-    title: "On Poetry and Machines",
-    subtitle: "Exploring what happens when algorithms write verse.",
-    url: "https://secondvoice.substack.com/p/the-lost-art-of-memory",
-  },
-  {
-    title: "The Training Loop",
-    subtitle: "How audience votes shape the next generation of machine poetry.",
-    url: "https://secondvoice.substack.com/p/the-150hr-poet",
-  },
-  {
-    title: "Behind the Performances",
-    subtitle: "What it\u2019s like to compete against an AI on stage.",
-    url: "https://secondvoice.substack.com/p/the-prestige-of-the-sentence",
   },
 ];
 
