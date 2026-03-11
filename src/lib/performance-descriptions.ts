@@ -116,7 +116,11 @@ const descriptions: Record<string, PerformanceDescription> = {
       },
       {
         type: "paragraph",
-        text: "Hard.exe is the fourth installment in the Singulars series, an ongoing duel between poet and machine. The poet writes a poem for 30 minutes on a theme proposed by the audience. The model, trained on an anthology of English poetry and past iterations of this performance, responds almost instantaneously with one of its own. Both poems are printed, hung and kept anonymous. The audience votes. When the human wins, the model is retrained on an updated dataset. When the machine wins, the poet adjusts.",
+        text: "Hard.exe is the fourth installment in the Singulars series, an ongoing duel between poet and machine. The poet writes a poem for 30 minutes on a theme proposed by the audience. The model, trained on an anthology of English poetry and past iterations of this performance, responds almost instantly with one of its own. Both poems are printed, hung, and kept anonymous. The audience votes. When the human wins, the machine is retrained on an updated dataset. When the machine wins, the poet adjusts.",
+      },
+      {
+        type: "paragraph",
+        text: "This is reinforcement learning using human feedback, a popular machine learning technique, made tangible. What emerges is a different narrative for the human and AI encounter. Not a fight but a mutual reinforcement. Not a contest but a feedback ecology where readers become trainers and taste becomes the tuning function. A reinforced model, both human and artificial, trained not to win, but to listen.",
       },
       {
         type: "gallery",
@@ -133,7 +137,11 @@ const descriptions: Record<string, PerformanceDescription> = {
       },
       {
         type: "paragraph",
-        text: "This is reinforcement learning using human feedback: a popular machine learning technique, made tangible. What emerges is a different narrative for the technique. Not a fight but a mutual reinforcement. Not a contest but a feedback ecology where readers become trainers and taste becomes the tuning function. A reinforced model, both human and artificial, trained not to win, but to listen.",
+        text: "The usual question is whether a machine can appear human enough. In this work the pressure runs in the other direction. Sitting behind a panel with a timer running, the poet is the one who has to prove their humanity. If the poem does not resonate, if the dots gather on the other page, it feels less like losing a game and more like failing to be adequately human in public. To win you cannot rely on tricks alone. You have to connect to something true, to tap into experiences that feel specific enough, embodied enough, that an audience of strangers feels it in their own lives.",
+      },
+      {
+        type: "paragraph",
+        text: "This format is also an intense study of attention. Once attention becomes the prize you can feel how quickly it bends the work into certain shapes. The model rarely goes very far into the conceptual. Where the poet tends to win is in the adjacent zones of shock, surprise, and situational awareness, the small receding edges of context that models are currently unable to inhabit. Paradoxically, this is also what rediscovers what matters in poetry. If you aim only for cheap attention, the poem wins but you lose. The goal becomes cultivating a particular quality of experience in the room, even if that means losing a round.",
       },
       {
         type: "gallery",
@@ -148,6 +156,22 @@ const descriptions: Record<string, PerformanceDescription> = {
           },
         ],
       },
+      {
+        type: "paragraph",
+        text: "The model writes in an instant. The poet takes thirty minutes. At first that feels like a handicap. Over time it becomes clear that the delay changes the poet. It takes thirty minutes to become the poem. The writing rewires you a little each round. There is also a surprisingly tender material side to the work. You learn how to tear and fold paper tape efficiently, how to arrange the wall so that the poems look held rather than slapped on. You get familiar with the printer, how it always struggles with the first page of the day, the faint burnt smell of its effort.",
+      },
+      {
+        type: "paragraph",
+        text: "Emotionally, the work is intense. At the beginning, when the machine wins, there is a strange pride. It means you have trained a strong model. Later, when the machine starts winning on nights where you have tried your best, it means what you wrote has not connected. That is a very raw feeling. At the same time this rivalry clearly makes for a better poet. The sense of line, structure, and timing sharpens. The tolerance for cliches goes down. You can feel when a poem is sliding into what might be called machine obviousness and pull it back toward something stranger and more human.",
+      },
+      {
+        type: "italic",
+        text: "It reminded me of a mother whose body changes through the act of feeding a child. The one who nourishes is transformed by the process of nourishment.",
+      },
+      {
+        type: "paragraph",
+        text: "The experiment does not only rewire the poet and the model. It also changes the corpus itself. Other poets were brought in. Their work was metabolized into the model's training data. This diffused the style, shifted it away from a narrow imitation of one voice, and created a richer, more plural texture. It felt like inviting a small ghostly council of poets into the system. Dataset creation is never one way. The residency made it very clear that the project is not only about better models. It is about using the pressure of a reverse Turing test to discover what kind of humans we still have the chance to become.",
+      },
     ],
   },
 
@@ -155,7 +179,7 @@ const descriptions: Record<string, PerformanceDescription> = {
     title: "Reverse.exe",
     date: "Mar '26",
     location: "Media Archaeology Lab, University of Colorado Boulder",
-    series: "Part IV of Singulars",
+    series: "Part V of Singulars",
     liveUrl: "",
     datasetUrl: "",
     content: [
@@ -166,7 +190,11 @@ const descriptions: Record<string, PerformanceDescription> = {
       },
       {
         type: "paragraph",
-        text: "Reverse.exe unfolds at the Media Archaeology Lab, surrounded by vintage computers, printers, and media artifacts that hold the memory of computing's early eras. The poet writes at a desk flanked by machines from decades past. The language model, trained on an anthology of English poetry and every prior Singulars performance, responds in seconds. Both poems are printed, hung on the wall, and kept anonymous. The audience votes with stickers. When the human wins, the model is retrained. When the machine wins, the poet adjusts.",
+        text: "Reverse.exe unfolds at the Media Archaeology Lab, surrounded by vintage computers, printers, and media artifacts that hold the memory of computing's early eras. The poet writes a poem for 30 minutes on a theme proposed by the audience. The model, trained on an anthology of English poetry and past iterations of this performance, responds almost instantly with one of its own. Both poems are printed, hung, and kept anonymous. The audience votes. When the human wins, the machine is retrained on an updated dataset. When the machine wins, the poet adjusts.",
+      },
+      {
+        type: "paragraph",
+        text: "This is reinforcement learning using human feedback, a popular machine learning technique, made tangible. What emerges is a different narrative for the human and AI encounter. Not a fight but a mutual reinforcement. Not a contest but a feedback ecology where readers become trainers and taste becomes the tuning function. A reinforced model, both human and artificial, trained not to win, but to listen.",
       },
       {
         type: "gallery",
