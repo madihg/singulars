@@ -60,8 +60,8 @@ export const HERO_IMAGES: {
       alt: "Carnation.exe performance installation with printed poems displayed side by side",
     },
     "reverse-exe": {
-      src: "/mal-logo.svg",
-      alt: "Media Archaeology Lab logo in black and white",
+      src: "/images/reverse-exe/IMG_2110.JPG",
+      alt: "Printed poems with purple voting stickers at the Media Archaeology Lab",
     },
   },
 };
@@ -106,16 +106,52 @@ const descriptions: Record<string, PerformanceDescription> = {
     datasetUrl: "",
     content: [
       {
+        type: "image",
+        src: "/images/reverse-exe/IMG_2110.JPG",
+        alt: "Printed poems with purple voting stickers at the Media Archaeology Lab",
+      },
+      {
         type: "paragraph",
         text: "Reverse.exe unfolds at the Media Archaeology Lab, surrounded by vintage computers, printers, and media artifacts that hold the memory of computing's early eras. The poet writes at a desk flanked by machines from decades past. The language model, trained on an anthology of English poetry and every prior Singulars performance, responds in seconds. Both poems are printed, hung on the wall, and kept anonymous. The audience votes with stickers. When the human wins, the model is retrained. When the machine wins, the poet adjusts.",
+      },
+      {
+        type: "gallery",
+        items: [
+          {
+            src: "/images/reverse-exe/IMG_2125.JPG",
+            alt: "The poet writing among vintage machines at the Media Archaeology Lab",
+          },
+          {
+            src: "/images/reverse-exe/IMG_2131.JPG",
+            alt: "The poet writing with a rainbow flag and lab equipment in the background",
+          },
+        ],
       },
       {
         type: "paragraph",
         text: "This is the fourth installment of Singulars. By now the feedback loop has tightened. The model carries forward the traces of Carnation, Versus, and Reinforcement in its weights. The poet carries them in memory. Each new performance reverses the flow. What was learned becomes the ground for what comes next.",
       },
       {
+        type: "gallery",
+        items: [
+          {
+            src: "/images/reverse-exe/IMG_2132.JPG",
+            alt: "A hand placing a purple voting sticker on printed poems",
+          },
+          {
+            src: "/images/reverse-exe/IMG_2133.JPG",
+            alt: "Printed poems accumulating with purple voting stickers at the lab",
+          },
+        ],
+      },
+      {
         type: "paragraph",
         text: "The title points backward. Reverse as in rewind, as in undo, as in the opposite direction. The lab itself is a place where technologies go to be remembered rather than discarded. Writing poetry among these machines asks what endures. The printer still prints. The stickers still stick. The audience still chooses. The loop continues.",
+      },
+      {
+        type: "image",
+        src: "/images/reverse-exe/IMG_2124.JPG",
+        alt: "The poet smiling at the Media Archaeology Lab with poems and stickers on the wall behind",
       },
       {
         type: "paragraph",
