@@ -42,42 +42,43 @@ export async function POST(request: Request) {
 
   results["before"] = poems;
 
-  // Offline vote tallies to ADD to existing counts
-  // Particles had 2 sessions: (H:3,M:1) + (H:35,M:38)
-  const offlineVotes: Record<string, Record<string, number>> = {
-    particles: { human: 38, machine: 39 },
-    sun: { human: 34, machine: 14 },
-    diegetic: { human: 20, machine: 8 },
-    romance: { human: 0, machine: 0 },
+  // CORRECTION: Previous migration used wrong values.
+  // Set absolute correct totals (online votes + correct offline votes).
+  // Online votes before any migration: particles H:2,M:0 / sun H:0,M:1 / diegetic H:1,M:0 / romance H:0,M:0
+  // Correct offline: particles H:3,M:1 / sun H:34,M:14 / romance H:35,M:38 / diegetic H:20,M:8
+  const correctTotals: Record<string, Record<string, number>> = {
+    particles: { human: 5, machine: 1 },
+    sun: { human: 34, machine: 15 },
+    romance: { human: 35, machine: 38 },
+    diegetic: { human: 21, machine: 8 },
   };
 
-  // Update each poem's vote_count by adding offline votes
   const updates: Array<{
     id: string;
     theme: string;
     author: string;
-    added: number;
+    oldCount: number;
     newTotal: number;
   }> = [];
 
   for (const poem of poems || []) {
-    const themeVotes = offlineVotes[poem.theme_slug];
-    if (!themeVotes) continue;
-    const toAdd = themeVotes[poem.author_type] || 0;
-    if (toAdd === 0) continue;
+    const themeTotals = correctTotals[poem.theme_slug];
+    if (!themeTotals) continue;
+    const correctTotal = themeTotals[poem.author_type];
+    if (correctTotal === undefined) continue;
+    if (correctTotal === poem.vote_count) continue;
 
-    const newTotal = (poem.vote_count || 0) + toAdd;
     const { error } = await supabase
       .from("poems")
-      .update({ vote_count: newTotal })
+      .update({ vote_count: correctTotal })
       .eq("id", poem.id);
 
     updates.push({
       id: poem.id,
       theme: poem.theme_slug,
       author: poem.author_type,
-      added: toAdd,
-      newTotal,
+      oldCount: poem.vote_count,
+      newTotal: correctTotal,
     });
 
     if (error) {

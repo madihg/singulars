@@ -8,7 +8,7 @@ export const metadata = {
 
 const substackCards = [
   {
-    title: "What I Learned Inside a Poetry Cage in Buenos Aires",
+    title: "Lessons Learned Inside a Poetry Cage in Buenos Aires",
     subtitle:
       "Notes from a performance where an audience became the training loop.",
     url: "https://halimmadi.substack.com/p/what-i-learned-inside-a-poetry-cage",
