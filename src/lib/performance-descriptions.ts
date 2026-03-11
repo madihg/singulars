@@ -59,6 +59,10 @@ export const HERO_IMAGES: {
       src: "/images/carnation-exe/IMG_8458.JPG",
       alt: "Carnation.exe performance installation with printed poems displayed side by side",
     },
+    "hard-exe": {
+      src: "/images/hard-exe/IMG_0463.JPG",
+      alt: "Audience examining printed poems with blue voting stickers at TIAT San Francisco",
+    },
     "reverse-exe": {
       src: "/images/reverse-exe/IMG_2110.JPG",
       alt: "Printed poems with purple voting stickers at the Media Archaeology Lab",
@@ -97,6 +101,56 @@ export function getPerformanceHeroImage(slug: string): HeroImage | null {
 }
 
 const descriptions: Record<string, PerformanceDescription> = {
+  "hard-exe": {
+    title: "Hard.exe",
+    date: "Nov '24",
+    location: "TIAT, San Francisco",
+    series: "Part IV of Singulars",
+    liveUrl: "",
+    datasetUrl: "",
+    content: [
+      {
+        type: "image",
+        src: "/images/hard-exe/IMG_0463.JPG",
+        alt: "Audience examining printed poems with blue voting stickers at TIAT San Francisco",
+      },
+      {
+        type: "paragraph",
+        text: "Hard.exe is the fourth installment in the Singulars series, an ongoing duel between poet and machine. The poet writes a poem for 30 minutes on a theme proposed by the audience. The model, trained on an anthology of English poetry and past iterations of this performance, responds almost instantaneously with one of its own. Both poems are printed, hung and kept anonymous. The audience votes. When the human wins, the model is retrained on an updated dataset. When the machine wins, the poet adjusts.",
+      },
+      {
+        type: "gallery",
+        items: [
+          {
+            src: "/images/hard-exe/IMG_0464.JPG",
+            alt: "Audience member placing blue voting stickers on printed poems",
+          },
+          {
+            src: "/images/hard-exe/IMG_0465.JPG",
+            alt: "Two printed poems side by side with blue voting stickers",
+          },
+        ],
+      },
+      {
+        type: "paragraph",
+        text: "This is reinforcement learning using human feedback: a popular machine learning technique, made tangible. What emerges is a different narrative for the technique. Not a fight but a mutual reinforcement. Not a contest but a feedback ecology where readers become trainers and taste becomes the tuning function. A reinforced model, both human and artificial, trained not to win, but to listen.",
+      },
+      {
+        type: "gallery",
+        items: [
+          {
+            src: "/images/hard-exe/IMG_0466.JPG",
+            alt: "Printed poems covered in blue voting stickers",
+          },
+          {
+            src: "/images/hard-exe/IMG_0476.JPG",
+            alt: "Poems lined up along a wooden ledge with blue stickers accumulating",
+          },
+        ],
+      },
+    ],
+  },
+
   "reverse-exe": {
     title: "Reverse.exe",
     date: "Mar '26",

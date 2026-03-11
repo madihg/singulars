@@ -199,7 +199,7 @@ export default async function SingularsPage() {
               getPerformanceHeroImage(perf.slug) ??
               reverseNameFallback ??
               HERO_IMAGES.landing;
-            const isLogoImage = Boolean(heroImg.src);
+            const isLogoImage = heroImg.src.endsWith(".svg");
             const cardContent = (
               <div
                 key={perf.id}
