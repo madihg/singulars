@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getServiceClient, getSupabase } from "@/lib/supabase";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     // Use service client for server-side API routes, falls back to anon client
