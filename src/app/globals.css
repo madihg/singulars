@@ -112,3 +112,12 @@ hr {
       10 10,
     pointer;
 }
+
+/* Performance page images: B&W by default, color on hover */
+.perf-img {
+  transition: filter 0.5s ease;
+  filter: grayscale(100%);
+}
+.perf-img:hover {
+  filter: grayscale(0%);
+}

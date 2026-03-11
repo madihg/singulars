@@ -67,6 +67,10 @@ export const HERO_IMAGES: {
       src: "/images/reverse-exe/IMG_2110.JPG",
       alt: "Printed poems with purple voting stickers at the Media Archaeology Lab",
     },
+    "ground-exe": {
+      src: "/images/ground-exe/currents-logo.png",
+      alt: "Currents New Media Festival logo",
+    },
   },
 };
 
@@ -109,11 +113,6 @@ const descriptions: Record<string, PerformanceDescription> = {
     liveUrl: "",
     datasetUrl: "",
     content: [
-      {
-        type: "image",
-        src: "/images/hard-exe/IMG_0463.JPG",
-        alt: "Audience examining printed poems with blue voting stickers at TIAT San Francisco",
-      },
       {
         type: "paragraph",
         text: "Hard.exe is the fourth installment in the Singulars series, an ongoing duel between poet and machine. The poet writes a poem for 30 minutes on a theme proposed by the audience. The model, trained on an anthology of English poetry and past iterations of this performance, responds almost instantly with one of its own. Both poems are printed, hung, and kept anonymous. The audience votes. When the human wins, the machine is retrained on an updated dataset. When the machine wins, the poet adjusts.",
@@ -184,11 +183,6 @@ const descriptions: Record<string, PerformanceDescription> = {
     datasetUrl: "",
     content: [
       {
-        type: "image",
-        src: "/images/reverse-exe/IMG_2110.JPG",
-        alt: "Printed poems with purple voting stickers at the Media Archaeology Lab",
-      },
-      {
         type: "paragraph",
         text: "Reverse.exe unfolds at the Media Archaeology Lab, surrounded by vintage computers, printers, and media artifacts that hold the memory of computing's early eras. The poet writes a poem for 30 minutes on a theme proposed by the audience. The model, trained on an anthology of English poetry and past iterations of this performance, responds almost instantly with one of its own. Both poems are printed, hung, and kept anonymous. The audience votes. When the human wins, the machine is retrained on an updated dataset. When the machine wins, the poet adjusts.",
       },
@@ -250,11 +244,6 @@ const descriptions: Record<string, PerformanceDescription> = {
     liveUrl: "https://carnation-eng.vercel.app/",
     datasetUrl: "https://huggingface.co/datasets/madihalim/carnation-fr",
     content: [
-      {
-        type: "image",
-        src: "/images/carnation-exe/IMG_8458.JPG",
-        alt: "Carnation.exe performance installation with printed poems displayed side by side",
-      },
       {
         type: "paragraph",
         text: "Carnation.exe begins with the story of AlphaGo and Lee Sedol. In that match, creativity didn\u2019t come from mastery alone but from confrontation. Sedol\u2019s \u201cGod move\u201d unmoored the machine, and AlphaGo\u2019s reply revealed something alien. This is the heart of the work: poetry born not in solitude but in encounter. Rivalry as intimacy. Losing as memory. Each exchange a gift.",
@@ -348,11 +337,6 @@ const descriptions: Record<string, PerformanceDescription> = {
       {
         type: "paragraph",
         text: "There is a soft humiliation in losing to the machine. The poet spends half an hour crafting each piece while the model generates its response in seconds. But this dynamic is the medium itself. Fine tuning as craft. Iteration as sculpture. The work investigates how judgment transforms into learning, learning into taste, and taste into evolution.",
-      },
-      {
-        type: "image",
-        src: "/images/versus-exe/IMG_9920.JPG",
-        alt: "Versus.exe performance at Mozilla AI Residency, San Francisco",
       },
       {
         type: "paragraph",

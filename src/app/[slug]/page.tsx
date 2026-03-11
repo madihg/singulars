@@ -230,6 +230,8 @@ export default async function PerformancePage({
 
   const heroImg =
     getPerformanceHeroImage(performance.slug) ?? HERO_IMAGES.landing;
+  const isHeroLogo =
+    heroImg.src.endsWith(".svg") || heroImg.src.includes("currents-logo");
 
   return (
     <main
@@ -256,6 +258,7 @@ export default async function PerformancePage({
 
       {/* Hero image - same aspect ratio as landing for alignment */}
       <div
+        className="hero-image-container"
         style={{
           width: "100%",
           aspectRatio: "16/9",
@@ -270,8 +273,9 @@ export default async function PerformancePage({
           style={{
             width: "100%",
             height: "100%",
-            objectFit: "cover",
+            objectFit: isHeroLogo ? "contain" : "cover",
             display: "block",
+            background: isHeroLogo ? "#fff" : undefined,
           }}
         />
       </div>

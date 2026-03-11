@@ -199,7 +199,9 @@ export default async function SingularsPage() {
               getPerformanceHeroImage(perf.slug) ??
               reverseNameFallback ??
               HERO_IMAGES.landing;
-            const isLogoImage = heroImg.src.endsWith(".svg");
+            const isLogoImage =
+              heroImg.src.endsWith(".svg") ||
+              heroImg.src.includes("currents-logo");
             const cardContent = (
               <div
                 key={perf.id}
@@ -207,9 +209,10 @@ export default async function SingularsPage() {
                 data-performance-name={perf.name}
                 style={{
                   borderTop: `4px solid ${perf.color}`,
-                  cursor: isUpcoming
-                    ? "default"
-                    : `url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20'><circle cx='10' cy='10' r='8' fill='${encodeURIComponent(perf.color)}'/></svg>") 10 10, pointer`,
+                  cursor:
+                    isUpcoming && perf.slug !== "ground-exe"
+                      ? "default"
+                      : `url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20'><circle cx='10' cy='10' r='8' fill='${encodeURIComponent(perf.color)}'/></svg>") 10 10, pointer`,
                   transition: "opacity 0.3s ease",
                 }}
               >
@@ -316,6 +319,23 @@ export default async function SingularsPage() {
             );
 
             if (isUpcoming) {
+              const externalUrl =
+                perf.slug === "ground-exe"
+                  ? "https://currentsnewmedia.org/festivals/currents-2026-art-technology-festival/"
+                  : null;
+              if (externalUrl) {
+                return (
+                  <a
+                    key={perf.id}
+                    href={externalUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ textDecoration: "none", color: "inherit" }}
+                  >
+                    {cardContent}
+                  </a>
+                );
+              }
               return <div key={perf.id}>{cardContent}</div>;
             }
 
