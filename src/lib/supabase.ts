@@ -6,7 +6,14 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 
 // Schema option for all clients - tables live in the "singulars" schema.
 // Cast needed because SupabaseClient generic defaults to "public".
-const SCHEMA = { db: { schema: "singulars" } };
+// Custom fetch disables Next.js Data Cache so queries always hit DB.
+const SCHEMA = {
+  db: { schema: "singulars" },
+  global: {
+    fetch: (url: RequestInfo | URL, options?: RequestInit) =>
+      fetch(url, { ...options, cache: "no-store" as RequestCache }),
+  },
+};
 
 /**
  * Check if Supabase is configured with required environment variables

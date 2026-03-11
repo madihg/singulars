@@ -45,6 +45,10 @@ async function getThemeData(
   }
   const supabase = createClient(url, key, {
     db: { schema: "singulars" },
+    global: {
+      fetch: (u: RequestInfo | URL, o?: RequestInit) =>
+        fetch(u, { ...o, cache: "no-store" as RequestCache }),
+    },
   }) as unknown as SupabaseClient;
 
   const { data: performance, error: perfError } = await supabase
