@@ -1,58 +1,75 @@
 import { NextResponse } from "next/server";
-import { getServiceClient, getSupabase } from "@/lib/supabase";
-
-export const dynamic = "force-dynamic";
+import { getServiceClient } from "@/lib/supabase";
 
 export async function POST(request: Request) {
   const { searchParams } = new URL(request.url);
-  const key = searchParams.get("key");
-  if (key !== "singulars-migrate-2026-03-10") {
+  if (searchParams.get("key") !== "singulars-migrate-2026-03-10-v2") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const supabase = getServiceClient() || getSupabase();
+  const supabase = getServiceClient();
   if (!supabase) {
-    return NextResponse.json({ error: "No DB client" }, { status: 503 });
+    return NextResponse.json(
+      { error: "Service client not configured" },
+      { status: 503 },
+    );
   }
 
   const results: Record<string, unknown> = {};
 
-  // 1. Update hard.exe to trained
-  const { error: e1 } = await supabase
+  // 1. Update hard.exe status to 'trained'
+  const { data: hardUpdate, error: hardErr } = await supabase
     .from("performances")
     .update({ status: "trained" })
-    .eq("slug", "hard-exe");
-  results["hard-exe-status"] = e1 ? e1.message : "trained";
+    .eq("slug", "hard-exe")
+    .select("slug, status");
+  results["hard-exe-update"] = hardErr
+    ? { error: hardErr.message }
+    : { data: hardUpdate };
 
-  // 2. Update reverse.exe to training
-  const { error: e2 } = await supabase
+  // 2. Update reverse.exe status to 'training' + metadata
+  const { data: revUpdate, error: revErr } = await supabase
     .from("performances")
-    .update({ status: "training" })
-    .eq("slug", "reverse-exe");
-  results["reverse-exe-status"] = e2 ? e2.message : "training";
+    .update({
+      status: "training",
+      location: "Media Archaeology Lab, Boulder",
+      num_poems: 6,
+      num_poets: 1,
+    })
+    .eq("slug", "reverse-exe")
+    .select("slug, status, location, num_poems");
+  results["reverse-exe-update"] = revErr
+    ? { error: revErr.message }
+    : { data: revUpdate };
 
   // 3. Get reverse.exe performance ID
-  const { data: revPerf, error: e3 } = await supabase
+  const { data: revPerf, error: revPerfErr } = await supabase
     .from("performances")
     .select("id")
     .eq("slug", "reverse-exe")
     .single();
-  if (e3 || !revPerf) {
-    results["reverse-exe-lookup"] = e3?.message || "not found";
+
+  if (revPerfErr || !revPerf) {
+    results["reverse-exe-lookup"] = {
+      error: revPerfErr?.message || "Not found",
+    };
     return NextResponse.json(results);
   }
+
   const revId = revPerf.id;
+  results["reverse-exe-id"] = revId;
 
   // 4. Check if poems already exist for reverse.exe
-  const { data: existing } = await supabase
+  const { data: existingPoems, error: existErr } = await supabase
     .from("poems")
-    .select("id")
+    .select("id, theme")
     .eq("performance_id", revId);
-  if (existing && existing.length > 0) {
-    results["reverse-exe-poems"] =
-      `already has ${existing.length} poems, skipping`;
-  } else {
-    // Insert poems
+  results["existing-poems"] = existErr
+    ? { error: existErr.message }
+    : { count: existingPoems?.length || 0 };
+
+  // 5. Insert poems only if none exist
+  if (!existingPoems || existingPoems.length === 0) {
     const poems = [
       {
         performance_id: revId,
@@ -75,7 +92,7 @@ out of reach`,
         performance_id: revId,
         theme: "Dreams",
         theme_slug: "dreams",
-        text: "When I sleep, sparks bathe my eyelids, reality dissolves to reveal the bones of a universe still alive. absences gather like summer flies and draw patterns on the wall. We pose there, motionless, and with each blink, the world rebuilds itself, more fragile than before. These dreams linger with their phosphorescent grain, they prove that elsewhere exists, and that words, when properly used, can piece together what was shattered.",
+        text: `When I sleep, sparks bathe my eyelids, reality dissolves to reveal the bones of a universe still alive. absences gather like summer flies and draw patterns on the wall. We pose there, motionless, and with each blink, the world rebuilds itself, more fragile than before. These dreams linger with their phosphorescent grain, they prove that elsewhere exists, and that words, when properly used, can piece together what was shattered.`,
         author_name: "Machine",
         author_type: "machine",
         vote_count: 0,
@@ -101,7 +118,7 @@ of jaws to come`,
         performance_id: revId,
         theme: "Alchemy",
         theme_slug: "alchemy",
-        text: "pour transformer lead to roses we stretch our breath to brittle glass where quivers our last words already turned to salt in the orbit of impossible we open a crack into that zone where words ignite melt back into their primal elements thinking this is gathering then begins interventions of light to raise new gold from our language",
+        text: `pour transformer lead to roses we stretch our breath to brittle glass where quivers our last words already turned to salt in the orbit of impossible we open a crack into that zone where words ignite melt back into their primal elements thinking this is gathering then begins interventions of light to raise new gold from our language`,
         author_name: "Machine",
         author_type: "machine",
         vote_count: 0,
@@ -119,44 +136,23 @@ of jaws to come`,
         performance_id: revId,
         theme: "The Winter in the Summer",
         theme_slug: "the-winter-in-the-summer",
-        text: "The ice field covers the rooftops, the clocks stone under frost. The hedgehog rounds the corner of the patio, fog in the breathing. The elderly woman unfamiliar in her mirror pulls woolens from plastic bags, lies down five minutes to breathe a winter that is not her own. The nonexistent ball of snow falls in the summer stroke of lightning. Between my teeth, a snowflake shatters.",
+        text: `The ice field covers the rooftops, the clocks stone under frost. The hedgehog rounds the corner of the patio, fog in the breathing. The elderly woman unfamiliar in her mirror pulls woolens from plastic bags, lies down five minutes to breathe a winter that is not her own. The nonexistent ball of snow falls in the summer stroke of lightning. Between my teeth, a snowflake shatters.`,
         author_name: "Machine",
         author_type: "machine",
         vote_count: 0,
       },
     ];
 
-    const { error: e4 } = await supabase.from("poems").insert(poems);
-    results["reverse-exe-poems"] = e4 ? e4.message : "6 poems inserted";
-
-    // Update poem count
-    await supabase
-      .from("performances")
-      .update({ num_poems: 6, num_poets: 1 })
-      .eq("slug", "reverse-exe");
-  }
-
-  // 5. Insert ground.exe if not exists
-  const { data: groundCheck } = await supabase
-    .from("performances")
-    .select("id")
-    .eq("slug", "ground-exe");
-  if (groundCheck && groundCheck.length > 0) {
-    results["ground-exe"] = "already exists, skipping";
+    const { data: insertedPoems, error: insertErr } = await supabase
+      .from("poems")
+      .insert(poems)
+      .select("id, theme, author_type");
+    results["poems-insert"] = insertErr
+      ? { error: insertErr.message }
+      : { inserted: insertedPoems?.length || 0, data: insertedPoems };
   } else {
-    const { error: e5 } = await supabase.from("performances").insert({
-      name: "ground.exe",
-      slug: "ground-exe",
-      color: "#D97706",
-      location: "Currents New Media Festival, Santa Fe",
-      date: "2026-06-12",
-      num_poems: 0,
-      num_poets: 0,
-      status: "upcoming",
-      poets: [],
-    });
-    results["ground-exe"] = e5 ? e5.message : "inserted as upcoming";
+    results["poems-insert"] = { skipped: true, existing: existingPoems.length };
   }
 
-  return NextResponse.json({ success: true, results });
+  return NextResponse.json(results);
 }
