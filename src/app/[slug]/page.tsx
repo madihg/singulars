@@ -258,7 +258,6 @@ export default async function PerformancePage({
 
       {/* Hero image - same aspect ratio as landing for alignment */}
       <div
-        className="hero-image-container"
         style={{
           width: "100%",
           aspectRatio: "16/9",

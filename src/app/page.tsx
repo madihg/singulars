@@ -226,6 +226,7 @@ export default async function SingularsPage() {
                   }}
                 >
                   <img
+                    className="perf-card-img"
                     src={heroImgSrc(heroImg)}
                     alt={heroImg.alt}
                     style={{

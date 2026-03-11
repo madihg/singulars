@@ -113,11 +113,10 @@ hr {
     pointer;
 }
 
-/* Performance page images: B&W by default, color on hover */
-.perf-img {
+/* Landing page performance cards: B&W by default, color on hover */
+.perf-card-img {
   transition: filter 0.5s ease;
-  filter: grayscale(100%);
 }
-.perf-img:hover {
-  filter: grayscale(0%);
+.perf-card-img:hover {
+  filter: grayscale(0%) !important;
 }

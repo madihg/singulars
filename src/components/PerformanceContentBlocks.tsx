@@ -57,7 +57,6 @@ export default function PerformanceContentBlocks({
             return (
               <figure key={i} style={{ margin: "2rem 0" }}>
                 <img
-                  className="perf-img"
                   src={block.src}
                   alt={block.alt}
                   loading="lazy"
@@ -87,7 +86,6 @@ export default function PerformanceContentBlocks({
               >
                 {block.items.map((item, j) => (
                   <img
-                    className="perf-img"
                     key={j}
                     src={item.src}
                     alt={item.alt}
