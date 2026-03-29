@@ -1,0 +1,108 @@
+Hard.exe is the 4th installment in the “Singulars” series, an ongoing duel between poet and machine. 
+
+The poet writes a poem for 30 minutes on a theme proposed by the audience. The model, trained on an anthology of English poetry and past iterations of this performance, responds almost instantly with one of its own. Both poems are printed, hung, and kept anonymous. The audience votes. When the human wins, the machine is retrained on an updated dataset. When the machine wins, the poet adjusts.
+
+This is reinforcement learning using human feedback, a popular machine learning technique, made tangible. What emerges is a different narrative for the human and AI encounter. Not a fight but a mutual reinforcement. Not a contest but a feedback ecology where readers become trainers and taste becomes the tuning function. A reinforced model, both human and artificial, trained not to win, but to listen.
+
+Halim Madi | Mozilla CFC AI Residency Report
+
+Content
+
+Project overview
+A reverse Turing test that made me more human
+Attention, competition, and what “human relevant” poetry is becoming
+What I learned about taste today
+Time, bodies, and the material side of the experiment
+Humiliation, rivalry, and becoming a better poet
+Shared evolution: me, the model, and other poets
+Audience conversations and the ethics of not revealing who wrote what
+What the Mozilla residency and TIATT specifically made possible
+
+
+
+Project overview
+
+During my Mozilla Foundation residency I continued the development of Singulars, a long term series of human-machine poetry duels. The iterations I focused on here, versus.exe and hard.exe, staged a daily confrontation between a poet and a fine-tuned language model that has been trained on an anthology of English poetry as well as past Singulars iterations.
+
+Each round followed the same ritual. A theme is announced. I have thirty minutes to write a poem. The model responds in under a second. Both poems are printed, taped to the wall, and presented anonymously. The audience votes by placing a neon dot on the poem that moved them most. Over the course of the residency I completed more than a dozen rounds. That is more than a dozen human poems and more than a dozen machine poems, all printed, handled, and publicly judged.
+
+If the human wins, the poem is added to the model’s training corpus. If the model wins, I keep the machine’s poem and study it. Both of us keep learning.
+
+A reverse Turing test that made me more human
+
+I arrived thinking this was mainly an experiment in training a model through performance. I left realizing it was something stranger: a kind of reverse Turing test.
+
+The usual question is whether a machine can appear human enough. In this work the pressure runs in the other direction. Sitting behind a panel with a timer running, I am the one who has to prove my humanity. If my poem does not resonate, if the dots gather on the other page, it feels less like losing a game and more like failing to be adequately human in public.
+
+To win I cannot rely on tricks alone. I have to connect to something true, to tap into experiences that feel specific enough, embodied enough, that an audience of strangers feels it in their own lives. The residency made this tension very clear. It is not only the machine that is being tested and transformed. I am being trained too.
+
+Attention, competition, and what “human relevant” poetry is becoming
+
+This format is also an intense study of attention. Attention really is “all you need” in a setup like this, and once attention becomes the prize you can feel how quickly it bends the work into certain shapes.
+
+I experimented with this directly. On a “crime” theme, for instance, I wrote an extremely short poem, almost a stunt. It was a kind of cheat to hijack attention. The audience reacted strongly. I understood that once I discover a tactic like this, the model will learn it too. We are in a feedback loop of escalating strategies.
+
+The model rarely goes very far into the conceptual. Where I tend to win is in the adjacent zones of shock, surprise, and situational awareness, the small receding edges of context that models are currently unable to inhabit. In response, I noticed my own style shifting. Shorter, more strategic, sometimes more bombastic. I had to keep asking myself: Am I becoming more machine in order to secure votes?
+
+Paradoxically, this is also what made me rediscover what I care about in poetry. If I aim only for cheap attention, the poem wins but I lose. Over the residency I learned to aim for aesthetic sensitivity rather than raw victory. The goal became to cultivate a particular quality of experience in the room, even if that meant losing a round.
+
+What I learned about taste today
+
+One concrete outcome of the residency is that it gave me a very granular feel for contemporary audience taste.
+
+Each day, with each theme, I could see what people gravitated toward. On a strange theme like “oysters”, for example, the most moving text was not about food itself, but about the story woven around people. The oysters a Proustian Madeleine of sorts to open a narrative. My own “completion engine” seemed to know that the real aesthetic of food language is intimacy, memory, and connection. That is what people wanted.
+
+Across more than a dozen rounds I developed a sharper sense of which turns of phrase land, which rhythms fatigue, and which metaphors actually travel across different bodies in the room. I can now feel when inspiration is about to “hit” in a way I could not before. There is a bodily sense of when I need to brace and focus because a line is arriving. It has been, in that sense, a very extreme and very productive poetic training regime.
+
+Time, bodies, and the material side of the experiment
+
+One of the clearest discoveries of the residency is that poetry is a process inscribed in time, and that time is not neutral here.
+
+The model writes in an instant. I take thirty minutes. At first that felt like a handicap. Over time I came to see that the delay changes me. It takes thirty minutes for me to become the poem. The writing rewires me a little each round. In that sense time is on my side.
+
+My perception of time also shifted. When I felt inspired, the half hour seemed generous and elastic. When I was stuck, time felt brutally short. The residency made this dilation and contraction very tangible.
+
+There is also a surprisingly tender material side to the work. You learn how to tear and fold paper tape efficiently, how to arrange the wall so that the poems look held rather than slapped on. You get familiar with the printer, how it always struggles with the first page of the day, the faint burnt smell of its effort. People in the gallery liked watching these small acts. They enjoyed seeing someone do things: tape, rearrange, care for the space. There is a housekeeping side to the performance that feels almost like domestic art.
+
+Behind the acrylic panel, writing, I could enter a public trance. I owed no one eye contact during those thirty minutes. I was simply generating. The booth became a small, alternative world where I was allowed to be fully absorbed.
+
+Humiliation, rivalry, and becoming a better poet
+
+Emotionally, the residency was intense. At the beginning, when the machine won, I felt a strange pride. It meant I had trained a strong model. Later, when the machine started winning on nights where I had tried my best, I sometimes wanted to cry. Not because I am obsessed with victory, but because it meant what I wrote had not connected. That is a very raw feeling.
+
+I found myself preparing like an athlete. I worked out, took supplements, and tried to arrive at the booth rested. Underperforming felt irresponsible, both to the work and to the audience that showed up. I thought often about Kasparov and Lee Sedol, about the emotional toll of losing to a system you helped make stronger.
+
+At the same time this rivalry clearly made me a better poet. My sense of line, structure, and timing sharpened. My tolerance for my own clichés went down. I can now feel when a poem is sliding into what I call “machine obviousness” and pull it back toward something stranger and more human.
+
+Shared evolution: me, the model, and other poets
+
+The experiment did not only rewire me and the model. It also changed the corpus itself.
+
+Midway through the residency I began bringing in other poets. Their work was metabolized into the model’s training data. This diffused the style, shifted it away from a narrow imitation of my voice, and created a richer, more plural texture. It felt like inviting a small ghostly council of poets into the system.
+
+As I generated new poems and added them to the corpus after human victories, my own style also started to bend under the influence of what I was feeding the machine. It reminded me of a mother whose body changes through the act of feeding a child. The one who nourishes is transformed by the process of nourishment. This was perhaps the deepest lesson about mutual transformation. The residency made it very clear that dataset creation is never one way.
+
+I also continued refining how I spoke to the model. At one point I sent a system prompt asking it to stop citing poets by name, and instead to let their influence saturate the text quietly. I asked it to be “modern like skin, like water drunk on its own molecules.” In this back and forth, my own intuitions about style, softness, and risk sharpened.
+
+
+Audience conversations and the ethics of not revealing who wrote what
+
+Conversations with the audience were another crucial part of the residency. Many people were puzzled or even frustrated that I refused to reveal which poem was mine and which was the machine’s, even after the votes were counted.
+
+Those encounters opened rich discussions about bias, fairness, and what people were actually voting for. They were not only trying to guess the machine. They were trying to locate their own aesthetics. What do I find beautiful if I cannot anchor it to a human or a model in advance. Over time I came to see the setup as a way to cultivate aesthetic sensitivity in the audience as well, not just in me.
+
+Some visitors, not knowing who wrote what, even told me, while pointing at one of my poems, that the writing felt “AI like”, which was its own kind of provocation.
+
+What the Mozilla residency and TIATT specifically made possible
+
+All of this was only possible because the Mozilla residency and TIAT gave me:
+
+Time and technical support to fine tune a model safely and iteratively
+Space and institutional cover to treat a gallery as a laboratory
+The freedom to fail publicly, regroup, and try again the next day
+
+A context where questions about ethics, training data, and mutual influence were not side notes but central to the work.
+
+In practice, the residency created an alternative space where I could play with the machine, with the audience, and with my own limits. It allowed Singulars to grow from a single performance concept into a deeper inquiry into what it means to be human in an age where our rivals are also our students, and where every act of teaching a model quietly teaches us about ourselves.
+
+This is the real outcome of the residency for Singulars. It clarified that the project is not only about better models. It is about using the pressure of a reverse Turing test to discover what kind of humans we still have the chance to become.

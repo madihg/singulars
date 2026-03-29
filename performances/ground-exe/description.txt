@@ -1,0 +1,7 @@
+ABOUT REVERSE.EXE
+
+Reverse.exe is the 4th installment in the “Singulars” series, an ongoing duel between poet and machine. 
+
+The poet writes a poem for 30 minutes on a theme proposed by the audience. The model, trained on an anthology of English poetry and past iterations of this performance, responds almost instantly with one of its own. Both poems are printed, hung, and kept anonymous. The audience votes. When the human wins, the machine is retrained on an updated dataset. When the machine wins, the poet adjusts.
+
+This is reinforcement learning using human feedback, a popular machine learning technique, made tangible. What emerges is a different narrative for the human and AI encounter. Not a fight but a mutual reinforcement. Not a contest but a feedback ecology where readers become trainers and taste becomes the tuning function. A reinforced model, both human and artificial, trained not to win, but to listen.
