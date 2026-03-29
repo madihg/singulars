@@ -26,7 +26,6 @@ export default function TimerPage() {
     if (isRunning || timeLeft === 0) return;
     setIsRunning(true);
 
-    // Request notification permission
     if ("Notification" in window && Notification.permission === "default") {
       Notification.requestPermission();
     }
@@ -36,7 +35,6 @@ export default function TimerPage() {
         if (prev <= 1) {
           clearTimer();
           setIsRunning(false);
-          // Fire notification
           if (
             "Notification" in window &&
             Notification.permission === "granted"
@@ -67,12 +65,18 @@ export default function TimerPage() {
     return () => clearTimer();
   }, [clearTimer]);
 
-  const bg = isDark ? "#000" : "#fff";
-  const fg = isDark ? "#fff" : "#000";
+  const bg = isDark ? "#000" : "var(--background)";
+  const fg = isDark ? "#fff" : "var(--text-primary)";
+  const fgMuted = isDark ? "rgba(255,255,255,0.5)" : "var(--text-hint)";
+  const fgSecondary = isDark
+    ? "rgba(255,255,255,0.7)"
+    : "var(--text-secondary)";
+  const borderColor = isDark ? "rgba(255,255,255,0.2)" : "var(--border-light)";
   const hasStarted = timeLeft < 1800 || isRunning;
 
   return (
     <div
+      className="timer-page"
       style={{
         minHeight: "100vh",
         backgroundColor: bg,
@@ -84,13 +88,13 @@ export default function TimerPage() {
         padding: "2rem",
         transition: "background-color 0.3s ease, color 0.3s ease",
         position: "relative",
-        fontFamily: '"Courier New", Courier, monospace',
       }}
     >
       {/* Theme toggle - top right */}
       <button
         onClick={() => setIsDark(!isDark)}
         aria-label="Toggle theme"
+        className="timer-corner-btn"
         style={{
           position: "absolute",
           top: 40,
@@ -98,22 +102,16 @@ export default function TimerPage() {
           width: 40,
           height: 40,
           borderRadius: "50%",
-          border: `1px solid ${fg}`,
+          border: `1px solid ${borderColor}`,
           background: "transparent",
-          color: fg,
-          fontSize: 20,
+          color: fgMuted,
+          fontSize: 18,
           cursor: "pointer",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          opacity: 0.5,
-          transition: "opacity 0.2s ease",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.opacity = "1";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.opacity = "0.5";
+          transition: "all 0.2s ease",
+          fontFamily: '"Diatype Mono Variable", monospace',
         }}
       >
         {isDark ? "\u23FE" : "\u2600\uFE0E"}
@@ -123,6 +121,7 @@ export default function TimerPage() {
       <button
         onClick={() => setIsBreak(!isBreak)}
         aria-label="Toggle break mode"
+        className="timer-corner-btn"
         style={{
           position: "absolute",
           top: 40,
@@ -130,26 +129,40 @@ export default function TimerPage() {
           width: 40,
           height: 40,
           borderRadius: "50%",
-          border: `1px solid ${fg}`,
+          border: `1px solid ${isBreak ? fg : borderColor}`,
           background: isBreak ? fg : "transparent",
-          color: isBreak ? bg : fg,
-          fontSize: 16,
+          color: isBreak ? bg : fgMuted,
+          fontSize: 14,
           cursor: "pointer",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          opacity: isBreak ? 1 : 0.5,
           transition: "all 0.2s ease",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.opacity = "1";
-        }}
-        onMouseLeave={(e) => {
-          if (!isBreak) e.currentTarget.style.opacity = "0.5";
+          fontFamily: '"Diatype Mono Variable", monospace',
         }}
       >
         ✷
       </button>
+
+      {/* Back link - top center */}
+      <a
+        href="/"
+        className="timer-back-link"
+        style={{
+          position: "absolute",
+          top: 40,
+          left: "50%",
+          transform: "translateX(-50%)",
+          fontFamily: '"Diatype Mono Variable", monospace',
+          fontSize: "0.8rem",
+          color: fgMuted,
+          transition: "color 0.2s ease",
+          textDecoration: "none",
+          letterSpacing: "0.03em",
+        }}
+      >
+        Singulars
+      </a>
 
       {/* Timer display */}
       <div
@@ -160,8 +173,8 @@ export default function TimerPage() {
           justifyContent: "center",
           gap: 0,
           marginBottom: 60,
-          lineHeight: isBreak || isFinished ? 0.9 : 1,
-          marginTop: -100,
+          lineHeight: isBreak || isFinished ? 0.85 : 0.9,
+          marginTop: -80,
         }}
       >
         {isBreak ? (
@@ -190,10 +203,10 @@ export default function TimerPage() {
             <span
               className="timer-colon"
               style={{
-                fontFamily: '"Georgia", "Garamond", serif',
+                fontFamily: '"Terminal Grotesque", sans-serif',
                 fontWeight: 400,
-                color: fg,
-                margin: "0 20px",
+                color: fgMuted,
+                margin: "0 0.15em",
               }}
             >
               :
@@ -209,36 +222,68 @@ export default function TimerPage() {
       {isRunning && !isBreak && (
         <div
           style={{
-            fontSize: 32,
-            letterSpacing: 1,
-            opacity: 0.7,
-            marginBottom: 20,
-            marginTop: -40,
+            fontFamily: '"Diatype Mono Variable", monospace',
+            fontSize: "1.1rem",
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            color: fgSecondary,
+            marginBottom: 24,
+            marginTop: -32,
           }}
         >
-          POET GENERATING
+          Poet generating
           <span className="loading-dots" />
         </div>
       )}
 
       {/* Controls */}
-      <div style={{ display: "flex", gap: 20 }}>
+      <div style={{ display: "flex", gap: 16 }}>
         <button
           onClick={isRunning ? pauseTimer : startTimer}
           disabled={isFinished && !hasStarted}
-          style={buttonStyle(fg)}
+          className="timer-btn"
+          style={{
+            backgroundColor: "transparent",
+            color: fg,
+            border: `1px solid ${borderColor}`,
+            padding: "0.7rem 2.5rem",
+            fontSize: "0.85rem",
+            fontFamily: '"Diatype Mono Variable", monospace',
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            cursor: "pointer",
+            transition: "all 0.2s ease",
+            borderRadius: "6px",
+          }}
         >
-          {isRunning ? "PAUSE" : hasStarted && !isFinished ? "RESUME" : "START"}
+          {isRunning ? "Pause" : hasStarted && !isFinished ? "Resume" : "Start"}
         </button>
         {hasStarted && (
-          <button onClick={resetTimer} style={buttonStyle(fg)}>
-            RESET
+          <button
+            onClick={resetTimer}
+            className="timer-btn"
+            style={{
+              backgroundColor: "transparent",
+              color: fgSecondary,
+              border: `1px solid ${borderColor}`,
+              padding: "0.7rem 2.5rem",
+              fontSize: "0.85rem",
+              fontFamily: '"Diatype Mono Variable", monospace',
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              borderRadius: "6px",
+            }}
+          >
+            Reset
           </button>
         )}
       </div>
 
       {/* Edit box - bottom left */}
       <div
+        className="timer-edit-box"
         style={{
           position: "absolute",
           bottom: 40,
@@ -247,53 +292,72 @@ export default function TimerPage() {
         }}
       >
         <div style={editRowStyle}>
-          <label style={editLabelStyle(fg)}>THEME:</label>
+          <label
+            style={{
+              fontFamily: '"Diatype Mono Variable", monospace',
+              fontSize: "0.75rem",
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              width: 70,
+              color: fgMuted,
+            }}
+          >
+            Theme
+          </label>
           <input
             type="text"
             value={theme}
             onChange={(e) => setTheme(e.target.value)}
             placeholder="enter theme..."
-            style={editInputStyle(fg, bg)}
+            style={{
+              backgroundColor: "transparent",
+              color: fg,
+              border: `1px solid ${borderColor}`,
+              borderRadius: "6px",
+              padding: "0.5rem 0.75rem",
+              fontSize: "0.85rem",
+              fontFamily: '"Diatype Mono Variable", monospace',
+              width: 360,
+              transition: "border-color 0.2s ease",
+              outline: "none",
+            }}
           />
         </div>
         <div style={editRowStyle}>
-          <label style={editLabelStyle(fg)}>MODEL:</label>
+          <label
+            style={{
+              fontFamily: '"Diatype Mono Variable", monospace',
+              fontSize: "0.75rem",
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              width: 70,
+              color: fgMuted,
+            }}
+          >
+            Model
+          </label>
           <input
             type="text"
             value={model}
             onChange={(e) => setModel(e.target.value)}
             placeholder="model name..."
-            style={editInputStyle(fg, bg)}
+            style={{
+              backgroundColor: "transparent",
+              color: fg,
+              border: `1px solid ${borderColor}`,
+              borderRadius: "6px",
+              padding: "0.5rem 0.75rem",
+              fontSize: "0.85rem",
+              fontFamily: '"Diatype Mono Variable", monospace',
+              width: 360,
+              transition: "border-color 0.2s ease",
+              outline: "none",
+            }}
           />
         </div>
       </div>
 
-      {/* Back link - top center */}
-      <a
-        href="/"
-        style={{
-          position: "absolute",
-          top: 40,
-          left: "50%",
-          transform: "translateX(-50%)",
-          fontFamily: '"Diatype Mono Variable", monospace',
-          fontSize: "0.8rem",
-          color: fg,
-          opacity: 0.4,
-          transition: "opacity 0.2s ease",
-          textDecoration: "none",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.opacity = "0.8";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.opacity = "0.4";
-        }}
-      >
-        Singulars
-      </a>
-
-      {/* Loading dots animation + responsive styles */}
+      {/* Styles */}
       <style>{`
         .loading-dots::after {
           content: '';
@@ -307,18 +371,36 @@ export default function TimerPage() {
           100% { content: ''; }
         }
         .timer-digit {
-          font-size: 300px;
+          font-size: 20rem;
         }
         .timer-colon {
-          font-size: 300px;
+          font-size: 20rem;
+        }
+        .timer-corner-btn:hover {
+          border-color: currentColor !important;
+        }
+        .timer-back-link:hover {
+          color: ${fg} !important;
+        }
+        .timer-btn:hover:not(:disabled) {
+          border-color: ${fg} !important;
+        }
+        .timer-btn:disabled {
+          opacity: 0.3;
+          cursor: not-allowed;
         }
         @media (max-width: 768px) {
-          .timer-digit { font-size: 150px !important; }
-          .timer-colon { font-size: 150px !important; }
+          .timer-digit { font-size: 10rem !important; }
+          .timer-colon { font-size: 10rem !important; }
+          .timer-edit-box { left: 20px !important; bottom: 20px !important; }
+          .timer-edit-box input { width: 240px !important; }
+          .timer-corner-btn { top: 20px !important; }
+          .timer-back-link { top: 24px !important; }
         }
         @media (max-width: 480px) {
-          .timer-digit { font-size: 100px !important; }
-          .timer-colon { font-size: 100px !important; }
+          .timer-digit { font-size: 6rem !important; }
+          .timer-colon { font-size: 6rem !important; }
+          .timer-edit-box input { width: 180px !important; }
         }
       `}</style>
     </div>
@@ -327,9 +409,8 @@ export default function TimerPage() {
 
 function timerDigitStyle(fg: string, isMessage: boolean): React.CSSProperties {
   return {
-    fontFamily: '"Georgia", "Garamond", serif',
+    fontFamily: '"Terminal Grotesque", sans-serif',
     fontWeight: 400,
-    fontVariantNumeric: "tabular-nums",
     color: fg,
     textAlign: "center",
     display: "inline-block",
@@ -337,45 +418,9 @@ function timerDigitStyle(fg: string, isMessage: boolean): React.CSSProperties {
   };
 }
 
-function buttonStyle(fg: string): React.CSSProperties {
-  return {
-    backgroundColor: "transparent",
-    color: fg,
-    border: `1px solid ${fg}`,
-    padding: "12px 40px",
-    fontSize: 18,
-    fontFamily: '"Courier New", Courier, monospace',
-    cursor: "pointer",
-    transition: "all 0.2s ease",
-  };
-}
-
 const editRowStyle: React.CSSProperties = {
   display: "flex",
   alignItems: "center",
-  marginBottom: 12,
-  gap: 12,
+  marginBottom: 10,
+  gap: 10,
 };
-
-function editLabelStyle(fg: string): React.CSSProperties {
-  return {
-    fontSize: 16,
-    letterSpacing: 1,
-    width: 80,
-    opacity: 0.7,
-    color: fg,
-  };
-}
-
-function editInputStyle(fg: string, bg: string): React.CSSProperties {
-  return {
-    backgroundColor: fg,
-    color: bg,
-    border: `1px solid ${fg}`,
-    padding: "8px 12px",
-    fontSize: 16,
-    fontFamily: '"Courier New", Courier, monospace',
-    width: 400,
-    transition: "all 0.3s ease",
-  };
-}
