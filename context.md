@@ -65,60 +65,114 @@ Total: 33 themes, 66 poems
 - Touch Grass theme (reinforcement.exe): order swapped from PDF — first poem is machine based on content analysis
 - Enfance (carnation.exe): PDF label contradicts content — attributed to Halim based on Arabic reference in poem
 
-## Unified Platform (March 2026)
+## Unified Platform Consolidation (March 2026)
 
-Consolidated 7 standalone projects into Singulars. PRD: `tasks/prd-unified-singulars.md`
+Consolidated 7 standalone projects into Singulars. All standalone folders have been deleted.
+PRDs: `tasks/prd-unified-singulars.md`, `tasks/prd-theme-admin.md`
 
-### New routes
+### What was consolidated
 
-- `/chat` - Unified chat with 5 fine-tuned models (sidebar selector)
-- `/theme-voting` - Theme suggestion + upvoting (Supabase-backed)
-- `/timer` - 30-min performance countdown
+| Standalone project(s)                                              | Absorbed into         | Status   |
+| ------------------------------------------------------------------ | --------------------- | -------- |
+| carnation-fr, carnation-eng, versus, reinforcement, hard-exe       | `/chat` (unified)     | Deployed |
+| singulars-theme-voting (Express.js on singulars-voting.vercel.app) | `/theme-voting`       | Deployed |
+| singulars-timer (static HTML)                                      | `/timer`              | Deployed |
+| (new)                                                              | `/theme-voting/admin` | Deployed |
 
-### New files
+All 7 standalone folders deleted from `/Users/halim/Documents/` on 2026-03-27.
 
-- `src/lib/models.ts` - Model registry (5 GPT-4.1-nano models)
-- `src/app/api/chat/route.ts` - Streaming chat API (edge runtime)
-- `src/app/chat/page.tsx` - Chat UI
-- `scripts/migration-themes.sql` - Themes table migration (additive only)
-- `src/app/api/themes/route.ts` - GET + POST themes
-- `src/app/api/themes/[id]/upvote/route.ts` - Upvote RPC
-- `src/app/theme-voting/page.tsx` - Theme voting UI
+### Routes added
+
+- `/chat` - Unified chat with 5 fine-tuned GPT-4.1-nano models (persistent sidebar on desktop, dropdown on mobile)
+- `/theme-voting` - Public theme suggestion + upvoting (Supabase-backed, optimistic UI)
+- `/theme-voting/admin` - Password-protected admin panel (password: singularpoetics)
+- `/timer` - 30-min performance countdown with break mode, light/dark toggle, browser notifications
+
+### Files added
+
+**Chat system:**
+
+- `src/lib/models.ts` - Model registry (5 models: carnation-fr, carnation-eng, versus, reinforcement, hard) with colors, system prompts
+- `src/app/api/chat/route.ts` - Streaming chat API (edge runtime, OpenAI SDK)
+- `src/app/chat/page.tsx` - Chat UI with ModelSidebar, MobileModelSelector, WelcomeScreen
+
+**Theme voting:**
+
+- `scripts/migration-themes.sql` - Themes table DDL (additive only, singulars schema)
+- `scripts/import-themes.mjs` - One-time import of 27 themes from old production app
+- `src/app/api/themes/route.ts` - GET (list) + POST (create) themes
+- `src/app/api/themes/[id]/upvote/route.ts` - Atomic upvote via RPC
+- `src/app/theme-voting/page.tsx` - Public voting UI
+
+**Admin panel:**
+
+- `src/app/api/themes/admin/auth/route.ts` - Password auth (HttpOnly cookie, HMAC-SHA256, 24h expiry)
+- `src/app/api/themes/admin/[id]/route.ts` - PUT (edit) + DELETE theme
+- `src/app/api/themes/admin/[id]/toggle-complete/route.ts` - PATCH toggle completed
+- `src/app/theme-voting/admin/page.tsx` - Admin dashboard (stats, inline edit, delete with confirm, add theme, logout)
+
+**Timer:**
+
 - `src/app/timer/page.tsx` - Timer page
 
-### New dependencies
+**Other changes:**
 
-- openai (^4.104.0), ai (^2.2.37), clsx (^2.1.1), react-textarea-autosize (^8.5.9)
+- `src/app/page.tsx` - Added nav links (Chat, Theme Voting, Timer) to landing page
+- `src/app/globals.css` - Added responsive CSS for chat sidebar (768px breakpoint)
+- `.env.local.example` - Added OPENAI_API_KEY
+
+### Dependencies added
+
+- `openai` (^4.104.0) - OpenAI API client for chat
+- `ai` (^2.2.37) - Vercel AI SDK for streaming (useChat, OpenAIStream, StreamingTextResponse)
+- `clsx` (^2.1.1) - Conditional classnames
+- `react-textarea-autosize` (^8.5.9) - Auto-expanding chat input
+
+### Design system
+
+All new pages use the Singulars design system:
+
+- **Terminal Grotesque** - Large display text (timer digits, page titles)
+- **Diatype Variable** - Headings
+- **Diatype Mono Variable** - Labels, buttons, monospaced text
+- **Standard** - Body text
+- CSS variables: `--background`, `--text-primary`, `--text-secondary`, `--text-hint`, `--border-light`
+- Fonts loaded from type.cargo.site CDN (see `src/app/layout.tsx`)
+
+### Database: themes table
+
+- Table: `singulars.themes` (same schema as all other tables - NOT public schema)
+- Columns: id (uuid), content, theme_slug, votes, completed, archived, performance_id (nullable FK), created_at, updated_at
+- Unique index on `lower(content)` (case-insensitive)
+- RLS: public read + insert for anon role
+- RPC: `singulars.upvote_theme(p_theme_id)` for atomic vote increment
+- 27 themes imported from old production (26 completed, 1 active: "Liberation")
+- Migration applied manually via Supabase SQL Editor
 
 ### Technical notes
 
-- openai@4.x + ai@2.x has type mismatch on OpenAIStream - fixed with `as any` cast
-- All DB tables in `singulars` schema (not public)
-- themes table additive only - no changes to performances/poems/votes
-- themes.theme_slug matches poems.theme_slug by convention (no FK)
-
-### Remaining for deployment
-
-1. Run `migration-themes.sql` in Supabase SQL Editor
-2. Add `OPENAI_API_KEY` to Vercel env vars
-3. Deploy + visual verification
-4. Delete absorbed folders after user confirmation:
-   - versus, carnation-fr, carnation-eng, reinforcement, hard-exe
-   - singulars-theme-voting, singulars-timer
+- `openai@4.x` + `ai@2.x` type mismatch on `OpenAIStream` - fixed with `as any` cast in `api/chat/route.ts`
+- Chat API runs on edge runtime for streaming
+- Admin auth uses env var `THEME_ADMIN_PASSWORD` (fallback: "singularpoetics") and `COOKIE_SECRET` (fallback: built-in default)
+- themes.theme_slug matches poems.theme_slug by convention (no FK) for future linking
+- Supabase env vars are only in Vercel Production environment (not Development) - use `vercel env pull .env.production.local --environment production` for local scripts
+- The themes unique index is functional (`lower(content)`) so Supabase upsert with `onConflict: "content"` won't work - use individual inserts with error handling instead
 
 ## What Still Needs Doing
 
 - [x] Add Supabase credentials to `.env.local` and Vercel env vars (done Feb 2026)
-- [x] Seed database with `poems-from-pdf.json` (done Feb 2026 — 66 poems)
-- [x] Clean up old placeholder poems from DB (done Feb 2026 — removed 18 placeholders)
+- [x] Seed database with `poems-from-pdf.json` (done Feb 2026 - 66 poems)
+- [x] Clean up old placeholder poems from DB (done Feb 2026 - removed 18 placeholders)
 - [x] Consolidate chat apps into /chat (done March 2026)
 - [x] Port theme-voting to /theme-voting (done March 2026)
 - [x] Port timer to /timer (done March 2026)
-- [ ] Run migration-themes.sql in Supabase
-- [ ] Add OPENAI_API_KEY to Vercel
-- [ ] Deploy and verify all routes
-- [ ] Delete absorbed standalone folders
-- [ ] Verify human/machine assignments — Halim to review
+- [x] Run migration-themes.sql in Supabase (done March 2026)
+- [x] Add OPENAI_API_KEY to Vercel (done March 2026)
+- [x] Deploy and verify all routes (done March 2026 - all working on singulars.vercel.app)
+- [x] Build admin panel at /theme-voting/admin (done March 2026)
+- [x] Import 27 themes from old production app (done March 2026)
+- [x] Delete absorbed standalone folders (done March 2026 - 7 folders removed)
+- [ ] Verify human/machine assignments - Halim to review
 - [ ] Identify non-Halim poets in versus.exe and update author_name
 - [ ] Update performance metadata (locations, dates, model_link, huggingface_link) if placeholders
 - [ ] Replace `seed-data.json` with real data from `poems-from-pdf.json`
