@@ -132,6 +132,62 @@ export default async function SingularsPage() {
         </Link>
       </p>
 
+      {/* Chat / Theme-Voting / Timer links */}
+      <div
+        style={{
+          display: "flex",
+          gap: "1.5rem",
+          marginBottom: "2rem",
+          flexWrap: "wrap",
+        }}
+      >
+        <Link
+          href="/chat"
+          style={{
+            fontFamily: '"Diatype Mono Variable", monospace',
+            fontSize: "0.85rem",
+            color: "rgba(0,0,0,0.85)",
+            padding: "0.5rem 1rem",
+            border: "1px solid rgba(0,0,0,0.15)",
+            borderRadius: "6px",
+            textDecoration: "none",
+            transition: "border-color 0.2s ease",
+          }}
+        >
+          Chat with the Models &rarr;
+        </Link>
+        <Link
+          href="/theme-voting"
+          style={{
+            fontFamily: '"Diatype Mono Variable", monospace',
+            fontSize: "0.85rem",
+            color: "rgba(0,0,0,0.85)",
+            padding: "0.5rem 1rem",
+            border: "1px solid rgba(0,0,0,0.15)",
+            borderRadius: "6px",
+            textDecoration: "none",
+            transition: "border-color 0.2s ease",
+          }}
+        >
+          Theme Voting &rarr;
+        </Link>
+        <Link
+          href="/timer"
+          style={{
+            fontFamily: '"Diatype Mono Variable", monospace',
+            fontSize: "0.85rem",
+            color: "rgba(0,0,0,0.85)",
+            padding: "0.5rem 1rem",
+            border: "1px solid rgba(0,0,0,0.15)",
+            borderRadius: "6px",
+            textDecoration: "none",
+            transition: "border-color 0.2s ease",
+          }}
+        >
+          Performance Timer &rarr;
+        </Link>
+      </div>
+
       {/* Hero image - B&W by default, color + green cursor on hover */}
       <div
         className="hero-image-container"

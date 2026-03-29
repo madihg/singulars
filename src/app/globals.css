@@ -120,3 +120,20 @@ hr {
 .perf-card-img:hover {
   filter: grayscale(0%) !important;
 }
+
+/* Chat page: sidebar visible on desktop, hidden on mobile */
+.chat-sidebar {
+  display: flex;
+}
+.chat-mobile-selector {
+  display: none;
+}
+@media (max-width: 768px) {
+  .chat-sidebar {
+    display: none !important;
+  }
+  .chat-mobile-selector {
+    display: flex !important;
+    align-items: center;
+  }
+}

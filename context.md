@@ -65,11 +65,59 @@ Total: 33 themes, 66 poems
 - Touch Grass theme (reinforcement.exe): order swapped from PDF — first poem is machine based on content analysis
 - Enfance (carnation.exe): PDF label contradicts content — attributed to Halim based on Arabic reference in poem
 
+## Unified Platform (March 2026)
+
+Consolidated 7 standalone projects into Singulars. PRD: `tasks/prd-unified-singulars.md`
+
+### New routes
+
+- `/chat` - Unified chat with 5 fine-tuned models (sidebar selector)
+- `/theme-voting` - Theme suggestion + upvoting (Supabase-backed)
+- `/timer` - 30-min performance countdown
+
+### New files
+
+- `src/lib/models.ts` - Model registry (5 GPT-4.1-nano models)
+- `src/app/api/chat/route.ts` - Streaming chat API (edge runtime)
+- `src/app/chat/page.tsx` - Chat UI
+- `scripts/migration-themes.sql` - Themes table migration (additive only)
+- `src/app/api/themes/route.ts` - GET + POST themes
+- `src/app/api/themes/[id]/upvote/route.ts` - Upvote RPC
+- `src/app/theme-voting/page.tsx` - Theme voting UI
+- `src/app/timer/page.tsx` - Timer page
+
+### New dependencies
+
+- openai (^4.104.0), ai (^2.2.37), clsx (^2.1.1), react-textarea-autosize (^8.5.9)
+
+### Technical notes
+
+- openai@4.x + ai@2.x has type mismatch on OpenAIStream - fixed with `as any` cast
+- All DB tables in `singulars` schema (not public)
+- themes table additive only - no changes to performances/poems/votes
+- themes.theme_slug matches poems.theme_slug by convention (no FK)
+
+### Remaining for deployment
+
+1. Run `migration-themes.sql` in Supabase SQL Editor
+2. Add `OPENAI_API_KEY` to Vercel env vars
+3. Deploy + visual verification
+4. Delete absorbed folders after user confirmation:
+   - versus, carnation-fr, carnation-eng, reinforcement, hard-exe
+   - singulars-theme-voting, singulars-timer
+
 ## What Still Needs Doing
 
 - [x] Add Supabase credentials to `.env.local` and Vercel env vars (done Feb 2026)
 - [x] Seed database with `poems-from-pdf.json` (done Feb 2026 — 66 poems)
 - [x] Clean up old placeholder poems from DB (done Feb 2026 — removed 18 placeholders)
+- [x] Consolidate chat apps into /chat (done March 2026)
+- [x] Port theme-voting to /theme-voting (done March 2026)
+- [x] Port timer to /timer (done March 2026)
+- [ ] Run migration-themes.sql in Supabase
+- [ ] Add OPENAI_API_KEY to Vercel
+- [ ] Deploy and verify all routes
+- [ ] Delete absorbed standalone folders
 - [ ] Verify human/machine assignments — Halim to review
 - [ ] Identify non-Halim poets in versus.exe and update author_name
 - [ ] Update performance metadata (locations, dates, model_link, huggingface_link) if placeholders
