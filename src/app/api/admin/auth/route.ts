@@ -1,6 +1,6 @@
 /**
- * /api/themes/admin/auth - existing route, refactored in US-101 to import
- * from src/lib/admin-auth. Behavior is unchanged.
+ * /api/admin/auth (US-101) - parallel auth route for the new /admin panel.
+ * Same cookie as /api/themes/admin/auth so a single login works across both.
  */
 
 import { NextResponse } from "next/server";
@@ -11,28 +11,24 @@ import {
   verifyPassword,
 } from "@/lib/admin-auth";
 
-// NOTE: Next.js disallows non-HTTP-method exports from route files. Older
-// callers that imported `hashToken` / `isValidAdminCookie` from here must now
-// import directly from "@/lib/admin-auth".
-
-/** POST /api/themes/admin/auth - validate password and set cookie */
+/** POST /api/admin/auth - validate password and set cookie */
 export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
   const password = typeof body?.password === "string" ? body.password : "";
 
   if (!verifyPassword(password)) {
-    return NextResponse.json({ error: "Incorrect password" }, { status: 401 });
+    return NextResponse.json({ error: "wrong password" }, { status: 401 });
   }
 
   return setAuthCookie(NextResponse.json({ success: true }));
 }
 
-/** DELETE /api/themes/admin/auth - clear cookie (logout) */
+/** DELETE /api/admin/auth - logout */
 export async function DELETE() {
   return clearAuthCookie(NextResponse.json({ success: true }));
 }
 
-/** GET /api/themes/admin/auth - check if authenticated */
+/** GET /api/admin/auth - auth check */
 export async function GET() {
   return NextResponse.json({ authenticated: isValidAdminCookieFromStore() });
 }

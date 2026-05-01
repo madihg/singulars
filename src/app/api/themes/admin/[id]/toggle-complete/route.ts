@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getServiceClient, getSupabase } from "@/lib/supabase";
-import { isValidAdminCookie } from "../../auth/route";
+import { isValidAdminCookie } from "@/lib/admin-auth";
 
 const COOKIE_NAME = "theme-admin-token";
 

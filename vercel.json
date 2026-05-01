@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/admin/cron/check-trained",
+      "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/admin/cron/poll-finetunes",
+      "schedule": "*/10 * * * *"
+    }
+  ]
+}
