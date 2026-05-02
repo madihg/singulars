@@ -1,0 +1,871 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Singulars — Head-to-Head Matrix</title>
+    <style>
+      @font-face {
+        font-display: block;
+        font-family: "Terminal Grotesque";
+        src: url("https://type.cargo.site/files/TerminalGrotesque.woff")
+          format("woff");
+      }
+      @font-face {
+        font-display: block;
+        font-family: "Diatype Variable";
+        src: url("https://type.cargo.site/files/Cargo-DiatypePlusVariable.woff2")
+          format("woff2-variations");
+        font-weight: 200 1000;
+      }
+      @font-face {
+        font-display: block;
+        font-family: "Diatype Mono Variable";
+        src: url("https://type.cargo.site/files/Cargo-DiatypePlusVariable.woff2")
+          format("woff2-variations");
+        font-weight: 200 700;
+      }
+
+      :root {
+        --background: #ffffff;
+        --text-primary: rgba(0, 0, 0, 0.85);
+        --text-secondary: rgba(0, 0, 0, 0.6);
+        --text-tertiary: rgba(0, 0, 0, 0.5);
+        --text-hint: rgba(0, 0, 0, 0.4);
+        --border: rgba(0, 0, 0, 0.75);
+        --border-light: rgba(0, 0, 0, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        font-size: 16px;
+      }
+      body {
+        margin: 0;
+        background: var(--background);
+        color: var(--text-primary);
+        font-family: "Diatype Variable", sans-serif;
+        font-size: 1rem;
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      main {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 4rem 2rem;
+      }
+
+      .back {
+        font-family: "Diatype Mono Variable", monospace;
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        text-decoration: none;
+        display: inline-block;
+        margin-bottom: 2rem;
+      }
+
+      .kicker {
+        font-family: "Diatype Mono Variable", monospace;
+        font-size: 0.75rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-hint);
+        margin-bottom: 0.5rem;
+      }
+
+      h1 {
+        font-family: "Terminal Grotesque", sans-serif;
+        font-size: 5rem;
+        line-height: 0.9;
+        margin: 0 0 1rem 0;
+        font-weight: 400;
+      }
+
+      .lede {
+        font-size: 1rem;
+        color: var(--text-primary);
+        line-height: 1.55;
+        margin: 0 0 2.5rem 0;
+        max-width: 60ch;
+      }
+
+      /* ------- Matrix ------- */
+      .matrix-wrap {
+        overflow-x: auto;
+        margin-bottom: 1.5rem;
+        /* On mobile, allow horizontal scroll while pinning the model column */
+      }
+      table.matrix {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: "Diatype Mono Variable", monospace;
+        font-size: 0.85rem;
+        min-width: 640px;
+      }
+      table.matrix thead th {
+        font-weight: 400;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        font-size: 0.65rem;
+        letter-spacing: 0.06em;
+        padding: 0.65rem 0.4rem;
+        text-align: center;
+        vertical-align: bottom;
+        border-bottom: 1px solid var(--border-light);
+      }
+      table.matrix thead th.row-head {
+        text-align: left;
+        padding-left: 0;
+        min-width: 160px;
+        background: #fff;
+        position: sticky;
+        left: 0;
+        z-index: 2;
+      }
+      table.matrix thead th .perf-label {
+        display: inline-block;
+        line-height: 1.2;
+      }
+      table.matrix thead th .perf-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-right: 0.5rem;
+        vertical-align: middle;
+      }
+      table.matrix thead th .perf-meta {
+        font-size: 0.6rem;
+        color: var(--text-hint);
+        letter-spacing: 0.04em;
+        margin-top: 0.2rem;
+        text-transform: none;
+      }
+      table.matrix tbody td {
+        padding: 0;
+        border-bottom: 1px solid var(--border-light);
+      }
+      table.matrix tbody th {
+        text-align: left;
+        font-weight: 400;
+        font-size: 0.85rem;
+        color: var(--text-primary);
+        padding: 0.6rem 1rem 0.6rem 0;
+        border-bottom: 1px solid var(--border-light);
+        background: #fff;
+        position: sticky;
+        left: 0;
+        z-index: 1;
+        white-space: nowrap;
+      }
+      table.matrix tbody th .kind-tag {
+        font-size: 0.6rem;
+        color: var(--text-hint);
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        margin-left: 0.4rem;
+      }
+      table.matrix tbody th.candidate {
+        font-weight: 600;
+      }
+
+      .cell {
+        display: block;
+        width: 100%;
+        height: 56px;
+        border: none;
+        background: transparent;
+        font-family: "Diatype Mono Variable", monospace;
+        cursor: pointer;
+        position: relative;
+        transition: outline 0.15s ease;
+        outline: 1px solid transparent;
+      }
+      .cell:hover,
+      .cell:focus-visible {
+        outline: 1px solid var(--text-primary);
+        outline-offset: -1px;
+        z-index: 3;
+      }
+      .cell .pct {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+      .cell .pct.faint {
+        color: var(--text-secondary);
+        font-weight: 400;
+      }
+      .cell .meta {
+        display: block;
+        font-size: 0.6rem;
+        color: var(--text-hint);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        margin-top: 2px;
+      }
+      .cell.empty {
+        background: repeating-linear-gradient(
+          45deg,
+          transparent 0 5px,
+          rgba(0, 0, 0, 0.03) 5px 10px
+        );
+      }
+      .cell.empty .pct {
+        color: var(--text-hint);
+        font-weight: 400;
+        font-size: 0.75rem;
+      }
+      .cell.empty .meta {
+        display: none;
+      }
+
+      /* Drilldown panel */
+      .panel {
+        position: fixed;
+        inset: 0;
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(4px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 50;
+        padding: 2rem;
+      }
+      .panel.open {
+        display: flex;
+      }
+      .panel-inner {
+        background: #fff;
+        border: 1px solid var(--border-light);
+        max-width: 640px;
+        width: 100%;
+        max-height: 86vh;
+        overflow-y: auto;
+        padding: 2.5rem 2.5rem 3rem 2.5rem;
+        position: relative;
+      }
+      .panel-close {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: none;
+        border: 1px solid var(--border-light);
+        font-family: "Diatype Mono Variable", monospace;
+        font-size: 0.75rem;
+        padding: 0.35rem 0.6rem;
+        cursor: pointer;
+        color: var(--text-secondary);
+      }
+      .panel-kicker {
+        font-family: "Diatype Mono Variable", monospace;
+        font-size: 0.7rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+        margin-bottom: 0.5rem;
+      }
+      .panel-title {
+        font-family: "Diatype Variable", sans-serif;
+        font-size: 1.6rem;
+        font-weight: 600;
+        margin: 0 0 0.5rem 0;
+        line-height: 1.2;
+      }
+      .panel-meta {
+        font-family: "Diatype Mono Variable", monospace;
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        margin-bottom: 1.5rem;
+      }
+      .panel-stat {
+        display: flex;
+        gap: 2rem;
+        font-family: "Diatype Mono Variable", monospace;
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid var(--border-light);
+      }
+      .panel-stat strong {
+        display: block;
+        font-size: 1.6rem;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+      .theme-row {
+        padding: 1rem 0;
+        border-bottom: 1px solid var(--border-light);
+        display: grid;
+        grid-template-columns: 1fr 80px;
+        gap: 1.5rem;
+        align-items: start;
+      }
+      .theme-row:last-child {
+        border-bottom: none;
+      }
+      .theme-name {
+        font-family: "Diatype Variable", sans-serif;
+        font-size: 1.05rem;
+        margin-bottom: 0.35rem;
+      }
+      .theme-result {
+        font-family: "Diatype Mono Variable", monospace;
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+      }
+      .theme-result.win {
+        color: #16a34a;
+      }
+      .theme-result.loss {
+        color: #dc2626;
+      }
+      .theme-pct {
+        font-family: "Diatype Mono Variable", monospace;
+        font-size: 1.2rem;
+        font-weight: 600;
+        text-align: right;
+      }
+
+      /* Legend / saturation key */
+      .key {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        font-family: "Diatype Mono Variable", monospace;
+        font-size: 0.72rem;
+        color: var(--text-secondary);
+        margin-bottom: 1.25rem;
+      }
+      .key .ramp {
+        display: flex;
+        height: 14px;
+        border: 1px solid var(--border-light);
+      }
+      .key .ramp .swatch {
+        width: 22px;
+      }
+      .key .label {
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-size: 0.65rem;
+        color: var(--text-hint);
+      }
+
+      .footnote {
+        margin-top: 2rem;
+        font-family: "Diatype Mono Variable", monospace;
+        font-size: 0.72rem;
+        color: var(--text-hint);
+        line-height: 1.7;
+        max-width: 60ch;
+      }
+
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        clip: rect(0, 0, 0, 0);
+        overflow: hidden;
+      }
+
+      hr.section {
+        border: none;
+        border-top: 2px solid #171717;
+        margin: 3rem 0;
+      }
+
+      @media (max-width: 600px) {
+        main {
+          padding: 3rem 1.25rem;
+        }
+        h1 {
+          font-size: 3rem !important;
+        }
+        table.matrix {
+          font-size: 0.78rem;
+        }
+        .cell {
+          height: 50px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <a class="back" href="/">&larr; Back to Singulars</a>
+      <div class="kicker">Eval &middot; Head to head</div>
+      <h1>Where each model wins</h1>
+      <p class="lede">
+        Rows are models. Columns are performances. Each cell shows the win rate
+        — how often that model would have beaten the audience-voted winner on
+        that night's themes. Saturated cells are higher win-rates; the colour is
+        the performance's colour. Tap any cell to read the themes.
+      </p>
+
+      <div class="key" aria-hidden="true">
+        <span class="label">Lower</span>
+        <div class="ramp" id="key-ramp"></div>
+        <span class="label">Higher</span>
+        <span style="margin-left: auto; color: var(--text-hint)">
+          colour = performance colour
+        </span>
+      </div>
+
+      <div class="matrix-wrap" tabindex="0" aria-label="Scrollable matrix">
+        <table
+          class="matrix"
+          id="matrix"
+          aria-describedby="matrix-desc"
+        ></table>
+      </div>
+      <p id="matrix-desc" class="sr-only" data-narration></p>
+
+      <p class="footnote">
+        Hatched cells = the model didn't exist yet at that performance (it
+        couldn't be trained on votes that hadn't happened). Closed-source
+        baselines (Claude Opus, GPT-5, Gemini) are evaluated against every
+        performance for reference. <a href="/about/eval">Methodology &rarr;</a>
+      </p>
+    </main>
+
+    <!-- Drilldown panel -->
+    <div
+      class="panel"
+      id="panel"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="panel-title"
+    >
+      <div class="panel-inner">
+        <button class="panel-close" id="panel-close">close [esc]</button>
+        <div class="panel-kicker" id="panel-kicker"></div>
+        <h2 class="panel-title" id="panel-title"></h2>
+        <p class="panel-meta" id="panel-meta"></p>
+        <div class="panel-stat">
+          <div>
+            <strong id="panel-pct">—</strong>
+            Win rate
+          </div>
+          <div>
+            <strong id="panel-n">—</strong>
+            Themes
+          </div>
+          <div>
+            <strong id="panel-margin">—</strong>
+            Avg margin
+          </div>
+        </div>
+        <div id="panel-themes"></div>
+      </div>
+    </div>
+
+    <script>
+      // -------- Stub data (matches the schema in data-spec.md) --------
+
+      const performances = [
+        {
+          slug: "carnation-exe",
+          name: "carnation.exe",
+          color: "#F6009B",
+          date: "2024-06-22",
+          location: "Paris",
+        },
+        {
+          slug: "versus-exe",
+          name: "versus.exe",
+          color: "#FEE005",
+          date: "2024-12-07",
+          location: "Brooklyn",
+        },
+        {
+          slug: "reinforcement-exe",
+          name: "reinforcement.exe",
+          color: "#02F700",
+          date: "2025-04-19",
+          location: "Berlin",
+        },
+        {
+          slug: "hard-exe",
+          name: "hard.exe",
+          color: "#2AA4DD",
+          date: "2025-09-13",
+          location: "Marfa",
+        },
+        {
+          slug: "reverse-exe",
+          name: "reverse.exe",
+          color: "#8B5CF6",
+          date: "2026-02-21",
+          location: "Brooklyn",
+        },
+        {
+          slug: "ground-exe",
+          name: "ground.exe",
+          color: "#D97706",
+          date: "2026-06-12",
+          location: "Santa Fe",
+        },
+      ];
+
+      const models = [
+        { slug: "ground", name: "ground.exe", kind: "candidate" },
+        { slug: "hard", name: "hard.exe", kind: "frozen" },
+        { slug: "reinforcement", name: "reinforcement.exe", kind: "frozen" },
+        { slug: "versus", name: "versus.exe", kind: "frozen" },
+        { slug: "carnation", name: "carnation.exe", kind: "frozen" },
+        { slug: "claude-opus", name: "Claude Opus 4.5", kind: "baseline" },
+        { slug: "gpt-5", name: "GPT-5", kind: "baseline" },
+        { slug: "gemini-2-5", name: "Gemini 2.5", kind: "baseline" },
+      ];
+
+      // matrix[modelSlug][perfSlug] = { rate, n, themes? } | null (didn't exist yet)
+      const matrix = {
+        ground: {
+          "carnation-exe": { rate: 0.41, n: 9 },
+          "versus-exe": { rate: 0.48, n: 11 },
+          "reinforcement-exe": { rate: 0.55, n: 10 },
+          "hard-exe": { rate: 0.62, n: 12 },
+          "reverse-exe": { rate: 0.69, n: 10 },
+          "ground-exe": { rate: 0.73, n: 0, projected: true },
+        },
+        hard: {
+          "carnation-exe": { rate: 0.39, n: 9 },
+          "versus-exe": { rate: 0.46, n: 11 },
+          "reinforcement-exe": { rate: 0.51, n: 10 },
+          "hard-exe": { rate: 0.58, n: 12 },
+          "reverse-exe": null,
+          "ground-exe": null,
+        },
+        reinforcement: {
+          "carnation-exe": { rate: 0.36, n: 9 },
+          "versus-exe": { rate: 0.42, n: 11 },
+          "reinforcement-exe": { rate: 0.5, n: 10 },
+          "hard-exe": null,
+          "reverse-exe": null,
+          "ground-exe": null,
+        },
+        versus: {
+          "carnation-exe": { rate: 0.33, n: 9 },
+          "versus-exe": { rate: 0.43, n: 11 },
+          "reinforcement-exe": null,
+          "hard-exe": null,
+          "reverse-exe": null,
+          "ground-exe": null,
+        },
+        carnation: {
+          "carnation-exe": { rate: 0.38, n: 9 },
+          "versus-exe": null,
+          "reinforcement-exe": null,
+          "hard-exe": null,
+          "reverse-exe": null,
+          "ground-exe": null,
+        },
+        "claude-opus": {
+          "carnation-exe": { rate: 0.6, n: 9 },
+          "versus-exe": { rate: 0.61, n: 11 },
+          "reinforcement-exe": { rate: 0.59, n: 10 },
+          "hard-exe": { rate: 0.62, n: 12 },
+          "reverse-exe": { rate: 0.6, n: 10 },
+          "ground-exe": { rate: 0.61, n: 0, projected: true },
+        },
+        "gpt-5": {
+          "carnation-exe": { rate: 0.56, n: 9 },
+          "versus-exe": { rate: 0.58, n: 11 },
+          "reinforcement-exe": { rate: 0.55, n: 10 },
+          "hard-exe": { rate: 0.57, n: 12 },
+          "reverse-exe": { rate: 0.59, n: 10 },
+          "ground-exe": { rate: 0.58, n: 0, projected: true },
+        },
+        "gemini-2-5": {
+          "carnation-exe": { rate: 0.52, n: 9 },
+          "versus-exe": { rate: 0.54, n: 11 },
+          "reinforcement-exe": { rate: 0.5, n: 10 },
+          "hard-exe": { rate: 0.55, n: 12 },
+          "reverse-exe": { rate: 0.53, n: 10 },
+          "ground-exe": { rate: 0.54, n: 0, projected: true },
+        },
+      };
+
+      // Stub theme-level results for drilldown
+      const themeResults = {
+        "ground|hard-exe": [
+          {
+            theme: "salt",
+            rate: 0.8,
+            won: true,
+            sample:
+              "Salt on the rim of the morning, you crossed the room without finishing the sentence.",
+          },
+          {
+            theme: "longing",
+            rate: 0.66,
+            won: true,
+            sample:
+              "I could be the one who waits, again, but the door is no longer in the wall.",
+          },
+          {
+            theme: "machines",
+            rate: 0.55,
+            won: true,
+            sample:
+              "The factory hums in the chest of the city, even at night, even when nobody listens.",
+          },
+          {
+            theme: "the city",
+            rate: 0.5,
+            won: false,
+            sample:
+              "Manhattan in a fever, the river holding its breath under the bridge.",
+          },
+          {
+            theme: "money",
+            rate: 0.42,
+            won: false,
+            sample:
+              "I counted the lights in the building opposite, until I realized I owned none.",
+          },
+          {
+            theme: "summer",
+            rate: 0.75,
+            won: true,
+            sample: "August on the cheek, the cicadas making maps of the heat.",
+          },
+          {
+            theme: "memory",
+            rate: 0.58,
+            won: true,
+            sample:
+              "The kitchen still keeps the smell of the woman who left it.",
+          },
+          {
+            theme: "father",
+            rate: 0.5,
+            won: false,
+            sample: "He learned a language he never spoke at the dinner table.",
+          },
+          {
+            theme: "violence",
+            rate: 0.66,
+            won: true,
+            sample: "The fist is the small, ordinary mechanism.",
+          },
+          {
+            theme: "the sea",
+            rate: 0.7,
+            won: true,
+            sample:
+              "The sea returns each thing it took, but later, and to the wrong shore.",
+          },
+          {
+            theme: "absence",
+            rate: 0.6,
+            won: true,
+            sample: "Absence is a chair pushed slightly away from the table.",
+          },
+          {
+            theme: "name",
+            rate: 0.66,
+            won: true,
+            sample:
+              "I have been called by the wrong name for twenty years and I have answered.",
+          },
+        ],
+      };
+
+      // -------- Render matrix --------
+      const table = document.getElementById("matrix");
+
+      // Header row
+      const thead = document.createElement("thead");
+      const trh = document.createElement("tr");
+      const th0 = document.createElement("th");
+      th0.className = "row-head";
+      th0.textContent = "MODEL";
+      trh.appendChild(th0);
+      performances.forEach((p) => {
+        const th = document.createElement("th");
+        th.scope = "col";
+        th.innerHTML = `
+          <div class="perf-label">
+            <span class="perf-dot" style="background:${p.color}"></span>
+            ${p.name}
+          </div>
+          <div class="perf-meta">${p.location} · ${formatDate(p.date)}</div>
+        `;
+        trh.appendChild(th);
+      });
+      thead.appendChild(trh);
+      table.appendChild(thead);
+
+      // Body rows
+      const tbody = document.createElement("tbody");
+      models.forEach((m) => {
+        const tr = document.createElement("tr");
+        const rowHead = document.createElement("th");
+        rowHead.scope = "row";
+        rowHead.className = m.kind;
+        rowHead.innerHTML = `
+          ${m.name}
+          <span class="kind-tag">${m.kind === "candidate" ? "live" : m.kind === "baseline" ? "ref" : ""}</span>
+        `;
+        tr.appendChild(rowHead);
+
+        performances.forEach((p) => {
+          const td = document.createElement("td");
+          const cell = matrix[m.slug][p.slug];
+
+          const btn = document.createElement("button");
+          btn.className = "cell" + (cell ? "" : " empty");
+          btn.setAttribute(
+            "aria-label",
+            cell
+              ? `${m.name} on ${p.name}: ${(cell.rate * 100).toFixed(0)} percent over ${cell.n} themes${cell.projected ? ", projected" : ""}.`
+              : `${m.name} did not exist at ${p.name}.`,
+          );
+
+          if (cell) {
+            const sat = saturation(cell.rate); // 0..1
+            btn.style.background = mix("#ffffff", p.color, sat);
+            btn.innerHTML = `
+              <span class="pct${cell.projected ? " faint" : ""}">${(cell.rate * 100).toFixed(0)}%</span>
+              <span class="meta">${cell.projected ? "projected" : `${cell.n} themes`}</span>
+            `;
+            btn.addEventListener("click", () => openPanel(m, p, cell));
+          } else {
+            btn.innerHTML = `<span class="pct">—</span>`;
+            btn.disabled = true;
+          }
+          td.appendChild(btn);
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+
+      // Saturation key (white -> ground.exe color as a representative ramp)
+      const ramp = document.getElementById("key-ramp");
+      [0.3, 0.45, 0.6, 0.75].forEach((r) => {
+        const sw = document.createElement("div");
+        sw.className = "swatch";
+        sw.style.background = mix("#ffffff", "#171717", saturation(r));
+        ramp.appendChild(sw);
+      });
+
+      // -------- Drilldown panel --------
+      const panel = document.getElementById("panel");
+      const panelClose = document.getElementById("panel-close");
+      panelClose.addEventListener("click", closePanel);
+      panel.addEventListener("click", (e) => {
+        if (e.target === panel) closePanel();
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closePanel();
+      });
+
+      function openPanel(model, perf, cell) {
+        document.getElementById("panel-kicker").innerHTML = `
+          <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${perf.color};margin-right:0.5rem;vertical-align:middle"></span>
+          ${perf.name} &middot; ${model.name}
+        `;
+        document.getElementById("panel-title").textContent =
+          `${model.name} vs the audience of ${perf.name}`;
+        document.getElementById("panel-meta").textContent =
+          `${perf.location} · ${formatDate(perf.date)}`;
+        document.getElementById("panel-pct").textContent =
+          (cell.rate * 100).toFixed(0) + "%";
+        document.getElementById("panel-n").textContent = cell.n || "—";
+
+        const themes = themeResults[`${model.slug}|${perf.slug}`];
+        const themesEl = document.getElementById("panel-themes");
+        if (themes) {
+          const wins = themes.filter((t) => t.won).length;
+          const margins =
+            themes
+              .map((t) => Math.abs(t.rate - 0.5))
+              .reduce((a, b) => a + b, 0) / themes.length;
+          document.getElementById("panel-margin").textContent =
+            "+" + (margins * 100).toFixed(0) + "pp";
+          themesEl.innerHTML = themes
+            .map(
+              (t) => `
+              <div class="theme-row">
+                <div>
+                  <div class="theme-name">${t.theme}</div>
+                  <div class="theme-result ${t.won ? "win" : "loss"}">
+                    ${t.won ? "candidate beat winner" : "candidate lost"} · sample: <em>${truncate(t.sample, 60)}</em>
+                  </div>
+                </div>
+                <div class="theme-pct">${(t.rate * 100).toFixed(0)}%</div>
+              </div>
+            `,
+            )
+            .join("");
+        } else {
+          document.getElementById("panel-margin").textContent = "—";
+          themesEl.innerHTML = `<p style="color:var(--text-hint);font-family:'Diatype Mono Variable', monospace;font-size:0.85rem">Theme-level breakdown not yet stubbed for this cell.</p>`;
+        }
+        panel.classList.add("open");
+        panelClose.focus();
+      }
+      function closePanel() {
+        panel.classList.remove("open");
+      }
+
+      // -------- Helpers --------
+      function saturation(rate) {
+        // Map [0.3, 0.8] -> [0.08, 0.85] saturation. Below 0.3 stays very pale.
+        const lo = 0.3,
+          hi = 0.8;
+        const t = Math.max(0, Math.min(1, (rate - lo) / (hi - lo)));
+        return 0.08 + t * 0.77;
+      }
+      function mix(c1, c2, t) {
+        // Linear RGB mix; t in [0,1]; returns hex
+        const a = hexRgb(c1),
+          b = hexRgb(c2);
+        const r = Math.round(a[0] + (b[0] - a[0]) * t);
+        const g = Math.round(a[1] + (b[1] - a[1]) * t);
+        const bl = Math.round(a[2] + (b[2] - a[2]) * t);
+        return `rgb(${r},${g},${bl})`;
+      }
+      function hexRgb(h) {
+        const c = h.replace("#", "");
+        return [
+          parseInt(c.slice(0, 2), 16),
+          parseInt(c.slice(2, 4), 16),
+          parseInt(c.slice(4, 6), 16),
+        ];
+      }
+      function formatDate(iso) {
+        const [y, m, d] = iso.split("-").map(Number);
+        const months = [
+          "Jan",
+          "Feb",
+          "Mar",
+          "Apr",
+          "May",
+          "Jun",
+          "Jul",
+          "Aug",
+          "Sep",
+          "Oct",
+          "Nov",
+          "Dec",
+        ];
+        return `${months[m - 1]} ${d}, ${y}`;
+      }
+      function truncate(s, n) {
+        return s.length > n ? s.slice(0, n - 1) + "…" : s;
+      }
+
+      // SR narration
+      document.querySelector("[data-narration]").textContent =
+        "Matrix of pairwise win-rates. Rows are models; columns are performances ordered chronologically. Higher saturation indicates higher win rate. Ground.exe row trends from forty-one percent on carnation.exe to a projected seventy-three percent on ground.exe; closed-source baselines stay between fifty and sixty-two percent across all performances.";
+    </script>
+  </body>
+</html>

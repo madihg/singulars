@@ -1,0 +1,886 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Singulars — Model Evolution</title>
+    <style>
+      /* Cargo Fonts — match oulipo.xyz */
+      @font-face {
+        font-display: block;
+        font-family: "Terminal Grotesque";
+        src: url("https://type.cargo.site/files/TerminalGrotesque.woff")
+          format("woff");
+      }
+      @font-face {
+        font-display: block;
+        font-family: "Diatype Variable";
+        src: url("https://type.cargo.site/files/Cargo-DiatypePlusVariable.woff2")
+          format("woff2-variations");
+        font-weight: 200 1000;
+      }
+      @font-face {
+        font-display: block;
+        font-family: "Diatype Mono Variable";
+        src: url("https://type.cargo.site/files/Cargo-DiatypePlusVariable.woff2")
+          format("woff2-variations");
+        font-weight: 200 700;
+      }
+
+      :root {
+        --background: #ffffff;
+        --text-primary: rgba(0, 0, 0, 0.85);
+        --text-secondary: rgba(0, 0, 0, 0.6);
+        --text-tertiary: rgba(0, 0, 0, 0.5);
+        --text-hint: rgba(0, 0, 0, 0.4);
+        --border: rgba(0, 0, 0, 0.75);
+        --border-light: rgba(0, 0, 0, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        font-size: 16px;
+      }
+      body {
+        margin: 0;
+        background: var(--background);
+        color: var(--text-primary);
+        font-family: "Diatype Variable", sans-serif;
+        font-size: 1rem;
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+      }
+      a {
+        color: var(--text-primary);
+      }
+
+      main {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 4rem 2rem;
+      }
+
+      .back {
+        font-family: "Diatype Mono Variable", monospace;
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        text-decoration: none;
+        display: inline-block;
+        margin-bottom: 2rem;
+      }
+
+      h1 {
+        font-family: "Terminal Grotesque", sans-serif;
+        font-size: 5rem;
+        line-height: 0.9;
+        margin: 0 0 1rem 0;
+        font-weight: 400;
+      }
+
+      .kicker {
+        font-family: "Diatype Mono Variable", monospace;
+        font-size: 0.75rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-hint);
+        margin-bottom: 0.5rem;
+      }
+
+      .lede {
+        font-size: 1rem;
+        color: var(--text-primary);
+        line-height: 1.55;
+        margin: 0 0 2.5rem 0;
+        max-width: 60ch;
+      }
+      .lede em {
+        font-style: italic;
+      }
+
+      .axis-label {
+        font-family: "Diatype Mono Variable", monospace;
+        font-size: 0.7rem;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        fill: var(--text-hint);
+      }
+      .tick text {
+        font-family: "Diatype Mono Variable", monospace;
+        font-size: 0.72rem;
+        fill: var(--text-secondary);
+      }
+      .tick line,
+      .domain {
+        stroke: var(--border-light);
+      }
+
+      .perf-tick text {
+        font-family: "Diatype Mono Variable", monospace;
+        font-size: 0.7rem;
+        letter-spacing: 0.02em;
+        fill: var(--text-secondary);
+      }
+      .perf-tick text.upcoming {
+        fill: var(--text-hint);
+      }
+
+      .line {
+        fill: none;
+        stroke-width: 1.25;
+      }
+      .line.candidate {
+        stroke-width: 2;
+      }
+      .line.baseline {
+        stroke: rgba(0, 0, 0, 0.35);
+        stroke-dasharray: 3 3;
+      }
+      .line.frozen {
+        opacity: 0.5;
+      }
+
+      .endpoint-label {
+        font-family: "Diatype Mono Variable", monospace;
+        font-size: 0.72rem;
+        fill: var(--text-secondary);
+      }
+      .endpoint-label.candidate {
+        fill: var(--text-primary);
+        font-weight: 600;
+      }
+
+      .perf-dot {
+        cursor: pointer;
+      }
+      .perf-dot:focus {
+        outline: none;
+      }
+      .perf-dot:focus-visible circle {
+        stroke: var(--text-primary);
+        stroke-width: 2;
+      }
+
+      .future-zone {
+        fill: rgba(0, 0, 0, 0.025);
+      }
+
+      /* Tooltip */
+      .tooltip {
+        position: fixed;
+        pointer-events: none;
+        background: #ffffff;
+        border: 1px solid var(--border-light);
+        padding: 0.9rem 1rem;
+        font-family: "Diatype Mono Variable", monospace;
+        font-size: 0.78rem;
+        line-height: 1.5;
+        max-width: 280px;
+        z-index: 50;
+        opacity: 0;
+        transition: opacity 0.12s ease;
+      }
+      .tooltip.visible {
+        opacity: 1;
+      }
+      .tooltip .tt-perf {
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-size: 0.7rem;
+        margin-bottom: 0.35rem;
+      }
+      .tooltip .tt-stat {
+        color: var(--text-secondary);
+        margin-bottom: 0.15rem;
+      }
+      .tooltip .tt-stat strong {
+        color: var(--text-primary);
+        font-weight: 600;
+      }
+      .tooltip .tt-divider {
+        border-top: 1px solid var(--border-light);
+        margin: 0.6rem 0 0.5rem 0;
+      }
+      .tooltip .tt-quote {
+        font-family: "Diatype Variable", sans-serif;
+        font-size: 0.85rem;
+        line-height: 1.5;
+        color: var(--text-primary);
+        white-space: pre-line;
+      }
+      .tooltip .tt-cite {
+        margin-top: 0.4rem;
+        color: var(--text-hint);
+      }
+
+      /* Legend */
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem 1.4rem;
+        margin: 1.25rem 0 0 0;
+        font-family: "Diatype Mono Variable", monospace;
+        font-size: 0.78rem;
+        color: var(--text-secondary);
+      }
+      .legend-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        user-select: none;
+      }
+      .legend-item.dim {
+        opacity: 0.3;
+      }
+      .legend-swatch {
+        width: 16px;
+        height: 2px;
+        flex-shrink: 0;
+      }
+      .legend-swatch.dashed {
+        background: repeating-linear-gradient(
+          to right,
+          rgba(0, 0, 0, 0.55) 0 3px,
+          transparent 3px 6px
+        );
+        height: 2px;
+      }
+      .legend-name {
+        color: var(--text-primary);
+      }
+      .legend-kind {
+        color: var(--text-hint);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        font-size: 0.65rem;
+      }
+
+      .footnote {
+        margin-top: 2rem;
+        font-family: "Diatype Mono Variable", monospace;
+        font-size: 0.72rem;
+        color: var(--text-hint);
+        line-height: 1.7;
+        max-width: 65ch;
+      }
+
+      /* Print-style screen-reader-only summary */
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      hr.section {
+        border: none;
+        border-top: 2px solid #171717;
+        margin: 3rem 0;
+      }
+
+      @media (max-width: 600px) {
+        main {
+          padding: 3rem 1.25rem;
+        }
+        h1 {
+          font-size: 3rem !important;
+        }
+        .legend {
+          gap: 0.5rem 1rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <a class="back" href="/">&larr; Back to Singulars</a>
+
+      <div class="kicker">Eval &middot; Updated after every performance</div>
+      <h1>Model Evolution</h1>
+      <p class="lede">
+        Six performances. One model the audience is teaching, season after
+        season. The chart below shows how often each version of the machine
+        would have <em>won</em> the audience vote, against the poems that
+        actually won on the night. <em>Ground.exe</em> debuts at Currents New
+        Media, Santa Fe — June&nbsp;12,&nbsp;2026.
+      </p>
+
+      <figure aria-labelledby="evo-title" aria-describedby="evo-desc">
+        <h2 id="evo-title" class="sr-only">Model evolution chart</h2>
+        <p id="evo-desc" class="sr-only" data-narration></p>
+        <div id="chart"></div>
+        <div id="legend" class="legend" role="list"></div>
+      </figure>
+
+      <p class="footnote">
+        Y-axis: pairwise win-rate against the human-voted winner of each theme,
+        averaged over five generations per theme, judged by a frontier model
+        from a different family than any candidate. Position bias mitigated by
+        running every comparison twice with positions swapped. Methodology:
+        <a href="/about/eval">see eval design</a>.
+      </p>
+
+      <hr class="section" />
+
+      <div class="kicker">What you're looking at</div>
+      <p style="max-width: 60ch; margin: 0 0 1rem 0">
+        Every coloured dot is a performance you (or someone like you) attended
+        and voted at. The line connects the model that opened that night to the
+        model that closes the next one. The flat dashed lines are the big
+        closed-source models — they don't change, because they aren't being
+        trained on your votes.
+      </p>
+    </main>
+
+    <div id="tooltip" class="tooltip" role="status" aria-live="polite"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+    <script>
+      // -------- Stub data (realistic shapes; replace with /api/evals/results) --------
+
+      // Performance milestones (ordered earliest -> latest)
+      const performances = [
+        {
+          slug: "carnation-exe",
+          name: "carnation.exe",
+          color: "#F6009B",
+          date: "2024-06-22",
+          location: "Paris",
+          status: "trained",
+        },
+        {
+          slug: "versus-exe",
+          name: "versus.exe",
+          color: "#FEE005",
+          date: "2024-12-07",
+          location: "Brooklyn",
+          status: "trained",
+        },
+        {
+          slug: "reinforcement-exe",
+          name: "reinforcement.exe",
+          color: "#02F700",
+          date: "2025-04-19",
+          location: "Berlin",
+          status: "trained",
+        },
+        {
+          slug: "hard-exe",
+          name: "hard.exe",
+          color: "#2AA4DD",
+          date: "2025-09-13",
+          location: "Marfa",
+          status: "trained",
+        },
+        {
+          slug: "reverse-exe",
+          name: "reverse.exe",
+          color: "#8B5CF6",
+          date: "2026-02-21",
+          location: "Brooklyn",
+          status: "training",
+        },
+        {
+          slug: "ground-exe",
+          name: "ground.exe",
+          color: "#D97706",
+          date: "2026-06-12",
+          location: "Santa Fe",
+          status: "upcoming",
+        },
+      ];
+
+      // Each candidate model has a series: [{ perf_slug, win_rate, n_tuples, sample_winner }]
+      // Fine-tunes are FROZEN at their training boundary — they only have points
+      // from their own performance onward (the data they were trained on doesn't exist
+      // before they did). Closed-source baselines get a value at every performance.
+      // Stub data: ground.exe trends up; baselines flat-ish; older fine-tunes plateau.
+
+      const sampleWinners = {
+        "carnation-exe":
+          "I lost the thread of time\nin a drawer full of letters\nnever sent, never opened.",
+        "versus-exe":
+          "We named the dog after the river\nbecause the river didn't ask.",
+        "reinforcement-exe":
+          "Resistance is a weight\napplied to the gradient.\nI learn to not learn.",
+        "hard-exe":
+          "Salt on the rim of the morning,\nyou crossed the room without finishing\nthe sentence.",
+        "reverse-exe":
+          "The window opens onto a window.\nBehind it, my mother is younger\nthan I am now.",
+        "ground-exe":
+          "Sand keeps the shape\nof whatever last touched it,\nfor about a minute.",
+      };
+
+      const models = [
+        {
+          slug: "ground",
+          name: "ground.exe",
+          kind: "candidate",
+          color: "#D97706",
+          // Trained iteratively on each prior performance's votes.
+          // Tracks upward as it ingests more vote data.
+          series: [
+            { perf: "carnation-exe", rate: 0.41, n: 9 },
+            { perf: "versus-exe", rate: 0.48, n: 11 },
+            { perf: "reinforcement-exe", rate: 0.55, n: 10 },
+            { perf: "hard-exe", rate: 0.62, n: 12 },
+            { perf: "reverse-exe", rate: 0.69, n: 10 },
+            { perf: "ground-exe", rate: 0.73, n: 0, projected: true },
+          ],
+        },
+        {
+          slug: "hard",
+          name: "hard.exe",
+          kind: "frozen",
+          color: "#2AA4DD",
+          // Frozen at hard.exe; we backfill scores against earlier perfs as well
+          // because the eval set is the union of all trained perfs.
+          series: [
+            { perf: "carnation-exe", rate: 0.39, n: 9 },
+            { perf: "versus-exe", rate: 0.46, n: 11 },
+            { perf: "reinforcement-exe", rate: 0.51, n: 10 },
+            { perf: "hard-exe", rate: 0.58, n: 12 },
+          ],
+        },
+        {
+          slug: "reinforcement",
+          name: "reinforcement.exe",
+          kind: "frozen",
+          color: "#02F700",
+          series: [
+            { perf: "carnation-exe", rate: 0.36, n: 9 },
+            { perf: "versus-exe", rate: 0.42, n: 11 },
+            { perf: "reinforcement-exe", rate: 0.5, n: 10 },
+          ],
+        },
+        {
+          slug: "versus",
+          name: "versus.exe",
+          kind: "frozen",
+          color: "#FEE005",
+          series: [
+            { perf: "carnation-exe", rate: 0.33, n: 9 },
+            { perf: "versus-exe", rate: 0.43, n: 11 },
+          ],
+        },
+        {
+          slug: "carnation",
+          name: "carnation.exe",
+          kind: "frozen",
+          color: "#F6009B",
+          series: [{ perf: "carnation-exe", rate: 0.38, n: 9 }],
+        },
+        // Closed-source baselines: flat, dashed.
+        {
+          slug: "claude-opus",
+          name: "Claude Opus 4.5",
+          kind: "baseline",
+          color: "rgba(0,0,0,0.55)",
+          series: [
+            { perf: "carnation-exe", rate: 0.6, n: 9 },
+            { perf: "versus-exe", rate: 0.61, n: 11 },
+            { perf: "reinforcement-exe", rate: 0.59, n: 10 },
+            { perf: "hard-exe", rate: 0.62, n: 12 },
+            { perf: "reverse-exe", rate: 0.6, n: 10 },
+            { perf: "ground-exe", rate: 0.61, n: 0, projected: true },
+          ],
+        },
+        {
+          slug: "gpt-5",
+          name: "GPT-5",
+          kind: "baseline",
+          color: "rgba(0,0,0,0.55)",
+          series: [
+            { perf: "carnation-exe", rate: 0.56, n: 9 },
+            { perf: "versus-exe", rate: 0.58, n: 11 },
+            { perf: "reinforcement-exe", rate: 0.55, n: 10 },
+            { perf: "hard-exe", rate: 0.57, n: 12 },
+            { perf: "reverse-exe", rate: 0.59, n: 10 },
+            { perf: "ground-exe", rate: 0.58, n: 0, projected: true },
+          ],
+        },
+        {
+          slug: "gemini-2-5",
+          name: "Gemini 2.5",
+          kind: "baseline",
+          color: "rgba(0,0,0,0.55)",
+          series: [
+            { perf: "carnation-exe", rate: 0.52, n: 9 },
+            { perf: "versus-exe", rate: 0.54, n: 11 },
+            { perf: "reinforcement-exe", rate: 0.5, n: 10 },
+            { perf: "hard-exe", rate: 0.55, n: 12 },
+            { perf: "reverse-exe", rate: 0.53, n: 10 },
+            { perf: "ground-exe", rate: 0.54, n: 0, projected: true },
+          ],
+        },
+      ];
+
+      // -------- Render --------
+
+      const W = Math.min(800, document.querySelector("main").clientWidth) - 0;
+      const H = Math.min(440, Math.max(340, W * 0.55));
+      const M = { top: 28, right: 96, bottom: 70, left: 56 };
+      const innerW = W - M.left - M.right;
+      const innerH = H - M.top - M.bottom;
+
+      const perfIdx = new Map(performances.map((p, i) => [p.slug, i]));
+
+      const x = d3
+        .scalePoint()
+        .domain(performances.map((p) => p.slug))
+        .range([0, innerW])
+        .padding(0.1);
+
+      const y = d3.scaleLinear().domain([0, 1]).range([innerH, 0]).nice();
+
+      const svg = d3
+        .select("#chart")
+        .append("svg")
+        .attr("viewBox", `0 0 ${W} ${H}`)
+        .attr("width", "100%")
+        .attr("height", "auto")
+        .attr("role", "img")
+        .attr("aria-labelledby", "evo-title")
+        .attr("aria-describedby", "evo-desc");
+
+      // Future zone (right of last trained perf — visually quiet)
+      const futureStartX = x("ground-exe") - x.step() * 0.5;
+      svg
+        .append("rect")
+        .attr("class", "future-zone")
+        .attr("x", M.left + futureStartX)
+        .attr("y", M.top)
+        .attr("width", innerW - futureStartX)
+        .attr("height", innerH);
+
+      const g = svg
+        .append("g")
+        .attr("transform", `translate(${M.left}, ${M.top})`);
+
+      // Axes
+      const yAxis = d3
+        .axisLeft(y)
+        .tickValues([0, 0.25, 0.5, 0.75, 1])
+        .tickFormat(d3.format(".0%"))
+        .tickSize(-innerW);
+
+      g.append("g")
+        .attr("class", "y-axis")
+        .call(yAxis)
+        .call((sel) => sel.select(".domain").remove())
+        .call((sel) =>
+          sel
+            .selectAll(".tick line")
+            .attr("stroke", "rgba(0,0,0,0.06)")
+            .attr("stroke-dasharray", "2 2"),
+        );
+
+      // 50% reference line
+      g.append("line")
+        .attr("x1", 0)
+        .attr("x2", innerW)
+        .attr("y1", y(0.5))
+        .attr("y2", y(0.5))
+        .attr("stroke", "rgba(0,0,0,0.18)")
+        .attr("stroke-width", 1);
+
+      g.append("text")
+        .attr("x", innerW)
+        .attr("y", y(0.5) - 6)
+        .attr("text-anchor", "end")
+        .attr("class", "axis-label")
+        .text("coin flip · 50%");
+
+      // X tick group
+      const xg = g
+        .append("g")
+        .attr("transform", `translate(0, ${innerH})`)
+        .attr("class", "x-axis");
+
+      xg.append("line")
+        .attr("x1", 0)
+        .attr("x2", innerW)
+        .attr("stroke", "var(--border-light)");
+
+      const tickG = xg
+        .selectAll("g.perf-tick")
+        .data(performances)
+        .join("g")
+        .attr("class", "perf-tick")
+        .attr("transform", (d) => `translate(${x(d.slug)}, 0)`);
+
+      tickG
+        .append("line")
+        .attr("y1", 0)
+        .attr("y2", 6)
+        .attr("stroke", "var(--border-light)");
+
+      tickG
+        .append("text")
+        .attr("y", 22)
+        .attr("text-anchor", "middle")
+        .attr("class", (d) => (d.status === "upcoming" ? "upcoming" : ""))
+        .text((d) => d.name);
+
+      tickG
+        .append("text")
+        .attr("y", 38)
+        .attr("text-anchor", "middle")
+        .attr("class", (d) => (d.status === "upcoming" ? "upcoming" : ""))
+        .style("font-size", "0.62rem")
+        .style("fill", "var(--text-hint)")
+        .style("letter-spacing", "0.05em")
+        .style("text-transform", "uppercase")
+        .text((d) => `${d.location} · ${formatDate(d.date)}`);
+
+      // Y-axis label
+      svg
+        .append("text")
+        .attr("class", "axis-label")
+        .attr("transform", `translate(${M.left - 42}, ${M.top - 10})`)
+        .text("Win rate vs. audience winners");
+
+      // -------- Lines --------
+
+      const line = d3
+        .line()
+        .x((d) => x(d.perf))
+        .y((d) => y(d.rate))
+        .curve(d3.curveMonotoneX);
+
+      // Draw baselines first (background), then frozen, then candidate on top
+      const drawOrder = [
+        ...models.filter((m) => m.kind === "baseline"),
+        ...models.filter((m) => m.kind === "frozen"),
+        ...models.filter((m) => m.kind === "candidate"),
+      ];
+
+      const linesG = g.append("g").attr("class", "lines");
+
+      drawOrder.forEach((m) => {
+        const sortedSeries = [...m.series].sort(
+          (a, b) => perfIdx.get(a.perf) - perfIdx.get(b.perf),
+        );
+
+        // Split into solid (actual) + dashed (projected)
+        const solidPts = sortedSeries.filter((d) => !d.projected);
+        const projectedSeg =
+          sortedSeries.find((d) => d.projected) && solidPts.length
+            ? [
+                solidPts[solidPts.length - 1],
+                sortedSeries.find((d) => d.projected),
+              ]
+            : null;
+
+        // Solid path
+        linesG
+          .append("path")
+          .datum(solidPts)
+          .attr("class", `line ${m.kind}`)
+          .attr("data-model", m.slug)
+          .attr("stroke", m.color)
+          .attr("stroke-dasharray", m.kind === "baseline" ? "3 3" : null)
+          .attr("d", line);
+
+        // Projected dashed segment (for ground.exe -> ground-exe perf)
+        if (projectedSeg) {
+          linesG
+            .append("path")
+            .datum(projectedSeg)
+            .attr("class", "line")
+            .attr("data-model", m.slug)
+            .attr("stroke", m.color)
+            .attr("stroke-width", 2)
+            .attr("stroke-dasharray", "4 4")
+            .attr("opacity", 0.8)
+            .attr("d", line);
+        }
+      });
+
+      // -------- Performance dots — colored, the visual anchor --------
+      const dotsG = g.append("g").attr("class", "dots");
+
+      drawOrder.forEach((m) => {
+        if (m.kind === "baseline") return; // baselines are flat dashed lines, no dots
+        m.series.forEach((d) => {
+          const perf = performances.find((p) => p.slug === d.perf);
+          if (!perf) return;
+          const dot = dotsG
+            .append("g")
+            .attr("class", "perf-dot")
+            .attr("transform", `translate(${x(d.perf)}, ${y(d.rate)})`)
+            .attr("tabindex", 0)
+            .attr("role", "button")
+            .attr(
+              "aria-label",
+              `${m.name} on ${perf.name}: ${(d.rate * 100).toFixed(0)} percent win rate over ${d.n} themes${d.projected ? ", projected" : ""}.`,
+            );
+
+          // Outer ring (lets two dots overlap and stay legible)
+          dot
+            .append("circle")
+            .attr("r", 6)
+            .attr("fill", "#fff")
+            .attr("stroke", perf.color)
+            .attr("stroke-width", 1.5)
+            .attr("opacity", d.projected ? 0.55 : 1);
+
+          // Inner fill — only for candidate to make ground.exe's path pop
+          if (m.kind === "candidate" && !d.projected) {
+            dot.append("circle").attr("r", 3).attr("fill", perf.color);
+          }
+          if (m.kind === "candidate" && d.projected) {
+            dot
+              .append("circle")
+              .attr("r", 3)
+              .attr("fill", "#fff")
+              .attr("stroke", perf.color)
+              .attr("stroke-dasharray", "1.5 1.5")
+              .attr("stroke-width", 1);
+          }
+
+          dot.on("mouseenter focus", (event) => showTooltip(event, m, d, perf));
+          dot.on("mouseleave blur", hideTooltip);
+        });
+      });
+
+      // -------- Endpoint labels --------
+      drawOrder.forEach((m) => {
+        const sorted = [...m.series].sort(
+          (a, b) => perfIdx.get(a.perf) - perfIdx.get(b.perf),
+        );
+        const last = sorted[sorted.length - 1];
+        if (!last) return;
+        g.append("text")
+          .attr("class", `endpoint-label ${m.kind}`)
+          .attr("x", x(last.perf) + 10)
+          .attr("y", y(last.rate))
+          .attr("dominant-baseline", "middle")
+          .attr("fill", m.kind === "baseline" ? "var(--text-secondary)" : null)
+          .text(m.name);
+      });
+
+      // -------- Legend --------
+      const legendEl = document.getElementById("legend");
+      const legendOrder = [
+        ...models.filter((m) => m.kind === "candidate"),
+        ...models.filter((m) => m.kind === "frozen"),
+        ...models.filter((m) => m.kind === "baseline"),
+      ];
+      legendOrder.forEach((m) => {
+        const item = document.createElement("button");
+        item.className = "legend-item";
+        item.setAttribute("role", "listitem");
+        item.setAttribute("type", "button");
+        item.setAttribute("aria-pressed", "true");
+        item.dataset.model = m.slug;
+        item.innerHTML = `
+          <span class="legend-swatch ${m.kind === "baseline" ? "dashed" : ""}"
+                style="background:${m.kind === "baseline" ? "" : m.color}"></span>
+          <span class="legend-name">${m.name}</span>
+          <span class="legend-kind">${m.kind === "candidate" ? "live" : m.kind}</span>
+        `;
+        item.addEventListener("click", () => toggleLine(m.slug, item));
+        legendEl.appendChild(item);
+      });
+
+      function toggleLine(slug, btn) {
+        const dim = btn.classList.toggle("dim");
+        btn.setAttribute("aria-pressed", dim ? "false" : "true");
+        d3.selectAll(`[data-model="${slug}"]`).attr(
+          "opacity",
+          dim ? 0.08 : null,
+        );
+      }
+
+      // -------- Tooltip --------
+      const tooltipEl = document.getElementById("tooltip");
+      function showTooltip(event, model, point, perf) {
+        const mx =
+          (event.clientX ??
+            event.target.getBoundingClientRect().left +
+              event.target.getBoundingClientRect().width / 2) + 12;
+        const my =
+          (event.clientY ?? event.target.getBoundingClientRect().top) - 14;
+
+        const winnerSample =
+          sampleWinners[perf.slug] ?? "(sample winner unavailable)";
+        const projectedTag = point.projected
+          ? `<span style="color:var(--text-hint);text-transform:uppercase;letter-spacing:0.05em;font-size:0.62rem">projected</span>`
+          : "";
+
+        tooltipEl.innerHTML = `
+          <div class="tt-perf" style="color:${perf.color};font-weight:600">
+            ${model.name} &times; ${perf.name} ${projectedTag}
+          </div>
+          <div class="tt-stat">
+            Win rate <strong>${(point.rate * 100).toFixed(0)}%</strong>
+            ${point.n ? `over ${point.n} themes` : "(no themes yet)"}
+          </div>
+          <div class="tt-stat">
+            ${perf.location} · ${formatDate(perf.date)}
+          </div>
+          <div class="tt-divider"></div>
+          <div style="font-size:0.62rem;letter-spacing:0.05em;text-transform:uppercase;color:var(--text-hint);margin-bottom:0.3rem">
+            Sample winning poem
+          </div>
+          <div class="tt-quote">${winnerSample}</div>
+          <div class="tt-cite">— audience-voted winner, ${perf.name}</div>
+        `;
+        tooltipEl.style.left = `${Math.min(mx, window.innerWidth - 320)}px`;
+        tooltipEl.style.top = `${Math.max(my - 60, 8)}px`;
+        tooltipEl.classList.add("visible");
+      }
+      function hideTooltip() {
+        tooltipEl.classList.remove("visible");
+      }
+      document.addEventListener("scroll", hideTooltip, { passive: true });
+
+      // -------- Helpers --------
+      function formatDate(iso) {
+        const [y, m, d] = iso.split("-").map(Number);
+        const months = [
+          "Jan",
+          "Feb",
+          "Mar",
+          "Apr",
+          "May",
+          "Jun",
+          "Jul",
+          "Aug",
+          "Sep",
+          "Oct",
+          "Nov",
+          "Dec",
+        ];
+        return `${months[m - 1]} ${d}, ${y}`;
+      }
+
+      // -------- Screen-reader narration --------
+      const groundFirst = models.find((m) => m.slug === "ground").series[0]
+        .rate;
+      const groundLast = models
+        .find((m) => m.slug === "ground")
+        .series.slice(-1)[0].rate;
+      const opusAvg = avg(
+        models.find((m) => m.slug === "claude-opus").series.map((s) => s.rate),
+      );
+      document.querySelector("[data-narration]").textContent =
+        `Pairwise win rate against audience-voted winners across six performances from ` +
+        `carnation.exe in 2024 to ground.exe in June 2026. Ground.exe (the live model) rises ` +
+        `from ${(groundFirst * 100).toFixed(0)} percent to a projected ${(groundLast * 100).toFixed(0)} percent. ` +
+        `Closed-source baselines stay roughly flat: Claude Opus around ${(opusAvg * 100).toFixed(0)} percent.`;
+
+      function avg(arr) {
+        return arr.reduce((a, b) => a + b, 0) / arr.length;
+      }
+    </script>
+  </body>
+</html>
