@@ -1,10 +1,17 @@
 /**
- * PATCH /api/admin/poems/[id] (US-113, US-104)
+ * PATCH /api/admin/poems/[id] (US-113, US-104, §9.4 resolution)
  *
  * Body: { vote_count: number, reason?: string }
  *
- * Direct override of poems.vote_count. v1 just writes; v2 will promote the
- * audit log to a poem_vote_overrides table. Logged via console.log JSON.
+ * Calls singulars.apply_vote_override(p_poem_id, p_new_total, p_reason, p_by) which:
+ *   1. snapshots COUNT(votes) for the poem
+ *   2. supercedes prior active overrides
+ *   3. inserts a new active override row with manual_delta = new_total - online_count
+ *   4. updates poems.vote_count to the new_total
+ *
+ * cast_vote (the live online-vote RPC) is unchanged. The two coexist because
+ * each online vote increments both COUNT(votes) AND poems.vote_count by 1
+ * while the latest manual_delta is unaffected.
  */
 
 import { NextResponse } from "next/server";
@@ -63,23 +70,34 @@ export async function PATCH(
     });
   }
 
-  const { error: updErr } = await supabase
-    .from("poems")
-    .update({ vote_count: intCount })
-    .eq("id", params.id);
-  if (updErr) {
-    return NextResponse.json({ error: updErr.message }, { status: 500 });
+  const userHash = userHashFromRequest(req);
+  const { data: override, error: rpcErr } = await supabase.rpc(
+    "apply_vote_override",
+    {
+      p_poem_id: params.id,
+      p_new_total: intCount,
+      p_reason: reason,
+      p_by: userHash,
+    },
+  );
+  if (rpcErr) {
+    return NextResponse.json({ error: rpcErr.message }, { status: 500 });
   }
 
+  // The console audit trail stays in addition to the DB row so Vercel Logs
+  // retain a record even if a future migration drops the table.
   audit({
     audit: "poem.vote_count",
-    by: userHashFromRequest(req),
+    by: userHash,
     poem_id: params.id,
     theme_slug: poem.theme_slug,
     author_type: poem.author_type,
     old,
     new: intCount,
     reason,
+    override_id: override?.id ?? null,
+    manual_delta: override?.manual_delta ?? null,
+    online_count_at_override: override?.online_count_at_override ?? null,
   });
 
   return NextResponse.json({
@@ -87,5 +105,6 @@ export async function PATCH(
     changed: true,
     vote_count: intCount,
     delta: intCount - old,
+    override_id: override?.id ?? null,
   });
 }

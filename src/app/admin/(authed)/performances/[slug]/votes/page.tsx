@@ -410,6 +410,28 @@ export default function VoteEntryPage() {
                     save row
                   </button>
                 </div>
+                {/* History disclosure (US §9.4): override audit trail per poem. */}
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "1.5rem",
+                    marginTop: "0.5rem",
+                    flexWrap: "wrap",
+                  }}
+                >
+                  {t.human ? (
+                    <HistoryDisclosure
+                      label="human history"
+                      poemId={t.human.id}
+                    />
+                  ) : null}
+                  {t.machine ? (
+                    <HistoryDisclosure
+                      label="machine history"
+                      poemId={t.machine.id}
+                    />
+                  ) : null}
+                </div>
               </div>
             );
           })}
@@ -444,6 +466,117 @@ export default function VoteEntryPage() {
         />
       ) : null}
       <Toaster toasts={toasts} dismiss={dismiss} />
+    </div>
+  );
+}
+
+type Override = {
+  id: string;
+  online_count_at_override: number;
+  manual_delta: number;
+  new_total: number;
+  reason: string | null;
+  by: string | null;
+  active: boolean;
+  created_at: string;
+};
+
+function HistoryDisclosure({
+  label,
+  poemId,
+}: {
+  label: string;
+  poemId: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [rows, setRows] = useState<Override[] | null>(null);
+
+  async function toggle() {
+    if (!open && rows === null) {
+      setLoading(true);
+      try {
+        const r = await fetch(`/api/admin/poems/${poemId}/overrides`);
+        const j = await r.json();
+        setRows(j.overrides || []);
+      } catch {
+        setRows([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+    setOpen((v) => !v);
+  }
+
+  return (
+    <div style={{ flex: "1 1 240px" }}>
+      <button
+        onClick={toggle}
+        style={{
+          background: "transparent",
+          border: "none",
+          padding: 0,
+          fontFamily: FONT_MONO,
+          fontSize: "0.75rem",
+          color: "var(--text-tertiary)",
+          cursor: "pointer",
+        }}
+      >
+        {open ? "- " : "+ "}
+        {label}
+        {rows ? ` (${rows.length})` : ""}
+      </button>
+      {open ? (
+        <div
+          style={{
+            marginTop: "0.5rem",
+            padding: "0.5rem 0.75rem",
+            border: "1px solid var(--border-light)",
+            fontFamily: FONT_MONO,
+            fontSize: "0.75rem",
+          }}
+        >
+          {loading ? (
+            <span style={{ color: "var(--text-secondary)" }}>loading...</span>
+          ) : rows === null || rows.length === 0 ? (
+            <span style={{ color: "var(--text-secondary)" }}>no overrides</span>
+          ) : (
+            <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+              {rows.map((r) => (
+                <li
+                  key={r.id}
+                  style={{
+                    paddingTop: "0.4rem",
+                    paddingBottom: "0.4rem",
+                    borderTop: "1px solid var(--border-light)",
+                    opacity: r.active ? 1 : 0.5,
+                  }}
+                >
+                  <div>
+                    {new Date(r.created_at)
+                      .toISOString()
+                      .slice(0, 16)
+                      .replace("T", " ")}{" "}
+                    · {r.online_count_at_override} online + {r.manual_delta}{" "}
+                    manual = {r.new_total}
+                    {r.active ? " · active" : ""}
+                  </div>
+                  {r.reason ? (
+                    <div style={{ color: "var(--text-secondary)" }}>
+                      reason: {r.reason}
+                    </div>
+                  ) : null}
+                  {r.by ? (
+                    <div style={{ color: "var(--text-tertiary)" }}>
+                      by {r.by}
+                    </div>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      ) : null}
     </div>
   );
 }

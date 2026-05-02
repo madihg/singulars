@@ -513,6 +513,30 @@ function parseJudgeJson(raw: string): {
   }
 }
 
+/**
+ * OpenAI fallback chain (per user decision 2026-05-02):
+ * If gpt-5-5 returns "model not found", retry with the next entry. The first
+ * success wins for the duration of this run. Only applies to provider=openai.
+ */
+const OPENAI_FALLBACK_CHAIN = ["gpt-5-5", "gpt-5", "gpt-4.1", "gpt-4o"];
+
+function isModelNotFound(status: number, body: string): boolean {
+  if (status !== 404) return false;
+  const lower = body.toLowerCase();
+  return (
+    lower.includes("model_not_found") ||
+    lower.includes("does not exist") ||
+    lower.includes("does not have access") ||
+    lower.includes("not found")
+  );
+}
+
+function openAIFallbackChain(model: string): string[] {
+  const idx = OPENAI_FALLBACK_CHAIN.indexOf(model);
+  if (idx === -1) return [model, ...OPENAI_FALLBACK_CHAIN];
+  return OPENAI_FALLBACK_CHAIN.slice(idx);
+}
+
 async function openAICompatibleGenerate(
   provider: string,
   model: string,
@@ -535,26 +559,47 @@ async function openAICompatibleGenerate(
       : provider === "openrouter"
         ? "https://openrouter.ai/api/v1"
         : "https://api.together.xyz/v1";
-  const res = await fetch(`${baseUrl}/chat/completions`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${key}`,
-    },
-    body: JSON.stringify({
-      model,
-      messages: [
-        { role: "system", content: GENERATION_PROMPT_SYSTEM },
-        { role: "user", content: theme },
-      ],
-      max_tokens: 600,
-      temperature: 0.85,
-    }),
-  });
-  if (!res.ok)
-    throw new Error(`generation http ${res.status}: ${await res.text()}`);
-  const j = await res.json();
-  return j.choices?.[0]?.message?.content || "";
+
+  const candidates =
+    provider === "openai" ? openAIFallbackChain(model) : [model];
+  let lastErr = "";
+  for (const m of candidates) {
+    const res = await fetch(`${baseUrl}/chat/completions`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${key}`,
+      },
+      body: JSON.stringify({
+        model: m,
+        messages: [
+          { role: "system", content: GENERATION_PROMPT_SYSTEM },
+          { role: "user", content: theme },
+        ],
+        max_tokens: 600,
+        temperature: 0.85,
+      }),
+    });
+    if (res.ok) {
+      const j = await res.json();
+      if (provider === "openai" && m !== model) {
+        process.stderr.write(
+          `[fallback] candidate ${model} not available, used ${m}\n`,
+        );
+      }
+      return j.choices?.[0]?.message?.content || "";
+    }
+    const body = await res.text();
+    lastErr = `generation http ${res.status}: ${body}`;
+    if (provider === "openai" && isModelNotFound(res.status, body)) {
+      // try next in chain
+      continue;
+    }
+    throw new Error(lastErr);
+  }
+  throw new Error(
+    `no openai model id matched - tried ${candidates.join(", ")} (last: ${lastErr})`,
+  );
 }
 
 async function anthropicGenerate(
@@ -612,22 +657,41 @@ async function runJudgeLLM(judge: string, prompt: string): Promise<string> {
         : provider === "openrouter"
           ? "https://openrouter.ai/api/v1"
           : "https://api.together.xyz/v1";
-    const res = await fetch(`${baseUrl}/chat/completions`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${key}`,
-      },
-      body: JSON.stringify({
-        model,
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0,
-        response_format: { type: "json_object" },
-      }),
-    });
-    if (!res.ok) throw new Error(`judge http ${res.status}`);
-    const j = await res.json();
-    return j.choices?.[0]?.message?.content || "";
+
+    const candidates =
+      provider === "openai" ? openAIFallbackChain(model) : [model];
+    let lastErr = "";
+    for (const m of candidates) {
+      const res = await fetch(`${baseUrl}/chat/completions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${key}`,
+        },
+        body: JSON.stringify({
+          model: m,
+          messages: [{ role: "user", content: prompt }],
+          temperature: 0,
+          response_format: { type: "json_object" },
+        }),
+      });
+      if (res.ok) {
+        const j = await res.json();
+        if (provider === "openai" && m !== model) {
+          process.stderr.write(
+            `[fallback] judge ${model} not available, used ${m}\n`,
+          );
+        }
+        return j.choices?.[0]?.message?.content || "";
+      }
+      const body = await res.text();
+      lastErr = `judge http ${res.status}: ${body}`;
+      if (provider === "openai" && isModelNotFound(res.status, body)) continue;
+      throw new Error(lastErr);
+    }
+    throw new Error(
+      `no openai judge model id matched - tried ${candidates.join(", ")} (last: ${lastErr})`,
+    );
   }
   if (provider === "anthropic") {
     const key = process.env.ANTHROPIC_API_KEY;

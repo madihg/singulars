@@ -179,22 +179,39 @@ export async function POST(
     );
   }
 
-  // Apply.
+  // Apply via apply_vote_override RPC so paper-ballot CSV imports are auditable
+  // and coexist with live online voting (cast_vote stays unchanged).
+  const userHash = userHashFromRequest(req);
   let applied = 0;
-  const diffs: Array<{ poem_id: string; old: number; new: number }> = [];
+  const diffs: Array<{
+    poem_id: string;
+    old: number;
+    new: number;
+    override_id: string | null;
+  }> = [];
   for (const r of validatedRows) {
     for (const author of ["human", "machine"] as const) {
       const ref = poemIndex.get(`${r.theme_slug}::${author}`)!;
       const next = author === "human" ? r.human_votes : r.machine_votes;
       if (ref.vote_count !== next) {
-        const { error: uErr } = await supabase
-          .from("poems")
-          .update({ vote_count: next })
-          .eq("id", ref.id);
-        if (uErr) {
-          return NextResponse.json({ error: uErr.message }, { status: 500 });
+        const { data: override, error: rpcErr } = await supabase.rpc(
+          "apply_vote_override",
+          {
+            p_poem_id: ref.id,
+            p_new_total: next,
+            p_reason: `csv-import row ${r.row}`,
+            p_by: userHash,
+          },
+        );
+        if (rpcErr) {
+          return NextResponse.json({ error: rpcErr.message }, { status: 500 });
         }
-        diffs.push({ poem_id: ref.id, old: ref.vote_count, new: next });
+        diffs.push({
+          poem_id: ref.id,
+          old: ref.vote_count,
+          new: next,
+          override_id: (override as { id?: string } | null)?.id ?? null,
+        });
         applied += 1;
       }
     }

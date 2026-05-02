@@ -409,22 +409,28 @@ export default async function SingularsPage() {
           })}
         </div>
 
-        {/* Responsive grid style */}
-        <style>{`
-          @media (max-width: 900px) {
-            main > section > div[style*="grid-template-columns"] {
-              grid-template-columns: repeat(2, 1fr) !important;
-            }
-          }
-          @media (max-width: 600px) {
-            main > section > div[style*="grid-template-columns"] {
-              grid-template-columns: 1fr !important;
-            }
-            main > h1 {
-              font-size: 4.5rem !important;
-            }
-          }
-        `}</style>
+        {/* Responsive grid style. dangerouslySetInnerHTML bypasses the React
+            hydration text-comparison so the > selectors don't trigger a mismatch
+            (server escapes them as &gt; while the client renders raw). */}
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
+              @media (max-width: 900px) {
+                main > section > div[style*="grid-template-columns"] {
+                  grid-template-columns: repeat(2, 1fr) !important;
+                }
+              }
+              @media (max-width: 600px) {
+                main > section > div[style*="grid-template-columns"] {
+                  grid-template-columns: 1fr !important;
+                }
+                main > h1 {
+                  font-size: 4.5rem !important;
+                }
+              }
+            `,
+          }}
+        />
 
         {/* Optional evolution thumbnail (US-118). Renders nothing unless
            NEXT_PUBLIC_SHOW_EVOLUTION_ON_LANDING=true. */}

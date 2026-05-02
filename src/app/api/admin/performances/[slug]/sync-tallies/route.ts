@@ -1,12 +1,11 @@
 /**
- * POST /api/admin/performances/[slug]/sync-tallies (US-113, US-103)
+ * POST /api/admin/performances/[slug]/sync-tallies (US-113, US-103, §9.4 resolution)
  *
- * Recomputes singulars.poems.vote_count from the singulars.votes table for
- * every poem in this performance. Returns the diff:
- *   { ok: true, updated: <n poems whose vote_count changed>, total: <n poems checked> }
+ * Reconciles poems.vote_count = COUNT(votes_for_poem) + latest_active_override.manual_delta
+ * for every poem in this performance. This RECONCILES rather than wipes - manual paper-ballot
+ * overrides are preserved.
  *
- * vote_count is a denormalised cache; sync reconciles it after manual
- * vote-row edits or import jobs.
+ * Returns: { ok, updated: <n poems whose vote_count changed>, total: <n poems checked> }
  */
 
 import { NextResponse } from "next/server";
@@ -29,7 +28,6 @@ export async function POST(
     );
   }
 
-  // Find the performance.
   const { data: perf, error: pErr } = await supabase
     .from("performances")
     .select("id, slug, name")
@@ -43,7 +41,6 @@ export async function POST(
     );
   }
 
-  // Pull all poems for this performance with their cached vote_count.
   const { data: poems, error: poemErr } = await supabase
     .from("poems")
     .select("id, vote_count")
@@ -51,14 +48,13 @@ export async function POST(
   if (poemErr) {
     return NextResponse.json({ error: poemErr.message }, { status: 500 });
   }
-
   if (!poems || poems.length === 0) {
     return NextResponse.json({ ok: true, updated: 0, total: 0 });
   }
 
   const poemIds = poems.map((p) => p.id as string);
 
-  // Pull the actual vote counts grouped by poem_id.
+  // Live online vote counts.
   const { data: votes, error: vErr } = await supabase
     .from("votes")
     .select("poem_id")
@@ -66,28 +62,56 @@ export async function POST(
   if (vErr) {
     return NextResponse.json({ error: vErr.message }, { status: 500 });
   }
-  const actualByPoem: Record<string, number> = {};
+  const onlineByPoem: Record<string, number> = {};
   for (const v of votes ?? []) {
     const pid = v.poem_id as string;
-    actualByPoem[pid] = (actualByPoem[pid] || 0) + 1;
+    onlineByPoem[pid] = (onlineByPoem[pid] || 0) + 1;
   }
 
-  // Find rows whose cache diverges and update only those.
+  // Latest active override delta per poem.
+  const { data: overrides, error: oErr } = await supabase
+    .from("poem_vote_overrides")
+    .select("poem_id, manual_delta, created_at")
+    .eq("active", true)
+    .in("poem_id", poemIds)
+    .order("created_at", { ascending: false });
+  if (oErr) {
+    return NextResponse.json({ error: oErr.message }, { status: 500 });
+  }
+  const overrideDeltaByPoem: Record<string, number> = {};
+  for (const o of overrides ?? []) {
+    const pid = o.poem_id as string;
+    if (overrideDeltaByPoem[pid] === undefined) {
+      // first occurrence is newest by ORDER BY clause
+      overrideDeltaByPoem[pid] = (o.manual_delta as number) || 0;
+    }
+  }
+
+  // Reconcile: vote_count = online + manual_delta. Update only rows that diverge.
   let updated = 0;
-  const diffs: Array<{ poem_id: string; old: number; new: number }> = [];
+  const diffs: Array<{
+    poem_id: string;
+    old: number;
+    new: number;
+    online: number;
+    delta: number;
+  }> = [];
   for (const p of poems) {
+    const pid = p.id as string;
     const old = (p.vote_count as number) || 0;
-    const next = actualByPoem[p.id as string] || 0;
+    const online = onlineByPoem[pid] || 0;
+    const delta = overrideDeltaByPoem[pid] || 0;
+    const next = online + delta;
     if (old !== next) {
       const { error: uErr } = await supabase
         .from("poems")
         .update({ vote_count: next })
-        .eq("id", p.id);
+        .eq("id", pid);
       if (uErr) {
         return NextResponse.json({ error: uErr.message }, { status: 500 });
       }
       updated += 1;
-      diffs.push({ poem_id: p.id as string, old, new: next });
+      diffs.push({ poem_id: pid, old, new: next, online, delta });
     }
   }
 

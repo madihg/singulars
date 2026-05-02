@@ -64,6 +64,7 @@ export default function EvolutionView() {
   const [data, setData] = useState<Results | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [hoveredModel, setHoveredModel] = useState<string | null>(null);
+  const [hidden, setHidden] = useState<Set<string>>(new Set());
   const [drilldown, setDrilldown] = useState<{
     model: Model;
     perf: Performance;
@@ -76,6 +77,15 @@ export default function EvolutionView() {
       .then((r) => r.json())
       .then(setData)
       .catch(() => setError("network error"));
+  }, []);
+
+  const toggleHidden = useCallback((slug: string) => {
+    setHidden((s) => {
+      const next = new Set(s);
+      if (next.has(slug)) next.delete(slug);
+      else next.add(slug);
+      return next;
+    });
   }, []);
 
   const openCell = useCallback(async (model: Model, perf: Performance) => {
@@ -177,54 +187,132 @@ export default function EvolutionView() {
               role="figure"
               aria-label="model win rate per performance"
             >
-              <ResponsiveContainer>
-                <LineChart
-                  data={chartData}
-                  margin={{ top: 16, right: 24, bottom: 16, left: 0 }}
+              {hidden.size === data.models.length ? (
+                <div
+                  style={{
+                    height: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontFamily: MONO,
+                    fontSize: "0.85rem",
+                    color: "rgba(0,0,0,0.5)",
+                  }}
                 >
-                  <CartesianGrid stroke="rgba(0,0,0,0.06)" vertical={false} />
-                  <XAxis
-                    dataKey="perf"
-                    stroke="rgba(0,0,0,0.5)"
-                    tick={{ fontFamily: MONO, fontSize: 11 }}
-                  />
-                  <YAxis
-                    domain={[0, 100]}
-                    tickFormatter={(v) => `${v}%`}
-                    stroke="rgba(0,0,0,0.5)"
-                    tick={{ fontFamily: MONO, fontSize: 11 }}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      background: "#fff",
-                      border: "1px solid rgba(0,0,0,0.75)",
-                      borderRadius: 0,
-                      fontFamily: MONO,
-                      fontSize: "0.85rem",
-                    }}
-                    labelStyle={{ fontFamily: STANDARD, fontWeight: 500 }}
-                    formatter={(value, name) => [`${value}%`, name as string]}
-                  />
-                  {data.models.map((m) => (
-                    <Line
-                      key={m.slug}
-                      type="monotone"
-                      dataKey={m.slug}
-                      name={m.name}
-                      stroke={m.color}
-                      strokeWidth={1.5}
-                      dot={{ r: 3, fill: m.color }}
-                      activeDot={{ r: 5 }}
-                      connectNulls
-                      opacity={
-                        hoveredModel && hoveredModel !== m.slug ? 0.4 : 1
-                      }
-                      onMouseEnter={() => setHoveredModel(m.slug)}
-                      onMouseLeave={() => setHoveredModel(null)}
+                  all models hidden - tap a chip to show
+                </div>
+              ) : (
+                <ResponsiveContainer>
+                  <LineChart
+                    data={chartData}
+                    margin={{ top: 16, right: 24, bottom: 16, left: 0 }}
+                  >
+                    <CartesianGrid stroke="rgba(0,0,0,0.06)" vertical={false} />
+                    <XAxis
+                      dataKey="perf"
+                      stroke="rgba(0,0,0,0.5)"
+                      tick={{ fontFamily: MONO, fontSize: 11 }}
                     />
-                  ))}
-                </LineChart>
-              </ResponsiveContainer>
+                    <YAxis
+                      domain={[0, 100]}
+                      tickFormatter={(v) => `${v}%`}
+                      stroke="rgba(0,0,0,0.5)"
+                      tick={{ fontFamily: MONO, fontSize: 11 }}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        background: "#fff",
+                        border: "1px solid rgba(0,0,0,0.75)",
+                        borderRadius: 0,
+                        fontFamily: MONO,
+                        fontSize: "0.85rem",
+                      }}
+                      labelStyle={{ fontFamily: STANDARD, fontWeight: 500 }}
+                      formatter={(value, name) => [`${value}%`, name as string]}
+                    />
+                    {data.models.map((m) => (
+                      <Line
+                        key={m.slug}
+                        type="monotone"
+                        dataKey={m.slug}
+                        name={m.name}
+                        stroke={m.color}
+                        strokeWidth={1.5}
+                        dot={{ r: 3, fill: m.color }}
+                        activeDot={{ r: 5 }}
+                        connectNulls
+                        hide={hidden.has(m.slug)}
+                        opacity={
+                          hoveredModel && hoveredModel !== m.slug ? 0.4 : 1
+                        }
+                        onMouseEnter={() => setHoveredModel(m.slug)}
+                        onMouseLeave={() => setHoveredModel(null)}
+                      />
+                    ))}
+                  </LineChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+
+            {/* Clickable legend (US §9.3): toggle visibility per model. */}
+            <div
+              role="group"
+              aria-label="toggle model lines"
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: "0.5rem",
+                marginTop: "0.75rem",
+              }}
+            >
+              {data.models.map((m) => {
+                const isHidden = hidden.has(m.slug);
+                return (
+                  <button
+                    key={m.slug}
+                    type="button"
+                    onClick={() => toggleHidden(m.slug)}
+                    onMouseEnter={() => !isHidden && setHoveredModel(m.slug)}
+                    onMouseLeave={() => setHoveredModel(null)}
+                    aria-pressed={!isHidden}
+                    aria-label={`toggle ${m.name}`}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "0.5rem",
+                      padding: "0.4rem 0.6rem",
+                      border: "1px solid rgba(0,0,0,0.12)",
+                      borderRadius: 0,
+                      background: "#fff",
+                      cursor: "pointer",
+                      opacity: isHidden ? 0.4 : 1,
+                      transition: "opacity 0.2s ease",
+                    }}
+                  >
+                    <span
+                      aria-hidden
+                      style={{
+                        width: 10,
+                        height: 10,
+                        background: isHidden ? "transparent" : m.color,
+                        border: isHidden
+                          ? `1px solid ${m.color}`
+                          : "1px solid transparent",
+                        flexShrink: 0,
+                      }}
+                    />
+                    <span
+                      style={{
+                        fontFamily: STANDARD,
+                        fontSize: "0.85rem",
+                        fontWeight: 500,
+                      }}
+                    >
+                      {m.name}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
             {/* Screen-reader narration */}
             <ul
