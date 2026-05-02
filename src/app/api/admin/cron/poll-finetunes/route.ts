@@ -6,6 +6,12 @@
  *
  * Updates the fine_tune_jobs row on status change. Auto-fills the candidate
  * model's api_endpoint on succeeded transition.
+ *
+ * NOTE: The Vercel cron entry was removed in commit 5f4af0 because every-10-min
+ * crons require the Pro plan (Hobby allows daily only). Webhooks are the primary
+ * path; this route is now a manual fallback. Hit it via curl + the cron header
+ * if a webhook is missed:
+ *   curl -H "x-vercel-cron: 1" https://singulars.oulipo.xyz/api/admin/cron/poll-finetunes
  */
 
 import { NextResponse } from "next/server";
