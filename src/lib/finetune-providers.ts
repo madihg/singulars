@@ -76,26 +76,29 @@ const openaiClient: ProviderClient = {
   async startJob({ fileId, baseModel, format, hyperparameters }) {
     const key = process.env.OPENAI_API_KEY;
     if (!key) throw new Error("missing OPENAI_API_KEY");
-    const url =
-      format === "dpo"
-        ? "https://api.openai.com/v1/fine_tuning/jobs"
-        : "https://api.openai.com/v1/fine_tuning/jobs";
+    // OpenAI DPO requires hyperparameters NESTED under method.dpo, not at the
+    // top level. SFT (legacy) uses top-level hyperparameters. Sending both
+    // results in 'top level hyperparameters are not allowed with method dpo'.
     const body: Record<string, unknown> = {
       model: baseModel,
       training_file: fileId,
-      hyperparameters,
     };
     if (format === "dpo") {
       body.method = { type: "dpo", dpo: { hyperparameters } };
+    } else {
+      body.hyperparameters = hyperparameters;
     }
-    const res = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${key}`,
+    const res = await fetch(
+      "https://api.openai.com/v1/fine_tuning/jobs",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${key}`,
+        },
+        body: JSON.stringify(body),
       },
-      body: JSON.stringify(body),
-    });
+    );
     if (!res.ok) {
       throw new Error(
         `openai job start failed: ${res.status} ${await res.text()}`,
@@ -151,21 +154,48 @@ const togetherClient: ProviderClient = {
   async uploadFile(jsonl, filename) {
     const key = process.env.TOGETHER_API_KEY;
     if (!key) throw new Error("missing TOGETHER_API_KEY");
+    // Together uses a two-step upload:
+    //   1. POST /v1/files with multipart metadata (purpose, file_name, optional
+    //      empty file blob) -> 302 redirect with Location header set to a
+    //      presigned R2 URL, plus x-together-file-id with the file id
+    //   2. PUT the binary content to that R2 URL (no auth header - the URL is
+    //      already signed)
     const form = new FormData();
     form.append("purpose", "fine-tune");
+    form.append("file_name", filename);
     form.append(
       "file",
       new Blob([jsonl], { type: "application/jsonl" }),
       filename,
     );
-    const res = await fetch("https://api.together.xyz/v1/files", {
+    const initRes = await fetch("https://api.together.xyz/v1/files", {
       method: "POST",
       headers: { Authorization: `Bearer ${key}` },
       body: form,
+      redirect: "manual",
     });
-    if (!res.ok) throw new Error(`together upload: ${await res.text()}`);
-    const j = await res.json();
-    return { fileId: j.id };
+    if (initRes.status !== 302) {
+      throw new Error(
+        `together init upload: ${initRes.status} ${await initRes.text()}`,
+      );
+    }
+    const uploadUrl = initRes.headers.get("location");
+    const fileId = initRes.headers.get("x-together-file-id");
+    if (!uploadUrl || !fileId) {
+      throw new Error(
+        "together init upload missing Location or x-together-file-id header",
+      );
+    }
+    const putRes = await fetch(uploadUrl, {
+      method: "PUT",
+      body: jsonl,
+    });
+    if (!putRes.ok) {
+      throw new Error(
+        `together r2 PUT: ${putRes.status} ${await putRes.text()}`,
+      );
+    }
+    return { fileId };
   },
 
   async startJob({ fileId, baseModel, format, hyperparameters }) {
