@@ -98,8 +98,11 @@ Poem B (id="B"):
 Poem C (id="C"):
 {{poem_c}}`;
 
-const GENERATION_PROMPT_SYSTEM =
-  "You are a poet. Write a short poem on the given theme. No preamble. Free verse. 8-24 lines. Avoid 'tapestry', 'whispers', em-dash overuse.";
+// The active system prompt used for candidate generation. Single source of
+// truth in src/lib/system-prompts.ts so the runner, the admin UI, and the
+// fine-tune corpus all reference the same string.
+import { ACTIVE_SYSTEM_PROMPT } from "../src/lib/system-prompts";
+const GENERATION_PROMPT_SYSTEM = ACTIVE_SYSTEM_PROMPT.text;
 
 // ---------- main ----------
 
@@ -662,6 +665,10 @@ async function runJudgeLLM(judge: string, prompt: string): Promise<string> {
       provider === "openai" ? openAIFallbackChain(model) : [model];
     let lastErr = "";
     for (const m of candidates) {
+      // gpt-5 family rejects custom temperature - only default (1) allowed.
+      // Omit the field entirely for those; keep temperature: 0 for older models
+      // where determinism is meaningful.
+      const usesDefaultTempOnly = m.startsWith("gpt-5");
       const res = await fetch(`${baseUrl}/chat/completions`, {
         method: "POST",
         headers: {
@@ -671,7 +678,7 @@ async function runJudgeLLM(judge: string, prompt: string): Promise<string> {
         body: JSON.stringify({
           model: m,
           messages: [{ role: "user", content: prompt }],
-          temperature: 0,
+          ...(usesDefaultTempOnly ? {} : { temperature: 0 }),
           response_format: { type: "json_object" },
         }),
       });

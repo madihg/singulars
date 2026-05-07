@@ -26,6 +26,7 @@ const TABS: Tab[] = [
   { href: "/admin/publish", label: "publish" },
   { href: "/admin/training-data", label: "training data" },
   { href: "/admin/fine-tunes", label: "fine-tunes" },
+  { href: "/admin/system-prompts", label: "system prompts" },
 ];
 
 export function AdminNav() {

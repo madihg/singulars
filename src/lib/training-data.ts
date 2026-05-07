@@ -8,6 +8,7 @@
  */
 
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { ACTIVE_SYSTEM_PROMPT } from "./system-prompts";
 
 export type TrainingFormat = "sft" | "dpo";
 
@@ -20,8 +21,13 @@ export type TupleRow = {
   loser_type: string;
 };
 
-export const DEFAULT_SYSTEM_PROMPT =
-  "You are a poet. Write a short poem on the given theme. No preamble. Free verse. 8-24 lines. Avoid 'tapestry', 'whispers', em-dash overuse.";
+/**
+ * The default system prompt used by training-data export + fine-tune kickoff.
+ * Source of truth lives in src/lib/system-prompts.ts so /admin/system-prompts,
+ * /admin/training-data, /admin/fine-tunes/new, and scripts/run-eval.ts all
+ * point at the same string.
+ */
+export const DEFAULT_SYSTEM_PROMPT = ACTIVE_SYSTEM_PROMPT.text;
 
 export type ExportOptions = {
   format: TrainingFormat;
