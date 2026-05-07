@@ -201,18 +201,34 @@ const togetherClient: ProviderClient = {
   async startJob({ fileId, baseModel, format, hyperparameters }) {
     const key = process.env.TOGETHER_API_KEY;
     if (!key) throw new Error("missing TOGETHER_API_KEY");
+    // Together's fine-tune API expects FLATTENED hyperparameters at top level,
+    // not nested under a "hyperparameters" key (unlike OpenAI). Sending nested
+    // produces "Internal error: finetune" with no helpful message.
+    const hp = hyperparameters as Record<string, unknown>;
+    const body: Record<string, unknown> = {
+      training_file: fileId,
+      model: baseModel,
+      training_method: format === "dpo" ? "dpo" : "sft",
+      n_epochs: hp.n_epochs ?? 3,
+      learning_rate:
+        hp.learning_rate ??
+        (typeof hp.learning_rate_multiplier === "number"
+          ? hp.learning_rate_multiplier * 1e-5
+          : 1e-5),
+    };
+    if (format === "dpo" && typeof hp.dpo_beta === "number") {
+      body.dpo_beta = hp.dpo_beta;
+    }
+    if (typeof hp.batch_size !== "undefined") {
+      body.batch_size = hp.batch_size;
+    }
     const res = await fetch("https://api.together.xyz/v1/fine-tunes", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${key}`,
       },
-      body: JSON.stringify({
-        training_file: fileId,
-        model: baseModel,
-        training_method: format === "dpo" ? "dpo" : "sft",
-        hyperparameters,
-      }),
+      body: JSON.stringify(body),
     });
     if (!res.ok) throw new Error(`together job start: ${await res.text()}`);
     const j = await res.json();
