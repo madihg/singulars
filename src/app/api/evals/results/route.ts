@@ -6,17 +6,19 @@
  *
  * Returns: { performances, models[].series } shape per research/05 §3.1.
  *
- * Cache: server-side via unstable_cache only (tagged "eval-results", 300s
- * revalidate). The HTTP response is no-store so the Vercel CDN doesn't
- * shadow-cache empty/stale data after a toggle/publish flip - revalidateTag()
- * already invalidates unstable_cache, but Vercel's edge HTTP cache is keyed
- * by URL+headers and ignores tag invalidation, so dual-layering caused stale
- * "no models" responses to persist for 5 minutes after publishing runs.
+ * No caching - the loader is three simple Postgres queries (a few ms each).
+ * unstable_cache + s-maxage=300 dual-caching previously caused stale empty
+ * responses to persist for 5 minutes after toggling models public, because
+ * revalidateTag invalidates unstable_cache but not Vercel's edge HTTP cache,
+ * and the persisted Data Cache also outlived deploys. Always-fresh is fine
+ * here.
  */
 
 import { NextResponse } from "next/server";
 import { getSupabase, getServiceClient } from "@/lib/supabase";
-import { unstable_cache } from "next/cache";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 type ChartData = {
   performances: Array<{
@@ -90,19 +92,13 @@ async function loadResults(): Promise<ChartData> {
   };
 }
 
-const cachedLoad = unstable_cache(loadResults, ["eval-results"], {
-  tags: ["eval-results"],
-  revalidate: 300,
-});
-
 export async function GET() {
-  const data = await cachedLoad();
+  const data = await loadResults();
   return NextResponse.json(data, {
     headers: {
-      // No CDN cache. unstable_cache (server memory, tag-invalidated) is the
-      // only cache layer - admin toggles call revalidateTag("eval-results")
-      // which busts that, and the page lights up on the next request.
-      "Cache-Control": "no-store",
+      "Cache-Control": "no-store, no-cache, must-revalidate",
+      "CDN-Cache-Control": "no-store",
+      "Vercel-CDN-Cache-Control": "no-store",
     },
   });
 }
