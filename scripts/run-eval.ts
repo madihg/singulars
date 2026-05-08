@@ -78,19 +78,64 @@ function getSupabase() {
 
 // ---------- judge prompt + council ----------
 
+import {
+  ACTIVE_CLASSIFIERS,
+  ACTIVE_CLASSIFIERS_VERSION,
+  CLASSIFIER_MAX_RAW_SCORE,
+  classifiersBlockForJudge,
+} from "../src/lib/audience-classifiers";
+
 /**
- * Audience-anchored judge prompt (2026-05-08).
+ * Classifier-based judge prompt (Phase 3, 2026-05-08).
  *
- * Methodology change: judges are no longer asked "which is the best poem?"
- * They are told explicitly that A is the audience-chosen winner, B is the
- * audience-rejected loser, and C is the AI candidate. Their job is to figure
- * out where C falls relative to A and B by the audience's apparent criteria.
- * The audience's taste is the source of truth - not the judge's.
+ * Replaces the rank-1/2/3 prompt. Judges no longer "rank" the candidate
+ * against A and B subjectively; they score the candidate on each
+ * audience-derived classifier (0-5). The classifiers are extracted from 37
+ * historical (winner, loser) pairs and codify the room's taste.
  *
- * This pairs with the council below: 3 judges (gpt-5 + Claude Opus + DeepSeek
- * R1) each vote independently; mode of their candidate-ranks is the verdict.
- * Position-swap A/B is dropped because explicit labels ("A = audience winner")
- * make a blind swap incoherent - inter-rater agreement is the bias check now.
+ * The audience-pair (A=winner, B=loser) on the same theme is shown for
+ * grounding only - the judge does NOT score A or B, just C against the
+ * classifier rubric (with A and B as the audience's taste signal on this
+ * specific theme).
+ */
+const JUDGE_PROMPT_CLASSIFIER = `You are scoring a candidate poem against an audience-derived rubric.
+
+The rubric was extracted from 37 (winner, loser) pairs from a live human-vs-machine poetry performance series. Each classifier captures a pattern that consistently distinguishes audience-chosen from audience-rejected poems. The audience's taste is the source of truth - NOT yours.
+
+For each classifier, rate the candidate (Poem C) on a 0-5 scale where:
+  0 = strongly absent (matches the loser pole; would lose the room)
+  1-2 = mostly absent
+  3 = neutral / mixed
+  4-5 = strongly present (matches the winner pole; would win the room)
+
+Anchor your scores in the exemplars provided per classifier - those are real winner/loser excerpts from the actual data.
+
+CLASSIFIERS:
+{{classifiers_block}}
+
+For grounding on this theme, here is the audience-decided pair (theme: {{theme}}):
+
+  A - audience-chosen winner:
+  {{poem_a}}
+
+  B - audience-rejected loser:
+  {{poem_b}}
+
+(Use A and B as evidence of the audience's apparent taste on this theme. Do NOT score A or B - only score the candidate.)
+
+CANDIDATE (Poem C):
+{{poem_c}}
+
+Output STRICT JSON, no other text:
+{
+  "scores": { "C1": <0-5>, "C2": <0-5>, "C3": <0-5>, "C4": <0-5>, "C5": <0-5>, "C6": <0-5>, "C7": <0-5> },
+  "rationale": "<one short sentence per classifier in the form 'C1: <reason>; C2: <reason>; ...'>",
+  "confidence": "low" | "medium" | "high"
+}`;
+
+/**
+ * The audience-anchored ranking prompt is kept for legacy/comparison runs but
+ * is no longer the default - the classifier prompt is the production path.
  */
 const JUDGE_PROMPT = `You are a judge evaluating a candidate poem against the taste of a live audience.
 
@@ -122,8 +167,11 @@ Poem C (candidate, id="C"):
 
 /**
  * The council. Three judges with three lineages (proprietary frontier OpenAI,
- * proprietary frontier Anthropic, open-source reasoning DeepSeek). Each gets
- * the same prompt; the mode of their candidate-ranks is the verdict.
+ * proprietary frontier Anthropic, open-source reasoning via OpenRouter). Each
+ * gets the same prompt; the mode of their candidate-ranks is the verdict.
+ *
+ * Requires OPENROUTER_API_KEY in env. Together was an earlier attempt at the
+ * open-source slot but credits were exhausted from prior fine-tune work.
  *
  * The eval_runs.judge_model field is now informational only - actual judges
  * used per score are recorded in eval_scores.raw_judge_payload.judges[].
@@ -344,23 +392,26 @@ async function runOne(
       return;
     }
 
-    // Council of 3 judges - one call per judge, no A/B swap (the explicit
-    // labels "A=audience winner, B=audience loser" make a blind position swap
-    // incoherent; inter-rater agreement is the bias check now).
+    // Council of 3 classifier-based judges. Each judge scores the candidate
+    // on each of the 7 audience-derived classifiers (0-5). Per-classifier
+    // council mean is the verdict; the headline `score` is the
+    // weight-normalized total (∈ [0, 1], higher = better).
     const judgeResults: Array<{
       judge_id: string;
       ok: boolean;
-      candidate_rank: number;
+      scores: Record<string, number>;
       rationale: string;
+      confidence: string;
       cost_estimate: number;
     }> = [];
     for (const judgeId of COUNCIL) {
-      const v = await callJudge(judgeId, t, candidateText, "ab");
+      const v = await callJudgeClassifier(judgeId, t, candidateText);
       judgeResults.push({
         judge_id: judgeId,
         ok: v.ok,
-        candidate_rank: v.candidateRank,
+        scores: v.scores,
         rationale: v.rationale,
+        confidence: v.confidence,
         cost_estimate: v.costEstimate,
       });
     }
@@ -373,41 +424,56 @@ async function runOne(
       continue;
     }
 
-    // Aggregate: mode of the OK judges' ranks; ties broken by lowest rank
-    // (best for the candidate, conservative). Confidence reflects unanimity.
-    const ranks = okJudges.map((j) => j.candidate_rank);
-    const counts: Record<number, number> = {};
-    for (const r of ranks) counts[r] = (counts[r] || 0) + 1;
-    let bestRank = ranks[0];
-    let bestCount = 0;
-    for (const key of Object.keys(counts)) {
-      const r = Number(key);
-      const c = counts[r];
-      if (c > bestCount || (c === bestCount && r < bestRank)) {
-        bestRank = r;
-        bestCount = c;
+    // Per-classifier council mean across OK judges
+    const councilScores: Record<string, number> = {};
+    for (const c of ACTIVE_CLASSIFIERS.classifiers) {
+      const vals: number[] = [];
+      for (const j of okJudges) {
+        if (typeof j.scores[c.id] === "number") vals.push(j.scores[c.id]);
+      }
+      if (vals.length > 0) {
+        councilScores[c.id] = vals.reduce((s, x) => s + x, 0) / vals.length;
       }
     }
-    const councilRank = bestRank;
-    const allAgree = bestCount === okJudges.length;
-    const majorityAgree = bestCount >= Math.ceil(okJudges.length / 2 + 0.01);
-    const candidateWon = councilRank === 1;
-    const rank = councilRank;
-    // Graduated score from rank: 1 → 1.0, 2 → 0.5, 3 → 0.0
-    const score = Math.max(0, Math.min(1, (3 - rank) / 2));
-    const confidence: "high" | "medium" | "low" = allAgree
-      ? "high"
-      : majorityAgree
-        ? "medium"
-        : "low";
-    // position_swap_agreement is now reused for "all council judges agree"
-    // (the role is the same: a high-reliability flag for this score row).
-    const positionSwapAgreement = allAgree;
-    // First OK judge's rationale gets surfaced as the headline; full payload
-    // preserves all 3 for drill-down.
+    // Normalized score ∈ [0, 1] using the artifact's weighting
+    let raw = 0;
+    let max = 0;
+    for (const c of ACTIVE_CLASSIFIERS.classifiers) {
+      const s = councilScores[c.id];
+      if (typeof s !== "number") continue;
+      raw += s * c.weight;
+      max += 5 * c.weight;
+    }
+    const score = max > 0 ? raw / max : 0;
+
+    // Inter-rater agreement: stddev across judges per classifier, averaged.
+    // High stddev => judges disagree => low confidence in this row.
+    let avgStddev = 0;
+    let nClassifiersWithMultipleJudges = 0;
+    for (const c of ACTIVE_CLASSIFIERS.classifiers) {
+      const vals: number[] = [];
+      for (const j of okJudges) {
+        if (typeof j.scores[c.id] === "number") vals.push(j.scores[c.id]);
+      }
+      if (vals.length < 2) continue;
+      const mean = vals.reduce((s, x) => s + x, 0) / vals.length;
+      const variance =
+        vals.reduce((s, x) => s + (x - mean) * (x - mean), 0) / vals.length;
+      avgStddev += Math.sqrt(variance);
+      nClassifiersWithMultipleJudges += 1;
+    }
+    if (nClassifiersWithMultipleJudges > 0) avgStddev /= nClassifiersWithMultipleJudges;
+    const confidence: "high" | "medium" | "low" =
+      avgStddev < 0.75 ? "high" : avgStddev < 1.5 ? "medium" : "low";
+
+    // Map score → rank for backward compatibility with existing chart code
+    // (mean_rank → score conversion). 1.0 → rank 1, 0.5 → rank 2, 0.0 → rank 3.
+    const rankApprox = Math.round(3 - 2 * score);
+    const candidateWon = score >= 0.7;
+
+    // First OK judge's rationale gets surfaced as the headline
     const headlineRationale = okJudges[0].rationale;
 
-    // Idempotent upsert
     await supabase.rpc("upsert_eval_score", {
       p_run_id: run.id,
       p_theme_slug: t.theme_slug,
@@ -415,18 +481,19 @@ async function runOne(
       p_rationale: headlineRationale,
       p_score: score,
     });
-    // Update the row with full details (the rpc only sets a subset)
     await supabase
       .from("eval_scores")
       .update({
         candidate_text: candidateText,
-        candidate_rank: rank,
+        candidate_rank: rankApprox,
         confidence,
-        position_swap_agreement: positionSwapAgreement,
+        position_swap_agreement: avgStddev < 0.75,
         raw_judge_payload: {
-          method: "council",
-          council_rank: councilRank,
-          agreement: { all_agree: allAgree, majority_agree: majorityAgree },
+          method: "council-classifier",
+          classifiers_version: ACTIVE_CLASSIFIERS_VERSION,
+          council_scores: councilScores,
+          normalized_score: score,
+          inter_rater_avg_stddev: avgStddev,
           judges: judgeResults,
         },
       })
@@ -438,7 +505,7 @@ async function runOne(
     totalCost += judgeResults.reduce((s, j) => s + j.cost_estimate, 0);
 
     process.stdout.write(
-      `[${completed}/${tuples.length}] ${model.name} -> ${t.theme_slug}: ${candidateWon ? "won" : "lost"} (rank ${rank})\n`,
+      `[${completed}/${tuples.length}] ${model.name} -> ${t.theme_slug}: score ${(score * 100).toFixed(0)}% (${confidence}, σ=${avgStddev.toFixed(2)})\n`,
     );
 
     await supabase
@@ -570,7 +637,148 @@ async function generatePoem(
   if (provider === "anthropic") {
     return anthropicGenerate(model, theme, useSystemPrompt);
   }
+  if (provider === "anthropic-incontext") {
+    // Rich prompt + 5 curated (winner, loser) pairs as in-context exposure.
+    // "DPO without fine-tuning" - tests whether explicit examples in the
+    // prompt help vs just the abstract rich pantheon prompt.
+    return anthropicInContextGenerate(model, theme);
+  }
   throw new Error(`unsupported provider: ${provider}`);
+}
+
+// ---------- in-context DPO exposure (curated pairs cache) ----------
+
+let _curatedPairsCache: string | null = null;
+
+async function getCuratedInContextBlock(
+  supabase: ReturnType<typeof getSupabase>,
+): Promise<string> {
+  if (_curatedPairsCache !== null) return _curatedPairsCache;
+  // Top 5 highest-vote-margin (winner, loser) pairs from TRAINING perfs only
+  // (carnation+versus+reinforcement+hard - NOT reverse, which is the held-
+  // out test set).
+  const { data: poems } = await supabase
+    .from("poems")
+    .select(
+      "performance_id, theme, theme_slug, author_type, vote_count, text, performances!inner(slug,status)",
+    );
+  type PoemRow = {
+    performance_id: string;
+    theme: string;
+    theme_slug: string;
+    author_type: string;
+    vote_count: number;
+    text: string;
+    performances:
+      | { slug: string; status: string }
+      | { slug: string; status: string }[];
+  };
+  const list = (poems ?? []) as unknown as PoemRow[];
+  type Group = {
+    perf: string;
+    theme: string;
+    h_text: string;
+    h_votes: number;
+    m_text: string;
+    m_votes: number;
+  };
+  const grouped: Record<string, Group> = {};
+  for (const r of list) {
+    const perf = Array.isArray(r.performances)
+      ? r.performances[0]?.slug
+      : r.performances?.slug;
+    // Exclude reverse-exe (held out) so the in-context exposure doesn't leak
+    // the test set into the candidate's view.
+    if (!perf || perf === "reverse-exe") continue;
+    const k = `${perf}|${r.theme_slug}`;
+    if (!grouped[k]) {
+      grouped[k] = {
+        perf,
+        theme: r.theme,
+        h_text: "",
+        h_votes: -1,
+        m_text: "",
+        m_votes: -1,
+      };
+    }
+    if (r.author_type === "human") {
+      grouped[k].h_text = r.text;
+      grouped[k].h_votes = r.vote_count;
+    } else if (r.author_type === "machine") {
+      grouped[k].m_text = r.text;
+      grouped[k].m_votes = r.vote_count;
+    }
+  }
+  const pairs = Object.values(grouped)
+    .filter((g) => g.h_text && g.m_text && g.h_votes !== g.m_votes)
+    .map((g) => {
+      const humanWon = g.h_votes > g.m_votes;
+      return {
+        perf: g.perf,
+        theme: g.theme,
+        margin: Math.abs(g.h_votes - g.m_votes),
+        winner_text: humanWon ? g.h_text : g.m_text,
+        loser_text: humanWon ? g.m_text : g.h_text,
+      };
+    })
+    .sort((a, b) => b.margin - a.margin)
+    .slice(0, 5);
+
+  const block = pairs
+    .map(
+      (p, i) =>
+        `EXAMPLE ${i + 1} (theme: ${p.theme}, perf: ${p.perf}, audience-margin: ${p.margin})
+
+The audience CHOSE this poem:
+${p.winner_text.trim()}
+
+The audience REJECTED this poem:
+${p.loser_text.trim()}`,
+    )
+    .join("\n\n---\n\n");
+
+  _curatedPairsCache = block;
+  return block;
+}
+
+async function anthropicInContextGenerate(
+  model: string,
+  theme: string,
+): Promise<string> {
+  const key = process.env.ANTHROPIC_API_KEY;
+  if (!key) {
+    throw new Error("missing ANTHROPIC_API_KEY");
+  }
+  const supabase = getSupabase();
+  const inContextBlock = await getCuratedInContextBlock(supabase);
+  // Combine the rich pantheon prompt with the in-context exposure
+  const systemPrompt = `${GENERATION_PROMPT_SYSTEM}
+
+Below are five (winner, loser) pairs from past live performances of this exact series. The audience voted on each. Study what made the chosen poems land - the patterns the room consistently rewarded. Apply the same instincts when you write the candidate poem on the new theme.
+
+${inContextBlock}
+
+Now write a poem on the new theme below. Aim for what the audience would have chosen.`;
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": key,
+      "anthropic-version": "2023-06-01",
+    },
+    body: JSON.stringify({
+      model,
+      system: systemPrompt,
+      max_tokens: 600,
+      messages: [{ role: "user", content: theme }],
+    }),
+  });
+  if (!res.ok)
+    throw new Error(
+      `anthropic-incontext http ${res.status}: ${await res.text()}`,
+    );
+  const j = await res.json();
+  return j.content?.[0]?.text || "";
 }
 
 async function callJudge(
@@ -579,7 +787,9 @@ async function callJudge(
   candidateText: string,
   swap: "ab" | "ba",
 ): Promise<Verdict> {
-  // Build A/B/C, with A and B containing winner/loser swapped if needed; C is candidate.
+  // Legacy ranking-based judge call. Kept for backward compatibility but no
+  // longer the default - the classifier-based callJudgeClassifier below is
+  // the production path as of Phase 3.
   const [a, b] =
     swap === "ab"
       ? [t.winner_text, t.loser_text]
@@ -592,14 +802,15 @@ async function callJudge(
   try {
     const raw = await runJudgeLLM(judge, prompt);
     const json = parseJudgeJson(raw);
-    if (!json)
+    if (!json || !Array.isArray((json as { ranking?: unknown }).ranking))
       return { ok: false, candidateRank: 3, rationale: "", costEstimate: 0 };
-    const cIdx = json.ranking.indexOf("C");
+    const ranking = (json as { ranking: string[] }).ranking;
+    const cIdx = ranking.indexOf("C");
     return {
       ok: true,
       candidateRank: cIdx >= 0 ? cIdx + 1 : 3,
-      rationale: json.rationale,
-      costEstimate: 0.005, // crude per-call estimate
+      rationale: (json as { rationale?: string }).rationale || "",
+      costEstimate: 0.005,
     };
   } catch (e) {
     process.stderr.write(`judge call failed: ${(e as Error).message}\n`);
@@ -607,11 +818,75 @@ async function callJudge(
   }
 }
 
-function parseJudgeJson(raw: string): {
-  ranking: string[];
+type ClassifierVerdict = {
+  ok: boolean;
+  scores: Record<string, number>; // per-classifier 0-5
   rationale: string;
-  confidence: string;
-} | null {
+  confidence: "low" | "medium" | "high";
+  costEstimate: number;
+};
+
+async function callJudgeClassifier(
+  judge: string,
+  t: Tuple,
+  candidateText: string,
+): Promise<ClassifierVerdict> {
+  const prompt = JUDGE_PROMPT_CLASSIFIER.replace(
+    "{{classifiers_block}}",
+    classifiersBlockForJudge(),
+  )
+    .replace("{{theme}}", t.theme)
+    .replace("{{poem_a}}", t.winner_text)
+    .replace("{{poem_b}}", t.loser_text)
+    .replace("{{poem_c}}", candidateText);
+
+  try {
+    const raw = await runJudgeLLM(judge, prompt);
+    const parsed = parseJudgeJson(raw) as
+      | {
+          scores?: Record<string, number>;
+          rationale?: string;
+          confidence?: "low" | "medium" | "high";
+        }
+      | null;
+    if (!parsed || !parsed.scores || typeof parsed.scores !== "object") {
+      process.stderr.write(
+        `classifier judge ${judge}: parse failed. raw[:300]=${raw.slice(0, 300)}\n`,
+      );
+      return {
+        ok: false,
+        scores: {},
+        rationale: "",
+        confidence: "low",
+        costEstimate: 0,
+      };
+    }
+    // Coerce and clamp to [0, 5]
+    const scores: Record<string, number> = {};
+    for (const c of ACTIVE_CLASSIFIERS.classifiers) {
+      const v = Number(parsed.scores[c.id]);
+      if (Number.isFinite(v)) scores[c.id] = Math.max(0, Math.min(5, v));
+    }
+    return {
+      ok: Object.keys(scores).length > 0,
+      scores,
+      rationale: parsed.rationale || "",
+      confidence: parsed.confidence || "medium",
+      costEstimate: 0.01, // classifier prompt is bigger, slightly more expensive
+    };
+  } catch (e) {
+    process.stderr.write(`classifier judge call failed: ${(e as Error).message}\n`);
+    return {
+      ok: false,
+      scores: {},
+      rationale: "",
+      confidence: "low",
+      costEstimate: 0,
+    };
+  }
+}
+
+function parseJudgeJson(raw: string): Record<string, unknown> | null {
   try {
     // Strip code fences if present
     const cleaned = raw
@@ -619,8 +894,8 @@ function parseJudgeJson(raw: string): {
       .replace(/```$/i, "")
       .trim();
     const j = JSON.parse(cleaned);
-    if (!Array.isArray(j.ranking)) return null;
-    return j;
+    if (!j || typeof j !== "object") return null;
+    return j as Record<string, unknown>;
   } catch {
     return null;
   }
@@ -806,6 +1081,20 @@ async function runJudgeLLM(judge: string, prompt: string): Promise<string> {
       // Omit the field entirely for those; keep temperature: 0 for older models
       // where determinism is meaningful.
       const usesDefaultTempOnly = m.startsWith("gpt-5");
+      // gpt-4.x fine-tunes and gpt-5+ use max_completion_tokens not max_tokens
+      const usesNewTokenParam =
+        provider === "openai" &&
+        (m.startsWith("gpt-5") ||
+          m.startsWith("gpt-4.1") ||
+          m.startsWith("ft:gpt-4.1") ||
+          m.startsWith("ft:gpt-5") ||
+          m.startsWith("ft:gpt-4o"));
+      const tokenField = usesNewTokenParam
+        ? "max_completion_tokens"
+        : "max_tokens";
+      // Cap response at 2000 tokens. Judge JSON is ~200 tokens; remainder
+      // gives reasoning models (DeepSeek R1) room to think. OpenRouter free
+      // tier caps at 2637 tokens/request - 2000 leaves headroom.
       const res = await fetch(`${baseUrl}/chat/completions`, {
         method: "POST",
         headers: {
@@ -816,6 +1105,7 @@ async function runJudgeLLM(judge: string, prompt: string): Promise<string> {
           model: m,
           messages: [{ role: "user", content: prompt }],
           ...(usesDefaultTempOnly ? {} : { temperature: 0 }),
+          [tokenField]: 2000,
           response_format: { type: "json_object" },
         }),
       });

@@ -24,6 +24,8 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
+import { AudienceTruthChart } from "./AudienceTruthChart";
+import { ModelComparisonChart } from "./ModelComparisonChart";
 
 const MONO = '"Diatype Mono Variable", monospace';
 const DISPLAY = '"Terminal Grotesque", sans-serif';
@@ -175,19 +177,28 @@ export default function EvolutionView() {
           margin: "0 0 3rem 0",
         }}
       >
-        the audience trains the machine. each performance updates how every
-        model fares against the room&apos;s chosen winners. higher score =
-        closer to what the audience voted as best. judges anchor on audience
-        taste, not their own.
+        two views of evolution: how the audience voted at each live show, and
+        how my candidate models fare against the patterns the audience
+        consistently rewards. ground.exe is pending.
       </p>
+
+      {/* Chart 1 - audience truth (machine vs halim per performance) */}
+      <AudienceTruthChart />
+
+      {/* Chart 2 - model comparison (classifier-based) */}
+      <ModelComparisonChart />
 
       {isEmpty ? (
         <EmptyState />
       ) : (
         <>
-          {/* Chart */}
-          <section style={{ marginBottom: "3rem" }}>
-            <h2 style={sectionHeading}>judge score over time</h2>
+          {/* Legacy chart - judge eval scores per performance.
+              The methodology has since changed (audience-anchored council
+              judges, classifier-based scoring); kept here for historical
+              continuity until everything is re-evaluated under the new
+              methodology. */}
+          <section style={{ marginBottom: "3rem", opacity: 0.85 }}>
+            <h2 style={sectionHeading}>judge-eval scores (legacy)</h2>
             <p
               style={{
                 fontFamily: MONO,
@@ -197,8 +208,8 @@ export default function EvolutionView() {
                 letterSpacing: "0.01em",
               }}
             >
-              score = (3 − mean rank) / 2 · 1 = always 1st · 0.5 = always 2nd ·
-              0 = always 3rd
+              score = (3 − mean rank) / 2 · pre-classifier eval methodology ·
+              kept for continuity
             </p>
             <div
               style={{
