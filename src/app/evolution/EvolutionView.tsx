@@ -44,7 +44,13 @@ type Model = {
   family: string;
   color: string;
   is_public: boolean;
-  series: Array<{ perf: string; rate: number; n_themes: number }>;
+  series: Array<{
+    perf: string;
+    rate: number;
+    score: number;
+    mean_rank: number | null;
+    n_themes: number;
+  }>;
 };
 
 type Results = { performances: Performance[]; models: Model[] };
@@ -124,7 +130,10 @@ export default function EvolutionView() {
 
   const isEmpty = data.models.length === 0;
 
-  // Build chart data: array of { perf: name, [model.slug]: rate }
+  // Build chart data: array of { perf: name, [model.slug]: score }.
+  // Score = (3 - mean_rank) / 2 graduated 0..1 (higher = better), rendered
+  // as a percentage on the y-axis. Old binary win-rate hid the difference
+  // between "always 2nd" (score 0.5) and "always 3rd" (score 0.0).
   const chartData = data.performances.map((p) => {
     const row: Record<string, string | number> = {
       perf: p.name,
@@ -132,7 +141,7 @@ export default function EvolutionView() {
     };
     for (const m of data.models) {
       const point = m.series.find((s) => s.perf === p.slug);
-      if (point) row[m.slug] = Math.round(point.rate * 100);
+      if (point) row[m.slug] = Math.round(point.score * 100);
     }
     return row;
   });
@@ -167,8 +176,9 @@ export default function EvolutionView() {
         }}
       >
         the audience trains the machine. each performance updates how every
-        model fares against the winners. lines rising means models learning the
-        room - or, sometimes, the room learning to lose.
+        model fares against the room&apos;s chosen winners. higher score =
+        closer to what the audience voted as best. judges anchor on audience
+        taste, not their own.
       </p>
 
       {isEmpty ? (
@@ -177,7 +187,19 @@ export default function EvolutionView() {
         <>
           {/* Chart */}
           <section style={{ marginBottom: "3rem" }}>
-            <h2 style={sectionHeading}>win rate over time</h2>
+            <h2 style={sectionHeading}>judge score over time</h2>
+            <p
+              style={{
+                fontFamily: MONO,
+                fontSize: "0.78rem",
+                color: "var(--text-tertiary)",
+                margin: "0.25rem 0 0 0",
+                letterSpacing: "0.01em",
+              }}
+            >
+              score = (3 − mean rank) / 2 · 1 = always 1st · 0.5 = always 2nd ·
+              0 = always 3rd
+            </p>
             <div
               style={{
                 width: "100%",
@@ -185,7 +207,7 @@ export default function EvolutionView() {
                 marginTop: "1rem",
               }}
               role="figure"
-              aria-label="model win rate per performance"
+              aria-label="model judge score per performance, higher is better"
             >
               {hidden.size === data.models.length ? (
                 <div
@@ -228,7 +250,28 @@ export default function EvolutionView() {
                         fontSize: "0.85rem",
                       }}
                       labelStyle={{ fontFamily: STANDARD, fontWeight: 500 }}
-                      formatter={(value, name) => [`${value}%`, name as string]}
+                      formatter={(value, name, ctx) => {
+                        const slug = (ctx?.dataKey as string) || "";
+                        const m = data.models.find((mm) => mm.slug === slug);
+                        const perfSlug =
+                          ((ctx?.payload as { perfSlug?: string } | undefined)
+                            ?.perfSlug as string) || "";
+                        const pt = m?.series.find((s) => s.perf === perfSlug);
+                        const meanRank =
+                          pt?.mean_rank != null
+                            ? `mean rank ${pt.mean_rank.toFixed(2)}`
+                            : "";
+                        const themes = pt
+                          ? `${pt.n_themes} theme${pt.n_themes === 1 ? "" : "s"}`
+                          : "";
+                        const tail = [meanRank, themes]
+                          .filter(Boolean)
+                          .join(" · ");
+                        return [
+                          tail ? `${value}%  (${tail})` : `${value}%`,
+                          name as string,
+                        ];
+                      }}
                     />
                     {data.models.map((m) => (
                       <Line
@@ -326,14 +369,15 @@ export default function EvolutionView() {
               }}
             >
               {data.models.map((m) => {
+                if (m.series.length === 0) return null;
                 const first = m.series[0];
                 const last = m.series[m.series.length - 1];
                 if (!first || !last) return null;
                 return (
                   <li key={m.slug}>
-                    {m.name}: {(first.rate * 100).toFixed(0)}% on {first.perf}{" "}
-                    to {(last.rate * 100).toFixed(0)}% on {last.perf} across{" "}
-                    {m.series.length} performances
+                    {m.name}: score {(first.score * 100).toFixed(0)}% on{" "}
+                    {first.perf} to {(last.score * 100).toFixed(0)}% on{" "}
+                    {last.perf} across {m.series.length} performances
                   </li>
                 );
               })}
@@ -415,10 +459,10 @@ export default function EvolutionView() {
                             {pt ? (
                               <button
                                 onClick={() => openCell(m, p)}
-                                style={cellButtonStyle(m.color, pt.rate)}
-                                aria-label={`${m.name} on ${p.name}: ${(pt.rate * 100).toFixed(0)} percent`}
+                                style={cellButtonStyle(m.color, pt.score)}
+                                aria-label={`${m.name} on ${p.name}: score ${(pt.score * 100).toFixed(0)} percent`}
                               >
-                                {(pt.rate * 100).toFixed(0)}%
+                                {(pt.score * 100).toFixed(0)}%
                               </button>
                             ) : (
                               <span style={{ color: "rgba(0,0,0,0.4)" }}>

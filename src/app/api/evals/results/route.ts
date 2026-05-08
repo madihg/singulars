@@ -35,7 +35,13 @@ type ChartData = {
     family: string;
     color: string;
     is_public: boolean;
-    series: Array<{ perf: string; rate: number; n_themes: number }>;
+    series: Array<{
+      perf: string;
+      rate: number;
+      score: number;
+      mean_rank: number | null;
+      n_themes: number;
+    }>;
   }>;
 };
 
@@ -63,18 +69,36 @@ async function loadResults(): Promise<ChartData> {
   // 3. Win-rate view rows (RLS pre-filters to published+completed).
   const { data: rows } = await supabase
     .from("v_model_winrate_per_performance")
-    .select("model_slug, performance_slug, win_rate, n_themes");
+    .select("model_slug, performance_slug, win_rate, mean_rank, n_themes");
 
+  // score = (3 - mean_rank) / 2  →  rank 1 = 1.0, rank 2 = 0.5, rank 3 = 0.0
+  // Higher = better. Falls back to binary win_rate when mean_rank is null
+  // (only happens for very old runs that pre-date the backfill).
   const seriesByModel: Record<
     string,
-    Array<{ perf: string; rate: number; n_themes: number }>
+    Array<{
+      perf: string;
+      rate: number;
+      score: number;
+      mean_rank: number | null;
+      n_themes: number;
+    }>
   > = {};
   for (const r of rows ?? []) {
     const slug = r.model_slug as string;
     if (!seriesByModel[slug]) seriesByModel[slug] = [];
+    const meanRank =
+      r.mean_rank == null ? null : Number(r.mean_rank);
+    const winRate = Number(r.win_rate) || 0;
+    const score =
+      meanRank != null
+        ? Math.max(0, Math.min(1, (3 - meanRank) / 2))
+        : winRate;
     seriesByModel[slug].push({
       perf: r.performance_slug as string,
-      rate: Number(r.win_rate) || 0,
+      rate: winRate,
+      score,
+      mean_rank: meanRank,
       n_themes: (r.n_themes as number) || 0,
     });
   }

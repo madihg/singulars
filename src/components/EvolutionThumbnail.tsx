@@ -13,7 +13,7 @@
 import Link from "next/link";
 import { getSupabase, getServiceClient } from "@/lib/supabase";
 
-type Series = Array<{ rate: number; perf: string }>;
+type Series = Array<{ score: number; perf: string }>;
 type ModelLine = { slug: string; color: string; series: Series };
 
 async function loadMini(): Promise<{
@@ -30,13 +30,14 @@ async function loadMini(): Promise<{
 
   const { data: viewRows } = await supabase
     .from("v_model_winrate_per_performance")
-    .select("model_slug, model_color, performance_slug, win_rate");
+    .select("model_slug, model_color, performance_slug, win_rate, mean_rank");
 
   type ViewRow = {
     model_slug: string;
     model_color: string;
     performance_slug: string;
     win_rate: number;
+    mean_rank: number | null;
   };
   const byModel: Record<string, ModelLine> = {};
   for (const r of (viewRows ?? []) as ViewRow[]) {
@@ -47,9 +48,16 @@ async function loadMini(): Promise<{
         series: [],
       };
     }
+    // score = (3 - mean_rank) / 2 (graduated 0..1, higher=better). Falls
+    // back to binary win_rate for any pre-backfill rows.
+    const meanRank = r.mean_rank == null ? null : Number(r.mean_rank);
+    const score =
+      meanRank != null
+        ? Math.max(0, Math.min(1, (3 - meanRank) / 2))
+        : Number(r.win_rate) || 0;
     byModel[r.model_slug].series.push({
       perf: r.performance_slug,
-      rate: Number(r.win_rate) || 0,
+      score,
     });
   }
 
@@ -108,7 +116,7 @@ export default async function EvolutionThumbnail() {
           xmlns="http://www.w3.org/2000/svg"
           style={{ display: "block", background: "#fff" }}
           role="img"
-          aria-label="model win rate evolution thumbnail"
+          aria-label="model judge score evolution thumbnail"
         >
           {/* horizontal grid */}
           {[0, 0.25, 0.5, 0.75, 1].map((q) => (
@@ -129,7 +137,7 @@ export default async function EvolutionThumbnail() {
               .map((s) => {
                 const x = xByPerf[s.perf];
                 const y =
-                  padY + innerH * (1 - Math.min(1, Math.max(0, s.rate)));
+                  padY + innerH * (1 - Math.min(1, Math.max(0, s.score)));
                 return `${x},${y}`;
               });
             if (points.length === 0) return null;
