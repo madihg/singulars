@@ -6,7 +6,12 @@
  *
  * Returns: { performances, models[].series } shape per research/05 §3.1.
  *
- * Cache: s-maxage=300, swr=86400, tagged "eval-results" for revalidateTag().
+ * Cache: server-side via unstable_cache only (tagged "eval-results", 300s
+ * revalidate). The HTTP response is no-store so the Vercel CDN doesn't
+ * shadow-cache empty/stale data after a toggle/publish flip - revalidateTag()
+ * already invalidates unstable_cache, but Vercel's edge HTTP cache is keyed
+ * by URL+headers and ignores tag invalidation, so dual-layering caused stale
+ * "no models" responses to persist for 5 minutes after publishing runs.
  */
 
 import { NextResponse } from "next/server";
@@ -94,7 +99,10 @@ export async function GET() {
   const data = await cachedLoad();
   return NextResponse.json(data, {
     headers: {
-      "Cache-Control": "s-maxage=300, stale-while-revalidate=86400",
+      // No CDN cache. unstable_cache (server memory, tag-invalidated) is the
+      // only cache layer - admin toggles call revalidateTag("eval-results")
+      // which busts that, and the page lights up on the next request.
+      "Cache-Control": "no-store",
     },
   });
 }
