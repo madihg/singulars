@@ -39,22 +39,32 @@ type Body = {
     perf_color: string;
     perf_status: string;
     pending: boolean;
+    /** Total audience-decided themes at this performance (from v_audience_machine_vs_human). */
+    n_themes_total: number;
+    /** True when both authors have classifier scores for every theme at this perf. */
+    complete: boolean;
   }>;
   series: {
     human: TrajectoryPoint[];
     machine: TrajectoryPoint[];
   };
+  /** Progress indicator for in-flight retroactive scoring. */
+  scoring_progress: {
+    poems_scored: number;
+    poems_total: number;
+    complete: boolean;
+  };
 };
 
 async function loadTrajectory(): Promise<Body> {
   const supabase = getSupabase() || getServiceClient();
-  if (!supabase) {
-    return {
-      classifiers_version: ACTIVE_CLASSIFIERS_VERSION,
-      performances: [],
-      series: { human: [], machine: [] },
-    };
-  }
+  const emptyResp: Body = {
+    classifiers_version: ACTIVE_CLASSIFIERS_VERSION,
+    performances: [],
+    series: { human: [], machine: [] },
+    scoring_progress: { poems_scored: 0, poems_total: 0, complete: true },
+  };
+  if (!supabase) return emptyResp;
 
   const { data: viewRows } = await supabase
     .from("v_machine_quality_trajectory")
@@ -66,6 +76,19 @@ async function loadTrajectory(): Promise<Body> {
     .from("performances")
     .select("slug, name, date, color, status")
     .order("date", { ascending: true, nullsFirst: false });
+
+  // Audience theme counts per performance, used to determine whether
+  // scoring is complete (both authors scored on every theme).
+  const { data: audienceRows } = await supabase
+    .from("v_audience_machine_vs_human")
+    .select("perf_slug, n_themes");
+  const themesByPerf = new Map<string, number>();
+  for (const r of (audienceRows ?? []) as {
+    perf_slug: string;
+    n_themes: number;
+  }[]) {
+    themesByPerf.set(r.perf_slug, r.n_themes);
+  }
 
   type RawRow = {
     perf_slug: string;
@@ -104,9 +127,19 @@ async function loadTrajectory(): Promise<Body> {
 
   const performances = (perfs ?? []).map((p) => {
     const slug = p.slug as string;
-    const hasData =
-      human.some((h) => h.perf_slug === slug) ||
-      machine.some((m) => m.perf_slug === slug);
+    const h = human.find((x) => x.perf_slug === slug);
+    const m = machine.find((x) => x.perf_slug === slug);
+    const hasData = !!h || !!m;
+    const expected = themesByPerf.get(slug) ?? 0;
+    // "complete" means both authors have classifier scores on every audience-
+    // decided theme. Partial perfs render as in-flight on the chart rather
+    // than as misleading low-sample data points.
+    const complete =
+      expected > 0 &&
+      !!h &&
+      !!m &&
+      h.n_poems >= expected &&
+      m.n_poems >= expected;
     return {
       perf_slug: slug,
       perf_name: p.name as string,
@@ -114,13 +147,32 @@ async function loadTrajectory(): Promise<Body> {
       perf_color: p.color as string,
       perf_status: p.status as string,
       pending: !hasData,
+      n_themes_total: expected,
+      complete,
     };
   });
+
+  // Scoring progress: scored = sum of n_poems across all (perf, author) view
+  // rows; total = sum of theme counts * 2 (halim + machine) across audience
+  // perfs that have at least one author with data.
+  let poemsScored = 0;
+  for (const h of human) poemsScored += h.n_poems;
+  for (const m of machine) poemsScored += m.n_poems;
+  let poemsTotal = 0;
+  themesByPerf.forEach((n) => {
+    poemsTotal += n * 2;
+  });
+  const scoringComplete = poemsScored >= poemsTotal && poemsTotal > 0;
 
   return {
     classifiers_version: ACTIVE_CLASSIFIERS_VERSION,
     performances,
     series: { human, machine },
+    scoring_progress: {
+      poems_scored: poemsScored,
+      poems_total: poemsTotal,
+      complete: scoringComplete,
+    },
   };
 }
 

@@ -50,10 +50,17 @@ type TrajectoryData = {
     perf_color: string;
     perf_status: string;
     pending: boolean;
+    n_themes_total: number;
+    complete: boolean;
   }>;
   series: {
     human: Point[];
     machine: Point[];
+  };
+  scoring_progress: {
+    poems_scored: number;
+    poems_total: number;
+    complete: boolean;
   };
 };
 
@@ -92,9 +99,20 @@ export function MachineTrajectoryChart() {
     );
   }
 
-  const trainedPerfs = data.performances.filter((p) => !p.pending);
+  // Only plot performances where BOTH authors have classifier scores on every
+  // audience-decided theme. Partial perfs (in-flight scoring) would render as
+  // misleading low-sample data points.
+  const completePerfs = data.performances.filter((p) => p.complete);
+  const progressPct =
+    data.scoring_progress.poems_total > 0
+      ? Math.round(
+          (data.scoring_progress.poems_scored /
+            data.scoring_progress.poems_total) *
+            100,
+        )
+      : 0;
 
-  if (trainedPerfs.length === 0) {
+  if (completePerfs.length === 0) {
     return (
       <section style={{ marginBottom: "3.5rem" }}>
         <h2
@@ -116,18 +134,20 @@ export function MachineTrajectoryChart() {
             margin: "0 0 1.5rem 0",
           }}
         >
-          retroactive classifier scoring in progress — trajectory will appear
-          once archive scoring completes.
+          retroactive classifier scoring in progress —{" "}
+          {data.scoring_progress.poems_scored} of{" "}
+          {data.scoring_progress.poems_total} poems scored ({progressPct}%).
+          trajectory will appear once at least one performance is fully scored.
         </p>
       </section>
     );
   }
 
-  // Build chart data: one row per performance (in date order), with
-  // halim_score and machine_score as percentages.
+  // Build chart data: one row per fully-scored performance (in date order),
+  // with halim_score and machine_score as percentages.
   const humanBySlug = new Map(data.series.human.map((p) => [p.perf_slug, p]));
   const machineBySlug = new Map(data.series.machine.map((p) => [p.perf_slug, p]));
-  const chartData = trainedPerfs.map((perf) => {
+  const chartData = completePerfs.map((perf) => {
     const h = humanBySlug.get(perf.perf_slug);
     const m = machineBySlug.get(perf.perf_slug);
     return {
@@ -139,6 +159,9 @@ export function MachineTrajectoryChart() {
       machine_n: m?.n_poems || 0,
     };
   });
+  const inFlightPerfs = data.performances.filter(
+    (p) => !p.pending && !p.complete && p.perf_status === "trained",
+  );
 
   return (
     <section style={{ marginBottom: "3.5rem" }}>
@@ -169,6 +192,25 @@ export function MachineTrajectoryChart() {
         consistently rewards. lines rising = improving on audience-taste
         dimensions, independent of who won the live vote.
       </p>
+      {!data.scoring_progress.complete ? (
+        <p
+          style={{
+            fontFamily: MONO,
+            fontSize: "0.78rem",
+            color: "var(--text-tertiary)",
+            margin: "-0.5rem 0 1.5rem 0",
+            letterSpacing: "0.01em",
+          }}
+        >
+          scoring in progress: {data.scoring_progress.poems_scored} of{" "}
+          {data.scoring_progress.poems_total} poems ({progressPct}%).
+          {inFlightPerfs.length > 0
+            ? ` showing only the ${completePerfs.length} fully-scored performance${completePerfs.length === 1 ? "" : "s"}; ${inFlightPerfs
+                .map((p) => p.perf_name.replace(".exe", ""))
+                .join(", ")} will appear once complete.`
+            : ""}
+        </p>
+      ) : null}
 
       <div
         style={{ width: "100%", height: 320 }}
