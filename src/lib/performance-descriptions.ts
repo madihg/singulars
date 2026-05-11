@@ -71,13 +71,19 @@ export const HERO_IMAGES: {
       src: "/images/ground-exe/currents-logo.png",
       alt: "Currents New Media Festival logo",
     },
+    "frontiere-exe": {
+      src: "/images/landing/hero.jpg",
+      alt: "frontière.exe placeholder hero - replace with bianjie.systems imagery once available",
+    },
   },
 };
 
 /** Short card descriptions for the landing page grid. */
 export const CARD_DESCRIPTIONS: Record<string, string> = {
   "ground-exe":
-    "The duel moves to the desert. At the Currents New Media Festival, the poet and machine write under the light of Santa Fe.",
+    "The duel moves to the desert. At the Currents New Media Festival in 2027, the poet and machine write under the light of Santa Fe.",
+  "frontiere-exe":
+    "邊界 night in Brooklyn. The duel arrives at Index Space, hosted by bianjie.systems, supported by Gray Area and FWB. May 13, 2026, 10pm – 12am.",
   "reverse-exe":
     "A live poetry duel at the Media Archaeology Lab. The poet writes among vintage machines while the model trains on the archive of past performances.",
   "hard-exe":

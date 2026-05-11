@@ -267,7 +267,9 @@ export default async function SingularsPage() {
                 style={{
                   borderTop: `4px solid ${perf.color}`,
                   cursor:
-                    isUpcoming && perf.slug !== "ground-exe"
+                    isUpcoming &&
+                    perf.slug !== "ground-exe" &&
+                    perf.slug !== "frontiere-exe"
                       ? "default"
                       : `url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20'><circle cx='10' cy='10' r='8' fill='${encodeURIComponent(perf.color)}'/></svg>") 10 10, pointer`,
                   transition: "opacity 0.3s ease",
@@ -379,8 +381,10 @@ export default async function SingularsPage() {
             if (isUpcoming) {
               const externalUrl =
                 perf.slug === "ground-exe"
-                  ? "https://currentsnewmedia.org/festivals/currents-2026-art-technology-festival/"
-                  : null;
+                  ? "https://currentsnewmedia.org/"
+                  : perf.slug === "frontiere-exe"
+                    ? "https://www.instagram.com/bianjie.systems/"
+                    : null;
               if (externalUrl) {
                 return (
                   <a
