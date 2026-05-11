@@ -99,10 +99,21 @@ export function MachineTrajectoryChart() {
     );
   }
 
-  // Only plot performances where BOTH authors have classifier scores on every
-  // audience-decided theme. Partial perfs (in-flight scoring) would render as
-  // misleading low-sample data points.
-  const completePerfs = data.performances.filter((p) => p.complete);
+  // Plot any performance where BOTH authors have at least one poem scored.
+  // Partial perfs (in-flight scoring) get a "(partial: X/Y themes)"
+  // annotation so the sample size is visible.
+  const humanBySlugCheck = new Map(
+    data.series.human.map((p) => [p.perf_slug, p]),
+  );
+  const machineBySlugCheck = new Map(
+    data.series.machine.map((p) => [p.perf_slug, p]),
+  );
+  const plottedPerfs = data.performances.filter((p) => {
+    if (p.pending) return false;
+    const h = humanBySlugCheck.get(p.perf_slug);
+    const m = machineBySlugCheck.get(p.perf_slug);
+    return !!h && !!m && h.n_poems > 0 && m.n_poems > 0;
+  });
   const progressPct =
     data.scoring_progress.poems_total > 0
       ? Math.round(
@@ -112,7 +123,7 @@ export function MachineTrajectoryChart() {
         )
       : 0;
 
-  if (completePerfs.length === 0) {
+  if (plottedPerfs.length === 0) {
     return (
       <section style={{ marginBottom: "3.5rem" }}>
         <h2
@@ -143,11 +154,12 @@ export function MachineTrajectoryChart() {
     );
   }
 
-  // Build chart data: one row per fully-scored performance (in date order),
-  // with halim_score and machine_score as percentages.
-  const humanBySlug = new Map(data.series.human.map((p) => [p.perf_slug, p]));
-  const machineBySlug = new Map(data.series.machine.map((p) => [p.perf_slug, p]));
-  const chartData = completePerfs.map((perf) => {
+  // Build chart data: one row per plotted performance (in date order), with
+  // halim_score and machine_score as percentages. Sample sizes preserved so
+  // partial perfs are honest about their support.
+  const humanBySlug = humanBySlugCheck;
+  const machineBySlug = machineBySlugCheck;
+  const chartData = plottedPerfs.map((perf) => {
     const h = humanBySlug.get(perf.perf_slug);
     const m = machineBySlug.get(perf.perf_slug);
     return {
@@ -157,6 +169,8 @@ export function MachineTrajectoryChart() {
       machine: m ? Math.round(m.avg_score * 100) : null,
       halim_n: h?.n_poems || 0,
       machine_n: m?.n_poems || 0,
+      n_themes_total: perf.n_themes_total,
+      complete: perf.complete,
     };
   });
   const inFlightPerfs = data.performances.filter(
@@ -203,12 +217,9 @@ export function MachineTrajectoryChart() {
           }}
         >
           scoring in progress: {data.scoring_progress.poems_scored} of{" "}
-          {data.scoring_progress.poems_total} poems ({progressPct}%).
-          {inFlightPerfs.length > 0
-            ? ` showing only the ${completePerfs.length} fully-scored performance${completePerfs.length === 1 ? "" : "s"}; ${inFlightPerfs
-                .map((p) => p.perf_name.replace(".exe", ""))
-                .join(", ")} will appear once complete.`
-            : ""}
+          {data.scoring_progress.poems_total} poems ({progressPct}%). partial
+          perfs are marked with their current sample below; the lines will
+          refine as more poems are scored.
         </p>
       ) : null}
 
@@ -335,6 +346,18 @@ export function MachineTrajectoryChart() {
                 >
                   <td style={{ padding: "0.35rem 0.5rem 0.35rem 0" }}>
                     {r.perf}
+                    {!r.complete ? (
+                      <span
+                        style={{
+                          color: "var(--text-tertiary)",
+                          marginLeft: 6,
+                          fontStyle: "italic",
+                        }}
+                      >
+                        (partial: {Math.min(r.halim_n, r.machine_n)}/
+                        {r.n_themes_total})
+                      </span>
+                    ) : null}
                   </td>
                   <td
                     style={{
