@@ -72,8 +72,8 @@ export const HERO_IMAGES: {
       alt: "Currents New Media Festival logo",
     },
     "frontiere-exe": {
-      src: "/images/landing/hero.jpg",
-      alt: "frontière.exe placeholder hero - replace with bianjie.systems imagery once available",
+      src: "/images/frontiere-exe/bianjie-night-poster.png",
+      alt: "邊界 NYC night - presenting Halim Madi's Singulars at Index Space Greenpoint, May 13 2026, 10pm-12am, hosted by bianjie.systems",
     },
   },
 };

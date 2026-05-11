@@ -256,9 +256,13 @@ export default async function SingularsPage() {
               getPerformanceHeroImage(perf.slug) ??
               reverseNameFallback ??
               HERO_IMAGES.landing;
+            // "logo/poster" images render as contain-on-white (vs photos
+            // which render as cover with grayscale). Match by filename
+            // substring so adding new poster assets is one entry here.
             const isLogoImage =
               heroImg.src.endsWith(".svg") ||
-              heroImg.src.includes("currents-logo");
+              heroImg.src.includes("currents-logo") ||
+              heroImg.src.includes("bianjie-night-poster");
             const cardContent = (
               <div
                 key={perf.id}
