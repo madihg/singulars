@@ -173,9 +173,6 @@ export function MachineTrajectoryChart() {
       complete: perf.complete,
     };
   });
-  const inFlightPerfs = data.performances.filter(
-    (p) => !p.pending && !p.complete && p.perf_status === "trained",
-  );
 
   return (
     <section style={{ marginBottom: "3.5rem" }}>
