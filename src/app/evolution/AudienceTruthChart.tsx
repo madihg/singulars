@@ -254,7 +254,7 @@ export function AudienceTruthChart() {
                       {/* Halim bar */}
                       <div
                         style={{
-                          width: "40%",
+                          width: "28%",
                           height: halimH,
                           background: HUMAN_COLOR,
                           position: "relative",
@@ -282,7 +282,7 @@ export function AudienceTruthChart() {
                       {/* Machine bar */}
                       <div
                         style={{
-                          width: "40%",
+                          width: "28%",
                           height: machineH,
                           background: MACHINE_COLOR,
                           position: "relative",
@@ -304,6 +304,37 @@ export function AudienceTruthChart() {
                             }}
                           >
                             {p.machine_wins}
+                          </span>
+                        ) : null}
+                      </div>
+                      {/* Tie bar - shown when ties > 0, gray, narrower so the
+                          eye still leads with halim vs machine. */}
+                      <div
+                        style={{
+                          width: "20%",
+                          height: (p.ties / yMax) * PLOT_HEIGHT,
+                          background: TIE_COLOR,
+                          position: "relative",
+                          minHeight: p.ties > 0 ? 2 : 0,
+                          opacity: p.ties > 0 ? 1 : 0,
+                        }}
+                        title={p.ties > 0 ? `tie ${p.ties}` : undefined}
+                        aria-hidden={p.ties === 0}
+                      >
+                        {p.ties > 0 ? (
+                          <span
+                            style={{
+                              position: "absolute",
+                              top: -16,
+                              left: "50%",
+                              transform: "translateX(-50%)",
+                              fontFamily: MONO,
+                              fontSize: "0.72rem",
+                              color: "rgba(0,0,0,0.45)",
+                              fontWeight: 600,
+                            }}
+                          >
+                            {p.ties}
                           </span>
                         ) : null}
                       </div>
@@ -346,18 +377,8 @@ export function AudienceTruthChart() {
                   >
                     {p.perf_name.replace(".exe", "")}
                   </div>
-                  {p.ties > 0 ? (
-                    <div
-                      style={{
-                        fontFamily: MONO,
-                        fontSize: "0.65rem",
-                        color: "var(--text-tertiary)",
-                        marginTop: 2,
-                      }}
-                    >
-                      +{p.ties} tie
-                    </div>
-                  ) : null}
+                  {/* Tie count is shown on top of the gray bar above; no
+                      duplicate label here. */}
                 </div>
               </div>
             );
