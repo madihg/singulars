@@ -25,6 +25,7 @@
 import { AudienceTruthChart } from "./AudienceTruthChart";
 import { ModelComparisonChart } from "./ModelComparisonChart";
 import { MachineTrajectoryChart } from "./MachineTrajectoryChart";
+import { ClassifierGapHeatmap } from "./ClassifierGapHeatmap";
 
 const MONO = '"Diatype Mono Variable", monospace';
 const DISPLAY = '"Terminal Grotesque", sans-serif';
@@ -68,6 +69,7 @@ export default function EvolutionView() {
 
       <AudienceTruthChart />
       <MachineTrajectoryChart />
+      <ClassifierGapHeatmap />
       <ModelComparisonChart />
 
       <p
