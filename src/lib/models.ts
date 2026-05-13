@@ -177,7 +177,8 @@ export const MODELS: Model[] = [
       "Pourrais-tu \u00e9crire un petit po\u00e8me fran\u00e7ais sur la m\u00e9lancolie ?",
     ],
     huggingFaceUrl: "https://huggingface.co/datasets/madihalim/carnation-fr",
-    order: 1,
+    status: "trained",
+    order: 6,
   },
   {
     slug: "carnation-eng",
@@ -192,7 +193,8 @@ export const MODELS: Model[] = [
       "Could you write a short English poem about melancholy?",
     ],
     huggingFaceUrl: "https://huggingface.co/datasets/madihalim/carnation-fr",
-    order: 2,
+    status: "trained",
+    order: 5,
   },
   {
     slug: "versus",
@@ -207,7 +209,8 @@ export const MODELS: Model[] = [
       "Could you write a short English poem about melancholy?",
     ],
     huggingFaceUrl: "https://huggingface.co/datasets/madihalim/v2-versus-eng",
-    order: 3,
+    status: "trained",
+    order: 4,
   },
   {
     slug: "reinforcement",
@@ -223,7 +226,8 @@ export const MODELS: Model[] = [
     ],
     huggingFaceUrl:
       "https://huggingface.co/datasets/madihalim/v3-reinforcement-eng",
-    order: 4,
+    status: "trained",
+    order: 3,
   },
   {
     slug: "hard",
@@ -238,7 +242,8 @@ export const MODELS: Model[] = [
       "Could you write a short English poem about melancholy?",
     ],
     huggingFaceUrl: "https://huggingface.co/datasets/madihalim/hard-eng",
-    order: 5,
+    status: "trained",
+    order: 2,
   },
   {
     slug: "reverse",
@@ -261,7 +266,7 @@ export const MODELS: Model[] = [
     ],
     huggingFaceUrl: "",
     status: "trained",
-    order: 6,
+    order: 1,
   },
   {
     slug: "frontiere",
@@ -283,7 +288,7 @@ export const MODELS: Model[] = [
     ],
     huggingFaceUrl: "",
     status: "training",
-    order: 7,
+    order: 99,
   },
 ];
 
@@ -291,8 +296,25 @@ export function getModelBySlug(slug: string): Model | undefined {
   return MODELS.find((m) => m.slug === slug);
 }
 
+/**
+ * Display order for the sidebar / mobile selector: trained models first
+ * (newest by `order` ascending), then training models below a divider.
+ */
+export function getSortedModels(): Model[] {
+  return [...MODELS].sort((a, b) => {
+    const aTraining = (a.status ?? "trained") === "training" ? 1 : 0;
+    const bTraining = (b.status ?? "trained") === "training" ? 1 : 0;
+    if (aTraining !== bTraining) return aTraining - bTraining;
+    return (a.order ?? 999) - (b.order ?? 999);
+  });
+}
+
+/** First trained model in sort order - the chat default. */
 export function getDefaultModel(): Model {
-  return MODELS[0];
+  const sorted = getSortedModels();
+  return (
+    sorted.find((m) => (m.status ?? "trained") === "trained") ?? sorted[0]
+  );
 }
 
 export function isValidModelSlug(slug: string): slug is ModelSlug {

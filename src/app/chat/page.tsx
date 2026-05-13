@@ -1,14 +1,27 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import { useChat } from "ai/react";
 import TextareaAutosize from "react-textarea-autosize";
-import { MODELS, type Model, type ModelSlug } from "@/lib/models";
+import {
+  MODELS,
+  getSortedModels,
+  getDefaultModel,
+  type Model,
+  type ModelSlug,
+} from "@/lib/models";
 import { readableForegroundOn } from "@/lib/color-utils";
 
+// Sorted once at module load - trained models first (newest -> oldest),
+// then the divider, then training models. Status of each model doesn't
+// change at runtime so this is fine.
+const SORTED_MODELS = getSortedModels();
+const DEFAULT_SLUG = getDefaultModel().slug;
+
 export default function ChatPage() {
-  const [activeSlug, setActiveSlug] = useState<ModelSlug>(MODELS[0].slug);
+  const [activeSlug, setActiveSlug] = useState<ModelSlug>(DEFAULT_SLUG);
   const activeModel = MODELS.find((m) => m.slug === activeSlug)!;
+  const isTraining = activeModel.status === "training";
 
   const {
     messages,
@@ -61,7 +74,7 @@ export default function ChatPage() {
     <div style={{ display: "flex", minHeight: "100vh" }}>
       {/* Sidebar - model selector */}
       <ModelSidebar
-        models={MODELS}
+        models={SORTED_MODELS}
         activeSlug={activeSlug}
         onSelect={switchModel}
       />
@@ -100,7 +113,7 @@ export default function ChatPage() {
 
           {/* Mobile model selector */}
           <MobileModelSelector
-            models={MODELS}
+            models={SORTED_MODELS}
             activeSlug={activeSlug}
             onSelect={switchModel}
           />
@@ -146,10 +159,33 @@ export default function ChatPage() {
           </p>
         )}
 
+        {/* Training note - visible when the active model is locked. */}
+        {isTraining ? (
+          <p
+            style={{
+              fontFamily: '"Diatype Mono Variable", monospace',
+              fontSize: "0.75rem",
+              color: "var(--text-tertiary)",
+              textAlign: "center",
+              marginBottom: "0.75rem",
+              lineHeight: 1.5,
+            }}
+          >
+            this model is training during a live performance — chat opens
+            once the show closes and the audience-decided pairs land.
+          </p>
+        ) : null}
+
         {/* Input */}
         <form
           data-chat-form
-          onSubmit={handleSubmit}
+          onSubmit={(e) => {
+            if (isTraining) {
+              e.preventDefault();
+              return;
+            }
+            handleSubmit(e);
+          }}
           style={{
             display: "flex",
             gap: "0.75rem",
@@ -161,7 +197,9 @@ export default function ChatPage() {
           <TextareaAutosize
             value={input}
             onChange={(e) => setInput(e.target.value)}
+            disabled={isTraining}
             onKeyDown={(e) => {
+              if (isTraining) return;
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
                 const form = e.currentTarget.closest("form");
@@ -169,9 +207,11 @@ export default function ChatPage() {
               }
             }}
             placeholder={
-              activeModel.language === "fr"
-                ? "Demandez un poeme..."
-                : "Ask for a poem..."
+              isTraining
+                ? "training — chat locked until the show closes"
+                : activeModel.language === "fr"
+                  ? "Demandez un poeme..."
+                  : "Ask for a poem..."
             }
             maxRows={6}
             style={{
@@ -184,35 +224,41 @@ export default function ChatPage() {
               resize: "none",
               outline: "none",
               lineHeight: 1.5,
-              background: "transparent",
-              color: "var(--text-primary)",
+              background: isTraining ? "rgba(0,0,0,0.04)" : "transparent",
+              color: isTraining ? "var(--text-hint)" : "var(--text-primary)",
+              cursor: isTraining ? "not-allowed" : "text",
             }}
           />
           <button
             type="submit"
-            disabled={!input.trim() || isLoading}
+            disabled={isTraining || !input.trim() || isLoading}
             style={{
               fontFamily: '"Diatype Mono Variable", monospace',
               fontSize: "0.85rem",
               padding: "0.75rem 1.25rem",
               border: "1px solid",
               borderColor:
-                !input.trim() || isLoading
+                isTraining || !input.trim() || isLoading
                   ? "var(--border-light)"
                   : activeModel.color,
               borderRadius: "8px",
               background:
-                !input.trim() || isLoading ? "transparent" : activeModel.color,
+                isTraining || !input.trim() || isLoading
+                  ? "transparent"
+                  : activeModel.color,
               color:
-                !input.trim() || isLoading
+                isTraining || !input.trim() || isLoading
                   ? "var(--text-hint)"
                   : readableForegroundOn(activeModel.color),
-              cursor: !input.trim() || isLoading ? "not-allowed" : "pointer",
+              cursor:
+                isTraining || !input.trim() || isLoading
+                  ? "not-allowed"
+                  : "pointer",
               transition: "all 0.2s ease",
               whiteSpace: "nowrap",
             }}
           >
-            {isLoading ? "..." : "Send"}
+            {isLoading ? "..." : isTraining ? "Locked" : "Send"}
           </button>
         </form>
       </div>
@@ -256,12 +302,43 @@ function ModelSidebar({
       >
         Models
       </span>
-      {models.map((model) => {
+      {models.map((model, idx) => {
         const isActive = model.slug === activeSlug;
         const isTraining = model.status === "training";
+        // Insert a divider + "training" header before the first training
+        // model when the previous entry was a trained one.
+        const prev = models[idx - 1];
+        const showTrainingDivider =
+          isTraining && (!prev || prev.status !== "training");
         return (
+          <React.Fragment key={model.slug}>
+            {showTrainingDivider ? (
+              <div
+                aria-hidden
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  marginTop: "1rem",
+                  marginBottom: "0.25rem",
+                  paddingTop: "0.75rem",
+                  borderTop: "1px solid var(--border-light)",
+                }}
+              >
+                <span
+                  style={{
+                    fontFamily: '"Diatype Mono Variable", monospace',
+                    fontSize: "0.65rem",
+                    color: "var(--text-hint)",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.06em",
+                  }}
+                >
+                  training
+                </span>
+              </div>
+            ) : null}
           <button
-            key={model.slug}
             onClick={() => onSelect(model.slug)}
             style={{
               display: "flex",
@@ -309,6 +386,7 @@ function ModelSidebar({
               </span>
             ) : null}
           </button>
+          </React.Fragment>
         );
       })}
     </nav>
