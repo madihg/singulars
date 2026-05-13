@@ -75,23 +75,28 @@ async function loadAudience(): Promise<Body> {
     byPerf.set(r.perf_slug, { ...r, pending: false });
   }
 
-  const merged: AudienceRow[] = (perfs ?? []).map((p) => {
-    const row = byPerf.get(p.slug as string);
-    if (row) return row;
-    // Performance exists but no audience pairs yet (e.g. ground.exe upcoming).
-    return {
-      perf_slug: p.slug as string,
-      perf_name: p.name as string,
-      perf_date: (p.date as string) ?? null,
-      perf_color: p.color as string,
-      perf_status: p.status as string,
-      n_themes: 0,
-      human_wins: 0,
-      machine_wins: 0,
-      ties: 0,
-      pending: true,
-    };
-  });
+  const merged: AudienceRow[] = (perfs ?? [])
+    // Hide ground.exe from the public chart until it's nearer (it's been
+    // moved to Currents Santa Fe 2027). The DB row stays - this is a chart-
+    // level filter.
+    .filter((p) => p.slug !== "ground-exe")
+    .map((p) => {
+      const row = byPerf.get(p.slug as string);
+      if (row) return row;
+      // Performance exists but no audience pairs yet (e.g. an upcoming show).
+      return {
+        perf_slug: p.slug as string,
+        perf_name: p.name as string,
+        perf_date: (p.date as string) ?? null,
+        perf_color: p.color as string,
+        perf_status: p.status as string,
+        n_themes: 0,
+        human_wins: 0,
+        machine_wins: 0,
+        ties: 0,
+        pending: true,
+      };
+    });
 
   const totals = merged.reduce(
     (acc, r) => {

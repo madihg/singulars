@@ -437,20 +437,23 @@ function WelcomeScreen({
         ))}
       </div>
 
-      {/* Dataset link */}
-      <a
-        href={model.huggingFaceUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        style={{
-          fontFamily: '"Diatype Mono Variable", monospace',
-          fontSize: "0.75rem",
-          color: "var(--text-hint)",
-          marginTop: "0.5rem",
-        }}
-      >
-        Dataset on HuggingFace &rarr;
-      </a>
+      {/* Dataset link - omitted for models without a public dataset (e.g.
+          frontière, which is not fine-tuned). */}
+      {model.huggingFaceUrl ? (
+        <a
+          href={model.huggingFaceUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            fontFamily: '"Diatype Mono Variable", monospace',
+            fontSize: "0.75rem",
+            color: "var(--text-hint)",
+            marginTop: "0.5rem",
+          }}
+        >
+          Dataset on HuggingFace &rarr;
+        </a>
+      ) : null}
     </div>
   );
 }

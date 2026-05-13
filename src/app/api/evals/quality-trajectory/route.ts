@@ -125,7 +125,11 @@ async function loadTrajectory(): Promise<Body> {
   human.sort(byDate);
   machine.sort(byDate);
 
-  const performances = (perfs ?? []).map((p) => {
+  const performances = (perfs ?? [])
+    // Hide ground.exe (moved to Currents Santa Fe 2027 - too far out to
+    // display as a pending placeholder).
+    .filter((p) => p.slug !== "ground-exe")
+    .map((p) => {
     const slug = p.slug as string;
     const h = human.find((x) => x.perf_slug === slug);
     const m = machine.find((x) => x.perf_slug === slug);
