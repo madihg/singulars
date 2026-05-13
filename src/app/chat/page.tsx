@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { useChat } from "ai/react";
 import TextareaAutosize from "react-textarea-autosize";
 import { MODELS, type Model, type ModelSlug } from "@/lib/models";
+import { accessibleTextColor } from "@/lib/color-utils";
 
 export default function ChatPage() {
   const [activeSlug, setActiveSlug] = useState<ModelSlug>(MODELS[0].slug);
@@ -202,7 +203,10 @@ export default function ChatPage() {
               borderRadius: "8px",
               background:
                 !input.trim() || isLoading ? "transparent" : activeModel.color,
-              color: !input.trim() || isLoading ? "var(--text-hint)" : "#000",
+              color:
+                !input.trim() || isLoading
+                  ? "var(--text-hint)"
+                  : accessibleTextColor(activeModel.color),
               cursor: !input.trim() || isLoading ? "not-allowed" : "pointer",
               transition: "all 0.2s ease",
               whiteSpace: "nowrap",
