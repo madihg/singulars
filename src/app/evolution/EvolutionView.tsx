@@ -80,16 +80,19 @@ export default function EvolutionView() {
             <strong style={{ color: "var(--text-primary)" }}>
               how the classifiers were made.
             </strong>{" "}
-            claude opus 4.7 read all 37 audience-decided (winner, loser)
-            poem pairs from the five trained performances and surfaced the
-            seven dimensions where winners consistently diverge from losers
-            - the patterns the room reliably rewards. the rubric is
-            anchored in actual audience preferences, filtered through
-            contemporary poetry&apos;s living conventions (specificity over
-            abstraction, voice over generic lyric, earned emotional landing
-            over decorative drift). each classifier carries a weight 1-3
-            reflecting how strongly it separated winners from losers in the
-            data.
+            halim worked with claude opus 4.7 to read all 37
+            audience-decided (winner, loser) poem pairs from the five
+            trained performances and surface the seven dimensions where
+            winners consistently diverge from losers - the patterns the
+            room reliably rewards. the methodology, the framing
+            (audience-as-truth, classifier-as-rubric), and the calibration
+            against contemporary poetry&apos;s living conventions are
+            halim&apos;s; claude did the systematic pass through the
+            pairs. the rubric ends up anchored in actual audience
+            preferences: specificity over abstraction, voice over generic
+            lyric, earned emotional landing over decorative drift. each
+            classifier carries a weight 1-3 reflecting how strongly it
+            separated winners from losers in the data.
           </p>
           <p
             style={{
