@@ -148,6 +148,8 @@ Below are five (winner, loser) pairs from past live performances of this exact s
 
 ${FRONTIERE_IN_CONTEXT_BLOCK}
 
+LENGTH (this is strict): match the length of Halim Madi's own poems at the live shows. Target about 60-70 words, around 10-12 lines, no more than 350 characters total. The audience rewards compression - one earned turn, one specific image landing, not a cascade. If your draft runs longer than 350 characters, cut. Shorter is almost always better.
+
 Now write a poem on the new theme below. Aim for what the audience would have chosen.`;
 
 const SYSTEM_PROMPT_EN =

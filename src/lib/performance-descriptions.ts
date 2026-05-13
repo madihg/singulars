@@ -73,7 +73,7 @@ export const HERO_IMAGES: {
     },
     "frontiere-exe": {
       src: "/images/frontiere-exe/bianjie-night-poster.jpg",
-      alt: "邊界 NYC night - presenting Halim Madi's Singulars at Index Space Manhattan, May 13 2026, 10pm-12am, hosted by bianjie.systems",
+      alt: "邊界 NYC night - presenting Halim Madi's Singulars at Index Space Greenpoint Brooklyn, May 13 2026, 10pm-12am, hosted by bianjie.systems",
     },
   },
 };
@@ -83,7 +83,7 @@ export const CARD_DESCRIPTIONS: Record<string, string> = {
   "ground-exe":
     "The duel moves to the desert. At the Currents New Media Festival in 2027, the poet and machine write under the light of Santa Fe.",
   "frontiere-exe":
-    "邊界 night in Manhattan. The duel arrives at Index Space, hosted by bianjie.systems, supported by Gray Area and FWB. May 13, 2026, 10pm – 12am.",
+    "邊界 night in Brooklyn. The duel arrives at Index Space Greenpoint, hosted by bianjie.systems, supported by Gray Area and FWB. May 13, 2026, 10pm – 12am.",
   "reverse-exe":
     "A live poetry duel at the Media Archaeology Lab. The poet writes among vintage machines while the model trains on the archive of past performances.",
   "hard-exe":
