@@ -35,7 +35,7 @@ export async function POST(req: Request) {
   if (!modelSlug || !isValidModelSlug(modelSlug)) {
     return new Response(
       JSON.stringify({
-        error: `Invalid model: ${modelSlug}. Valid slugs: carnation-fr, carnation-eng, versus, reinforcement, hard, frontiere`,
+        error: `Invalid model: ${modelSlug}. Valid slugs: carnation-fr, carnation-eng, versus, reinforcement, hard, reverse`,
       }),
       { status: 400, headers: { "Content-Type": "application/json" } },
     );

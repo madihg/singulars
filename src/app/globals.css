@@ -137,3 +137,38 @@ hr {
     align-items: center;
   }
 }
+
+/* /evolution layout
+ *  - Default (narrow): single column, title above charts (existing).
+ *  - Wide (>= 1280px): 2-column outer grid (title sticky on the left,
+ *    charts on the right). Inside the charts column, switch to a 2-col
+ *    grid so two charts sit next to each other when there's room.
+ */
+.evolution-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2.5rem;
+}
+.evolution-charts {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+.evolution-charts > section {
+  margin-bottom: 0 !important;
+}
+@media (min-width: 1280px) {
+  .evolution-grid {
+    grid-template-columns: minmax(220px, 280px) 1fr;
+    gap: 3rem;
+  }
+  .evolution-meta {
+    position: sticky;
+    top: 4rem;
+    align-self: start;
+  }
+  .evolution-charts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2.5rem 2rem;
+  }
+}

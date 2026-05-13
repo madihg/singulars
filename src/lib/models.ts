@@ -19,7 +19,7 @@ export type ModelSlug =
   | "versus"
   | "reinforcement"
   | "hard"
-  | "frontiere";
+  | "reverse";
 
 export type ModelProvider = "openai" | "openrouter";
 
@@ -137,12 +137,13 @@ The audience REJECTED this poem:
 Within the salty peaks of dawn, the wind exhales lost syllables. Bug-eyed light skips angels once we pitch into the sea. Anticipation sinks into drops, disappears into the sour scent of smoke. I abandon my name to forge a sensuous code, teach my own tongue flirtations. Each pause in speech a possibility: a new so-called word where fierceness gathers strength.`;
 
 /**
- * frontière.exe system prompt: rich pantheon (rimbaud-blake v2) + five
- * audience-decided exemplar pairs. This is what the Phase 3 4-cell
- * classifier eval ran with and scored 90% (winner over Claude rich at 70%,
- * gpt-4.1 base + rich at 46%, gpt-4.1 DPO at 50%, Gemini in-context at 78%).
+ * reverse.exe system prompt: the outcome of the reverse.exe held-out
+ * evaluation. Rich pantheon (rimbaud-blake v2) + five audience-decided
+ * exemplar pairs. This is what the Phase 3 4-cell classifier eval ran with
+ * and scored 90% (winner over Claude rich at 70%, gpt-4.1 base + rich at
+ * 46%, gpt-4.1 DPO at 50%, Gemini in-context at 78%).
  */
-const SYSTEM_PROMPT_FRONTIERE = `${ACTIVE_SYSTEM_PROMPT.text}
+const SYSTEM_PROMPT_REVERSE = `${ACTIVE_SYSTEM_PROMPT.text}
 
 Below are five (winner, loser) pairs from past live performances of this exact series. The audience voted on each. Study what made the chosen poems land - the patterns the room consistently rewarded. Apply the same instincts when you write the candidate poem on the new theme.
 
@@ -233,15 +234,18 @@ export const MODELS: Model[] = [
     order: 5,
   },
   {
-    slug: "frontiere",
-    displayName: "frontière.exe",
-    color: "#000000",
+    slug: "reverse",
+    displayName: "reverse.exe",
+    // The reverse.exe performance color (the perf this model is the
+    // outcome of - it won the held-out classifier eval on reverse.exe
+    // themes). frontière.exe's model will emerge after that show.
+    color: "#8B5CF6",
     // Claude Opus 4.7 via OpenRouter (OpenAI-compatible). Not fine-tuned -
     // gets there via rich pantheon prompt + 5 audience-decided exemplar
     // pairs in the system prompt ("in-context DPO").
     modelId: "anthropic/claude-opus-4.7",
     provider: "openrouter",
-    systemPrompt: SYSTEM_PROMPT_FRONTIERE,
+    systemPrompt: SYSTEM_PROMPT_REVERSE,
     language: "en",
     examplePrompts: [
       "Write a short poem about a specific dinner you'll never forget.",
