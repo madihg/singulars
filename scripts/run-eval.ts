@@ -643,7 +643,87 @@ async function generatePoem(
     // prompt help vs just the abstract rich pantheon prompt.
     return anthropicInContextGenerate(model, theme);
   }
+  if (
+    provider === "openai-incontext" ||
+    provider === "openrouter-incontext" ||
+    provider === "together-incontext"
+  ) {
+    // Same trick as anthropic-incontext but routed through an
+    // OpenAI-compatible provider (used for Gemini via OpenRouter, etc.).
+    const upstream = provider.replace("-incontext", "");
+    return openAICompatibleInContextGenerate(upstream, model, theme);
+  }
   throw new Error(`unsupported provider: ${provider}`);
+}
+
+async function openAICompatibleInContextGenerate(
+  provider: string,
+  model: string,
+  theme: string,
+): Promise<string> {
+  const supabase = getSupabase();
+  const inContextBlock = await getCuratedInContextBlock(supabase);
+  const systemPrompt = `${GENERATION_PROMPT_SYSTEM}
+
+Below are five (winner, loser) pairs from past live performances of this exact series. The audience voted on each. Study what made the chosen poems land - the patterns the room consistently rewarded. Apply the same instincts when you write the candidate poem on the new theme.
+
+${inContextBlock}
+
+Now write a poem on the new theme below. Aim for what the audience would have chosen.`;
+
+  const key =
+    provider === "openai"
+      ? process.env.OPENAI_API_KEY
+      : provider === "openrouter"
+        ? process.env.OPENROUTER_API_KEY
+        : process.env.TOGETHER_API_KEY;
+  if (!key) {
+    throw new Error(`missing ${provider.toUpperCase()}_API_KEY`);
+  }
+  const baseUrl =
+    provider === "openai"
+      ? "https://api.openai.com/v1"
+      : provider === "openrouter"
+        ? "https://openrouter.ai/api/v1"
+        : "https://api.together.xyz/v1";
+  const usesNewParam =
+    provider === "openai" &&
+    (model.startsWith("gpt-5") ||
+      model.startsWith("gpt-4.1") ||
+      model.startsWith("ft:gpt-4.1") ||
+      model.startsWith("ft:gpt-5") ||
+      model.startsWith("ft:gpt-4o"));
+  const tokenField = usesNewParam ? "max_completion_tokens" : "max_tokens";
+  const usesDefaultTempOnly =
+    provider === "openai" &&
+    (model.startsWith("gpt-5") || model.startsWith("ft:gpt-5"));
+  const res = await fetch(`${baseUrl}/chat/completions`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${key}`,
+    },
+    body: JSON.stringify({
+      model,
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: theme },
+      ],
+      [tokenField]: 1500,
+      ...(usesDefaultTempOnly ? {} : { temperature: 0.85 }),
+    }),
+  });
+  if (!res.ok) {
+    throw new Error(
+      `${provider}-incontext http ${res.status}: ${await res.text()}`,
+    );
+  }
+  const j = await res.json();
+  let raw: string = j.choices?.[0]?.message?.content || "";
+  if (raw.includes("<think>")) {
+    raw = raw.replace(/<think>[\s\S]*?<\/think>/g, "").trim();
+  }
+  return raw;
 }
 
 // ---------- in-context DPO exposure (curated pairs cache) ----------
