@@ -258,6 +258,7 @@ function ModelSidebar({
       </span>
       {models.map((model) => {
         const isActive = model.slug === activeSlug;
+        const isTraining = model.status === "training";
         return (
           <button
             key={model.slug}
@@ -288,7 +289,25 @@ function ModelSidebar({
                 flexShrink: 0,
               }}
             />
-            {model.displayName}
+            <span style={{ flex: 1 }}>{model.displayName}</span>
+            {isTraining ? (
+              <span
+                style={{
+                  fontFamily: '"Diatype Mono Variable", monospace',
+                  fontSize: "0.6rem",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.05em",
+                  padding: "0.1rem 0.4rem",
+                  border: "1px solid var(--text-primary)",
+                  color: "var(--text-primary)",
+                  borderRadius: "2px",
+                  flexShrink: 0,
+                }}
+                aria-label="training - live during the current performance"
+              >
+                training
+              </span>
+            ) : null}
           </button>
         );
       })}

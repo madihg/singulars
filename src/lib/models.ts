@@ -19,9 +19,14 @@ export type ModelSlug =
   | "versus"
   | "reinforcement"
   | "hard"
-  | "reverse";
+  | "reverse"
+  | "frontiere";
 
 export type ModelProvider = "openai" | "openrouter";
+
+/** Mirrors performances.status. "trained" = the model resulting from a
+ *  completed perf, "training" = a model live during a perf in progress. */
+export type ModelStatus = "trained" | "training";
 
 export interface Model {
   slug: ModelSlug;
@@ -35,6 +40,8 @@ export interface Model {
   examplePrompts: string[];
   /** HuggingFace dataset link (empty string when there's no published dataset). */
   huggingFaceUrl: string;
+  /** Defaults to "trained" if omitted. */
+  status?: ModelStatus;
   order: number;
 }
 
@@ -253,7 +260,30 @@ export const MODELS: Model[] = [
       "Write a poem with a clear emotional turn, anchored in one specific city.",
     ],
     huggingFaceUrl: "",
+    status: "trained",
     order: 6,
+  },
+  {
+    slug: "frontiere",
+    displayName: "frontière.exe",
+    // frontière.exe performance color (black). The machine live during
+    // tonight's show at Index Space Greenpoint. Under the hood it's the
+    // same Claude+rich+in-context-DPO setup as reverse.exe - the strongest
+    // candidate going into the live evaluation - and a new model will
+    // emerge from frontière's audience-decided pairs once the show closes.
+    color: "#000000",
+    modelId: "anthropic/claude-opus-4.7",
+    provider: "openrouter",
+    systemPrompt: SYSTEM_PROMPT_REVERSE,
+    language: "en",
+    examplePrompts: [
+      "Write a short poem about a specific dinner you'll never forget.",
+      "Compose a poem in the voice of someone confessing something to a friend.",
+      "Write a poem with a clear emotional turn, anchored in one specific city.",
+    ],
+    huggingFaceUrl: "",
+    status: "training",
+    order: 7,
   },
 ];
 
