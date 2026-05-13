@@ -98,6 +98,21 @@ export function accessibleTextColor(
 }
 
 /**
+ * Pick a readable foreground (white or black) given a solid background
+ * color. Use this for text/labels placed ON a colored surface (e.g. a
+ * filled button whose background is the performance color).
+ *
+ * Note: do NOT use accessibleTextColor() for this case - that function
+ * picks a text color for a WHITE background, not for a colored one.
+ */
+export function readableForegroundOn(bg: string): "#ffffff" | "#000000" {
+  const [r, g, b] = hexToRgb(bg);
+  const lum = relativeLuminance(r, g, b);
+  // Threshold ~0.5 is the standard WCAG-style luminance split.
+  return lum > 0.5 ? "#000000" : "#ffffff";
+}
+
+/**
  * Get an accessible color for UI components (icons, borders, dots).
  * WCAG AA requires 3:1 contrast for non-text UI components.
  */
