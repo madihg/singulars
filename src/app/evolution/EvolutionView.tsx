@@ -34,9 +34,9 @@ const STANDARD = '"Standard", sans-serif';
 export default function EvolutionView() {
   return (
     <main
+      className="evolution-page"
       style={{
         padding: "4rem 2rem",
-        maxWidth: 1400,
         margin: "0 auto",
       }}
     >
