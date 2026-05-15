@@ -45,10 +45,10 @@ export default function EvolutionView() {
           <h1
             style={{
               fontFamily: DISPLAY,
-              fontSize: "5rem",
-              lineHeight: 0.9,
+              fontSize: "clamp(2.5rem, 4vw, 3.5rem)",
+              lineHeight: 0.95,
               fontWeight: 400,
-              margin: "0 0 1rem 0",
+              margin: "0 0 1.25rem 0",
             }}
           >
             evolution

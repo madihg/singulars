@@ -158,6 +158,21 @@ export default async function SingularsPage() {
           Chat with the Models &rarr;
         </Link>
         <Link
+          href="/evolution"
+          style={{
+            fontFamily: '"Diatype Mono Variable", monospace',
+            fontSize: "0.85rem",
+            color: "rgba(0,0,0,0.85)",
+            padding: "0.5rem 1rem",
+            border: "1px solid rgba(0,0,0,0.15)",
+            borderRadius: "6px",
+            textDecoration: "none",
+            transition: "border-color 0.2s ease",
+          }}
+        >
+          Machine vs Me Over Time &rarr;
+        </Link>
+        <Link
           href="/theme-voting"
           style={{
             fontFamily: '"Diatype Mono Variable", monospace',

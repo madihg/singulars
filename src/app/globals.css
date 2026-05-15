@@ -171,7 +171,7 @@ hr {
   }
   .evolution-grid {
     grid-template-columns: minmax(200px, 240px) 1fr;
-    gap: 3rem;
+    gap: 4.5rem;
   }
   .evolution-meta {
     position: sticky;
@@ -193,8 +193,8 @@ hr {
     max-width: 1700px;
   }
   .evolution-grid {
-    grid-template-columns: minmax(240px, 300px) 1fr;
-    gap: 4rem;
+    grid-template-columns: minmax(240px, 280px) 1fr;
+    gap: 6rem;
   }
   .evolution-charts {
     gap: 3.5rem 2.5rem;
