@@ -73,8 +73,8 @@ export const HERO_IMAGES: {
       alt: "Currents New Media Festival logo",
     },
     "frontiere-exe": {
-      src: "/images/frontiere-exe/bianjie-night-poster.jpg",
-      alt: "邊界 NYC night - presenting Halim Madi's Singulars at Index Space Greenpoint Brooklyn, May 13 2026, 10pm-12am, hosted by bianjie.systems",
+      src: "/images/frontiere-exe/featured.JPG",
+      alt: "Frontière.exe at Index Space Greenpoint, May 2026",
     },
   },
 };
@@ -126,8 +126,12 @@ const descriptions: Record<string, PerformanceDescription> = {
       },
       {
         type: "image",
-        src: "/images/frontiere-exe/featured.JPG",
-        alt: "Frontière.exe at Index Space Greenpoint, May 2026",
+        src: "/images/frontiere-exe/bianjie-night-poster.jpg",
+        alt: "邊界 NYC night flyer - Frontière.exe at Index Space Greenpoint Brooklyn, May 13 2026, 10pm-12am, hosted by bianjie.systems",
+      },
+      {
+        type: "italic",
+        text: "The night's flyer. 邊界 NYC, May 13, 2026, Index Space Greenpoint. Designed and hosted by bianjie.systems.",
       },
       { type: "heading", text: "Fridges" },
       {

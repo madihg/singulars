@@ -276,8 +276,7 @@ export default async function SingularsPage() {
             // substring so adding new poster assets is one entry here.
             const isLogoImage =
               heroImg.src.endsWith(".svg") ||
-              heroImg.src.includes("currents-logo") ||
-              heroImg.src.includes("bianjie-night-poster");
+              heroImg.src.includes("currents-logo");
             const cardContent = (
               <div
                 key={perf.id}
