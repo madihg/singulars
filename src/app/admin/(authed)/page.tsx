@@ -26,7 +26,10 @@ type Counts = {
   performances: number;
   themes: number;
   poems: number;
-  votes: number;
+  poemsByHuman: number;
+  poemsByMachine: number;
+  votes: number; // audience votes (sum of poems.vote_count, includes paper ballots)
+  votesOnline: number; // online-only votes (rows in singulars.votes)
   evalRuns: number | null; // null until US-100 migration applied
   fineTuneJobs: number | null;
   candidateModels: number | null;
@@ -109,7 +112,10 @@ async function fetchCounts(): Promise<Counts> {
       performances: 0,
       themes: 0,
       poems: 0,
+      poemsByHuman: 0,
+      poemsByMachine: 0,
       votes: 0,
+      votesOnline: 0,
       evalRuns: null,
       fineTuneJobs: null,
       candidateModels: null,
@@ -126,11 +132,43 @@ async function fetchCounts(): Promise<Counts> {
     return count ?? 0;
   }
 
+  async function safeCountFiltered(
+    table: string,
+    column: string,
+    value: string,
+  ): Promise<number | null> {
+    const { count, error } = await supabase!
+      .from(table)
+      .select("*", { count: "exact", head: true })
+      .eq(column, value);
+    if (error) return null;
+    return count ?? 0;
+  }
+
+  // Audience-vote tally: sum poems.vote_count across all poems. This is the
+  // canonical number Halim writes / asks about because it includes paper
+  // ballots from live shows merged in via apply_vote_override. The raw
+  // singulars.votes row count is online-only and misses ~90% of live show
+  // votes (which were on paper).
+  async function sumVoteCount(): Promise<number> {
+    const { data, error } = await supabase!
+      .from("poems")
+      .select("vote_count");
+    if (error) return 0;
+    return ((data || []) as { vote_count: number | null }[]).reduce(
+      (s, r) => s + (Number(r.vote_count) || 0),
+      0,
+    );
+  }
+
   const [
     performances,
     themes,
     poems,
-    votes,
+    poemsByHuman,
+    poemsByMachine,
+    votesOnlineCount,
+    votesAudience,
     evalRuns,
     fineTuneJobs,
     candidateModels,
@@ -138,7 +176,10 @@ async function fetchCounts(): Promise<Counts> {
     safeCount("performances"),
     safeCount("themes"),
     safeCount("poems"),
+    safeCountFiltered("poems", "author_type", "human"),
+    safeCountFiltered("poems", "author_type", "machine"),
     safeCount("votes"),
+    sumVoteCount(),
     safeCount("eval_runs"),
     safeCount("fine_tune_jobs"),
     safeCount("candidate_models"),
@@ -148,7 +189,10 @@ async function fetchCounts(): Promise<Counts> {
     performances: performances ?? 0,
     themes: themes ?? 0,
     poems: poems ?? 0,
-    votes: votes ?? 0,
+    poemsByHuman: poemsByHuman ?? 0,
+    poemsByMachine: poemsByMachine ?? 0,
+    votes: votesAudience,
+    votesOnline: votesOnlineCount ?? 0,
     evalRuns,
     fineTuneJobs,
     candidateModels,
@@ -245,9 +289,21 @@ export default async function AdminDashboardPage() {
           value={counts.performances}
           href="/admin/performances"
         />
-        <StatCard label="themes" value={counts.themes} />
-        <StatCard label="poems" value={counts.poems} />
-        <StatCard label="votes" value={counts.votes} />
+        <StatCard
+          label="themes"
+          value={counts.themes}
+          href="/admin/themes"
+        />
+        <StatCard
+          label="poems"
+          value={counts.poems}
+          hint={`${counts.poemsByHuman} halim · ${counts.poemsByMachine} machine`}
+        />
+        <StatCard
+          label="audience votes"
+          value={counts.votes}
+          hint={`${counts.votesOnline} online · ${counts.votes - counts.votesOnline} paper ballots`}
+        />
       </div>
 
       <h2 style={{ ...sectionHeadingStyle, marginBottom: "1rem" }}>
