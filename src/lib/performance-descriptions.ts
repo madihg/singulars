@@ -4,6 +4,7 @@
 type ContentBlock =
   | { type: "paragraph"; text: string }
   | { type: "italic"; text: string }
+  | { type: "heading"; text: string }
   | { type: "image"; src: string; alt: string }
   | { type: "video"; hash: string; filename: string }
   | {
@@ -56,7 +57,7 @@ export const HERO_IMAGES: {
       alt: "Versus.exe performance at Mozilla AI Residency, San Francisco",
     },
     "carnation-exe": {
-      src: "/images/carnation-exe/IMG_8458.JPG",
+      src: "/images/carnation-exe/featured.JPG",
       alt: "Carnation.exe performance installation with printed poems displayed side by side",
     },
     "hard-exe": {
@@ -111,6 +112,148 @@ export function getPerformanceHeroImage(slug: string): HeroImage | null {
 }
 
 const descriptions: Record<string, PerformanceDescription> = {
+  "frontiere-exe": {
+    title: "Frontière.exe",
+    date: "May '26",
+    location: "Index Space, Greenpoint Brooklyn",
+    series: "Part VI of Singulars",
+    liveUrl: "",
+    datasetUrl: "",
+    content: [
+      {
+        type: "italic",
+        text: "frontière — French for border, boundary, the edge between two things. The night was hosted by bianjie.systems (邊界, the Chinese for border) at Index Space in Greenpoint, supported by Gray Area and FWB. What follows is the speech that opened the performance.",
+      },
+      {
+        type: "image",
+        src: "/images/frontiere-exe/featured.JPG",
+        alt: "Frontière.exe at Index Space Greenpoint, May 2026",
+      },
+      { type: "heading", text: "Fridges" },
+      {
+        type: "paragraph",
+        text: "How many technologists, blockchain folks, etc. Poets? Both much more mundane and much more interesting.",
+      },
+      {
+        type: "paragraph",
+        text: "I want to talk about something unrelated to what most of us have a deep expertise in. I actually want to talk about fridges. There's one over there. And of course, it is a technology of sorts, but it struck me this past weekend. Pandora's box: Because rot didn't threaten our food anymore, we could hunt to our heart's content. In some ways, refrigerators brought about the hegemony of our species.",
+      },
+      {
+        type: "paragraph",
+        text: "I told you they were interesting. I mean, take enough mescaline, sit long enough in a kitchen alone somewhere in California, and anything has the potential to become interesting.",
+      },
+      {
+        type: "paragraph",
+        text: "And so I'm in hour 3 of this trip that frankly feels infinite. And it strikes me, we're likely one of the first generations to have spent so much time with fridges. Our parents, and their parents as well. This is a recent phenomena. Think about the last time you were in a hotel room just wondering: who is the Korean or American or German designer who came up with this? Or in your crammed dorm room, or your little studio, and even now, on a late night alone in the kitchen, this is one of the technologies we've listened to most, unlike the other technologies that seem so eager to listen to us.",
+      },
+      {
+        type: "gallery",
+        items: [
+          {
+            src: "/images/frontiere-exe/IMG_2612.JPG",
+            alt: "Frontière.exe performance documentation",
+          },
+          {
+            src: "/images/frontiere-exe/IMG_2614.JPG",
+            alt: "Frontière.exe performance documentation",
+          },
+          {
+            src: "/images/frontiere-exe/IMG_2619.JPG",
+            alt: "Frontière.exe performance documentation",
+          },
+        ],
+      },
+      { type: "heading", text: "The song of fridges" },
+      {
+        type: "paragraph",
+        text: "And the other thing that strikes you, as mescaline (but let's just call it the poetic spirit) really starts hitting, is that we often notice the sound of fridges when they stop. They carve out silence. Almost the same way song does. Nothing makes you notice silence as well as a singer when stops. And so yes, I am saying fridges sing. There is such a thing as the song of refrigerators. And the point I'm trying to make tonight is that this strange combination of words, the song of fridges, the refrigerator's song, is only possible because we've spent a long time with these things. It's almost not strange.",
+      },
+      {
+        type: "paragraph",
+        text: "It made me think that there's another poet thousands of years ago, maybe one of the first poets, maybe also on mescaline, who looked at nature, at the sea, the same sea that took their brother's life, or fire, the same fire that disfigured their sister, and that poet saw beauty, saw song, and started writing about it. A poem about nature. Now the most banal thing.",
+      },
+      { type: "paragraph", text: "And so." },
+      {
+        type: "gallery",
+        items: [
+          {
+            src: "/images/frontiere-exe/IMG_2623.JPG",
+            alt: "Frontière.exe performance documentation",
+          },
+          {
+            src: "/images/frontiere-exe/IMG_2629.JPG",
+            alt: "Frontière.exe performance documentation",
+          },
+          {
+            src: "/images/frontiere-exe/IMG_2636.JPG",
+            alt: "Frontière.exe performance documentation",
+          },
+        ],
+      },
+      { type: "heading", text: "Singulars" },
+      {
+        type: "paragraph",
+        text: "Two years ago, I had fine-tuned my first model on some of my own writing, and something about some of the sentences felt psychedelic, in that it reached a place my day-to-day mind doesn't do readily. It seemed to me this was a chimera, a coalition, a council of voices scheming, and it felt unique to the point that I wondered whether it was writing for an audience that didn't exist yet.",
+      },
+      {
+        type: "paragraph",
+        text: "And because I have a healthy ego maybe, I wanted to know who people would pick between a model trained on my voice as well as some of the best of English poetry, and me.",
+      },
+      {
+        type: "paragraph",
+        text: "This is the 6th performance in a series I'm now calling Singulars. I perform in galleries and museums. I sit down. I write a poem for 30 minutes on a theme the audience picks. The model needs 3 seconds to generate a poem. And I ask people to vote. At the end of the day, I feed the winning and losing poems back into the dataset and re-train the model. The model I'm battling today is the 6th evolution, the 6th spawning.",
+      },
+      {
+        type: "gallery",
+        items: [
+          {
+            src: "/images/frontiere-exe/IMG_2637.JPG",
+            alt: "Frontière.exe performance documentation",
+          },
+          {
+            src: "/images/frontiere-exe/IMG_2645.JPG",
+            alt: "Frontière.exe performance documentation",
+          },
+          {
+            src: "/images/frontiere-exe/IMG_2646.JPG",
+            alt: "Frontière.exe performance documentation",
+          },
+        ],
+      },
+      { type: "heading", text: "Two questions" },
+      { type: "paragraph", text: "People ask two questions." },
+      {
+        type: "paragraph",
+        text: "The first one I don't answer: Did AI write this? The point is actually not to beat or be beaten. It is truly to explore another relational narrative with the model. One, maybe one more akin to these romanticized duels of old where warriors used to respect each other (I'm thinking of some Samurai tales and gladiators, and when I think of duels and fighting). Two, I can't help but eroticize it, and what if there's something more sensual happening here between me and the model. And three, that there's a case for surrender, not a loss of agency but a posture where we're curious and listening.",
+      },
+      {
+        type: "paragraph",
+        text: "And that leads me to the second question, and what I'd like to close with. I don't answer, but now do: who is winning? The answer is, I'm still winning. But I lose a bunch. And I can tell you there is humiliation. What I've learned sitting through this so many times is that humiliation and humility feel like two sides of the same coin. I have been humbled. I have been schooled many times, where I realized how flat my metaphors were. This has felt like a school for poetry. And in a way I'd describe it as a reverse Turing test, a test where I am trying to prove my humanity.",
+      },
+      {
+        type: "italic",
+        text: "I want you to see me. I hope you can see me. But mostly, I hope you can feel this moment. This is interesting. This fridge is singing. And mescaline or not, there's a case for sitting down and listening.",
+      },
+      {
+        type: "gallery",
+        items: [
+          {
+            src: "/images/frontiere-exe/IMG_2647.JPG",
+            alt: "Frontière.exe performance documentation",
+          },
+          {
+            src: "/images/frontiere-exe/IMG_2648.JPG",
+            alt: "Frontière.exe performance documentation",
+          },
+          {
+            src: "/images/frontiere-exe/IMG_2651.JPG",
+            alt: "Frontière.exe performance documentation",
+          },
+        ],
+      },
+    ],
+  },
+
   "hard-exe": {
     title: "Hard.exe",
     date: "Nov '24",

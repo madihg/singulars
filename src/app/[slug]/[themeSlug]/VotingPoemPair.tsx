@@ -120,6 +120,38 @@ export default function VotingPoemPair({
     [hasVoted, isVoting, performanceStatus],
   );
 
+  const handleUndo = useCallback(async () => {
+    if (!votedPoemId || isVoting || performanceStatus !== "training") return;
+    if (typeof window !== "undefined") {
+      const ok = window.confirm(
+        "Undo your vote? You'll be able to vote again on this pair.",
+      );
+      if (!ok) return;
+    }
+    setIsVoting(true);
+    setErrorMsg(null);
+    try {
+      const fp = await getFingerprint();
+      const res = await fetch("/api/vote/undo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ poem_id: votedPoemId, fingerprint: fp }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        if (data.vote_counts) setVoteCounts(data.vote_counts);
+        setHasVoted(false);
+        setVotedPoemId(null);
+      } else {
+        setErrorMsg(data.error || "Could not undo vote");
+      }
+    } catch {
+      setErrorMsg("Network error. Please try again.");
+    } finally {
+      setIsVoting(false);
+    }
+  }, [votedPoemId, isVoting, performanceStatus]);
+
   const canVote = performanceStatus === "training" && !hasVoted && !isVoting;
   const showResults = hasVoted || performanceStatus === "trained";
 
@@ -307,19 +339,48 @@ export default function VotingPoemPair({
       )}
 
       {hasVoted && performanceStatus === "training" && (
-        <p
-          aria-live="polite"
-          role="status"
+        <div
           style={{
             textAlign: "center",
-            color: a11yColor,
-            fontSize: "0.9rem",
             marginTop: "1.5rem",
-            fontWeight: 500,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "0.5rem",
           }}
         >
-          Thank you for voting!
-        </p>
+          <p
+            aria-live="polite"
+            role="status"
+            style={{
+              color: a11yColor,
+              fontSize: "0.9rem",
+              fontWeight: 500,
+              margin: 0,
+            }}
+          >
+            Thank you for voting!
+          </p>
+          <button
+            type="button"
+            onClick={handleUndo}
+            disabled={isVoting}
+            style={{
+              fontFamily: '"Diatype Mono Variable", monospace',
+              fontSize: "0.8rem",
+              color: "rgba(0,0,0,0.55)",
+              background: "transparent",
+              border: "none",
+              padding: 0,
+              cursor: isVoting ? "wait" : "pointer",
+              textDecoration: "underline",
+              textDecorationColor: "rgba(0,0,0,0.3)",
+              textUnderlineOffset: "3px",
+            }}
+          >
+            {isVoting ? "undoing…" : "voted by mistake? undo vote"}
+          </button>
+        </div>
       )}
     </div>
   );

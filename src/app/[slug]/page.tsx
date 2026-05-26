@@ -9,7 +9,7 @@ import {
   HERO_IMAGES,
   getPerformanceHeroImage,
 } from "@/lib/performance-descriptions";
-import PerformanceContentBlocks from "@/components/PerformanceContentBlocks";
+import CollapsibleDescription from "@/components/CollapsibleDescription";
 
 export const dynamic = "force-dynamic";
 
@@ -388,7 +388,30 @@ export default async function PerformancePage({
         )}
 
         {hasDescription(performance.slug) && (
-          <div style={{ marginTop: "1rem" }}>
+          <div
+            style={{
+              marginTop: "1.25rem",
+              display: "flex",
+              gap: "1.25rem",
+              flexWrap: "wrap",
+              alignItems: "center",
+            }}
+          >
+            <a
+              href="#themes"
+              style={{
+                fontFamily: '"Diatype Mono Variable", monospace',
+                fontSize: "0.85rem",
+                color: a11yColor,
+                textDecoration: "none",
+                padding: "0.45rem 0.9rem",
+                border: `1px solid ${performance.color}`,
+                background: "transparent",
+                letterSpacing: "0.03em",
+              }}
+            >
+              read the poems ↓
+            </a>
             <Link
               href={`/${performance.slug}/about`}
               style={{ color: "rgba(0,0,0,0.6)", fontSize: "0.9rem" }}
@@ -401,21 +424,25 @@ export default async function PerformancePage({
 
       <hr />
 
-      {/* Scraped content (images, paragraphs, galleries) */}
+      {/* Scraped content (images, paragraphs, galleries) — collapsible.
+          Default expanded for SEO/a11y; returning visitors can collapse to
+          skip past it. Jump anchor above scrolls directly to #themes. */}
       {hasDescription(performance.slug) &&
         (() => {
           const desc = getPerformanceDescription(performance.slug);
           return desc ? (
-            <section style={{ marginBottom: "3rem" }}>
-              <PerformanceContentBlocks content={desc.content} />
-            </section>
+            <CollapsibleDescription
+              content={desc.content}
+              performanceColor={performance.color}
+              a11yColor={a11yColor}
+            />
           ) : null;
         })()}
 
       {hasDescription(performance.slug) && <hr />}
 
       {/* Theme cards with poems */}
-      <section>
+      <section id="themes" style={{ scrollMarginTop: "1.5rem" }}>
         <h2
           style={{
             fontFamily: '"Diatype Variable", sans-serif',

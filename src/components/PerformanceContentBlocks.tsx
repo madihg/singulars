@@ -35,6 +35,24 @@ export default function PerformanceContentBlocks({
               </p>
             );
 
+          case "heading":
+            return (
+              <h3
+                key={i}
+                style={{
+                  fontFamily: '"Diatype Variable", sans-serif',
+                  fontSize: "1.4rem",
+                  fontWeight: 600,
+                  lineHeight: 1.2,
+                  color: "rgba(0,0,0,0.85)",
+                  marginTop: "2.5rem",
+                  marginBottom: "1rem",
+                }}
+              >
+                {block.text}
+              </h3>
+            );
+
           case "italic":
             return (
               <blockquote

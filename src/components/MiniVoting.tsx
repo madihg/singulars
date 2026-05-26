@@ -45,11 +45,33 @@ export default function MiniVoting() {
     [themeData],
   );
 
-  // Fetch a random theme from hard.exe
+  // Fetch a random theme from whichever performance is currently `training`.
+  // Falls back to the most recent `trained` performance if no training perf
+  // exists (so the widget always has something to show between shows).
   useEffect(() => {
     async function fetchRandomTheme() {
       try {
-        const res = await fetch("/api/performances/reverse-exe");
+        const listRes = await fetch("/api/performances");
+        if (!listRes.ok) {
+          throw new Error("Failed to fetch performances list");
+        }
+        const performances: Array<{
+          slug: string;
+          status: "upcoming" | "training" | "trained";
+          date: string;
+        }> = await listRes.json();
+
+        const target =
+          performances.find((p) => p.status === "training") ||
+          performances
+            .filter((p) => p.status === "trained")
+            .sort((a, b) => (b.date || "").localeCompare(a.date || ""))[0];
+
+        if (!target) {
+          throw new Error("No training or trained performance available");
+        }
+
+        const res = await fetch(`/api/performances/${target.slug}`);
         if (!res.ok) {
           throw new Error("Failed to fetch performance data");
         }
