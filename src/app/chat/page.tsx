@@ -23,6 +23,14 @@ export default function ChatPage() {
   const activeModel = MODELS.find((m) => m.slug === activeSlug)!;
   const isTraining = activeModel.status === "training";
 
+  // Route to the runtime that can actually reach each provider:
+  //   - OpenAI fine-tunes  → /api/chat       (Node, 60s timeout headroom)
+  //   - OpenRouter (Claude) → /api/chat-edge  (edge; the Node lambda can't
+  //     reach openrouter.ai). useChat re-binds `api` when this changes
+  //     because triggerRequest lists `api` in its deps.
+  const chatApi =
+    activeModel.provider === "openrouter" ? "/api/chat-edge" : "/api/chat";
+
   const {
     messages,
     input,
@@ -32,7 +40,7 @@ export default function ChatPage() {
     setMessages,
     error,
   } = useChat({
-    api: "/api/chat",
+    api: chatApi,
     body: { modelSlug: activeSlug },
     onResponse: (response) => {
       if (response.status === 429) {
