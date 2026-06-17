@@ -12,7 +12,19 @@ import OpenAI from "openai";
 import { OpenAIStream, StreamingTextResponse } from "ai";
 import { getModelBySlug, isValidModelSlug } from "@/lib/models";
 
-export const runtime = "edge";
+// Node serverless (NOT edge) + a generous maxDuration. The edge runtime caps
+// a request at ~25s, and OpenAI fine-tuned nano models can take longer than
+// that to first token when they're cold or under load - which produced
+// intermittent 504 FUNCTION_INVOCATION_TIMEOUT errors mid-stream (a poem
+// would half-render then die). Node + maxDuration=60 gives ~2.4x the headroom
+// and tolerates cold fine-tune latency. Streaming still works on Node.
+export const runtime = "nodejs";
+export const maxDuration = 60;
+export const dynamic = "force-dynamic";
+
+// Cap generation so a runaway response can't eat the whole budget. Poems are
+// short; 800 tokens is generous headroom over the ~350-char target.
+const MAX_TOKENS = 800;
 
 function getClient(provider: "openai" | "openrouter") {
   if (provider === "openrouter") {
@@ -80,6 +92,7 @@ export async function POST(req: Request) {
     const response = await client.chat.completions.create({
       model: model.modelId,
       stream: true,
+      max_tokens: MAX_TOKENS,
       messages: [{ role: "system", content: model.systemPrompt }, ...messages],
     });
 

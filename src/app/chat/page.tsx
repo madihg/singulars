@@ -127,7 +127,11 @@ export default function ChatPage() {
               onExampleClick={handleExampleClick}
             />
           ) : (
-            <MessageList messages={messages} model={activeModel} />
+            <MessageList
+              messages={messages}
+              model={activeModel}
+              isLoading={isLoading}
+            />
           )}
         </div>
 
@@ -584,10 +588,21 @@ function WelcomeScreen({
 function MessageList({
   messages,
   model,
+  isLoading,
 }: {
   messages: { role: string; content: string; id: string }[];
   model: Model;
+  isLoading: boolean;
 }) {
+  // Show the "generating" indicator while a request is in flight and the
+  // model hasn't started streaming text yet (no assistant message, or an
+  // empty one). Fine-tuned models can take a few seconds to first token -
+  // without this the screen looks frozen/empty, which reads as broken.
+  const last = messages[messages.length - 1];
+  const showGenerating =
+    isLoading &&
+    (!last || last.role !== "assistant" || last.content.length === 0);
+
   return (
     <div
       style={{
@@ -598,6 +613,20 @@ function MessageList({
         paddingBottom: "2rem",
       }}
     >
+      <style>{`
+        @keyframes singularsBlink {
+          0%, 80%, 100% { opacity: 0.2; }
+          40% { opacity: 1; }
+        }
+        .gen-dot {
+          display: inline-block;
+          width: 7px;
+          height: 7px;
+          border-radius: 50%;
+          margin-right: 5px;
+          animation: singularsBlink 1.4s infinite both;
+        }
+      `}</style>
       {messages.map((message) => (
         <div
           key={message.id}
@@ -661,6 +690,47 @@ function MessageList({
           </div>
         </div>
       ))}
+
+      {/* Generating indicator - animated dots in the model color, shown
+          while waiting for the first streamed token. */}
+      {showGenerating && (
+        <div
+          aria-live="polite"
+          aria-label="Generating poem"
+          style={{ display: "flex", gap: "0.75rem", alignItems: "flex-start" }}
+        >
+          <div
+            style={{
+              width: 28,
+              height: 28,
+              borderRadius: "50%",
+              backgroundColor: model.color,
+              flexShrink: 0,
+              marginTop: "0.15rem",
+            }}
+          />
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              height: 28,
+            }}
+          >
+            <span
+              className="gen-dot"
+              style={{ backgroundColor: model.color, animationDelay: "0s" }}
+            />
+            <span
+              className="gen-dot"
+              style={{ backgroundColor: model.color, animationDelay: "0.2s" }}
+            />
+            <span
+              className="gen-dot"
+              style={{ backgroundColor: model.color, animationDelay: "0.4s" }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
