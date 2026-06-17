@@ -155,7 +155,10 @@ export default function ChatPage() {
               marginBottom: "1rem",
             }}
           >
-            Something went wrong. Please try again.
+            {/* Surface the real error from /api/chat when we have it (ai@2
+                puts the response body text on error.message). Falls back to
+                the generic line if it's an opaque network failure. */}
+            {parseChatError(error.message)}
           </p>
         )}
 
@@ -264,6 +267,25 @@ export default function ChatPage() {
       </div>
     </div>
   );
+}
+
+/**
+ * Pull a human-readable message out of useChat's error. Our /api/chat
+ * returns `{ "error": "..." }` on failure; ai@2 surfaces that body as
+ * error.message. If it parses, show the server's message; otherwise show a
+ * generic line.
+ */
+function parseChatError(raw: string | undefined): string {
+  if (!raw) return "Something went wrong. Please try again.";
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed.error === "string") return parsed.error;
+  } catch {
+    // not JSON - fall through
+  }
+  // Avoid dumping a giant HTML error page at the user.
+  if (raw.length > 0 && raw.length < 200 && !raw.includes("<")) return raw;
+  return "Something went wrong. Please try again.";
 }
 
 /* ---- Sub-components ---- */

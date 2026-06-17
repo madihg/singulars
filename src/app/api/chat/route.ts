@@ -28,40 +28,78 @@ function getClient(provider: "openai" | "openrouter") {
   return new OpenAI({ apiKey: key });
 }
 
-export async function POST(req: Request) {
-  const body = await req.json();
-  const { messages, modelSlug } = body;
+function jsonError(message: string, status: number) {
+  return new Response(JSON.stringify({ error: message }), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
+}
 
-  if (!modelSlug || !isValidModelSlug(modelSlug)) {
-    return new Response(
-      JSON.stringify({
-        error: `Invalid model: ${modelSlug}. Valid slugs: carnation-fr, carnation-eng, versus, reinforcement, hard, reverse, frontiere`,
-      }),
-      { status: 400, headers: { "Content-Type": "application/json" } },
+export async function POST(req: Request) {
+  // Parse + validate the body. A malformed body should never throw an
+  // opaque 500 - return a clear 400 instead.
+  let messages: unknown;
+  let modelSlug: unknown;
+  try {
+    const body = await req.json();
+    messages = body.messages;
+    modelSlug = body.modelSlug;
+  } catch {
+    return jsonError("Invalid request body (expected JSON).", 400);
+  }
+
+  if (typeof modelSlug !== "string" || !isValidModelSlug(modelSlug)) {
+    return jsonError(
+      `Invalid model: ${String(
+        modelSlug,
+      )}. Valid slugs: carnation-fr, carnation-eng, versus, reinforcement, hard, reverse, frontiere`,
+      400,
     );
+  }
+
+  if (!Array.isArray(messages) || messages.length === 0) {
+    return jsonError("No messages provided.", 400);
   }
 
   const model = getModelBySlug(modelSlug)!;
   const provider = model.provider ?? "openai";
   const client = getClient(provider);
   if (!client) {
-    return new Response(
-      JSON.stringify({
-        error: `${provider.toUpperCase()} API key not configured`,
-      }),
-      { status: 503, headers: { "Content-Type": "application/json" } },
+    return jsonError(
+      `${provider.toUpperCase()} API key not configured on the server.`,
+      503,
     );
   }
 
-  const response = await client.chat.completions.create({
-    model: model.modelId,
-    stream: true,
-    messages: [{ role: "system", content: model.systemPrompt }, ...messages],
-  });
+  // The provider call is the most failure-prone step (rate limits, model
+  // outages, expired fine-tunes, network blips). Without this try/catch an
+  // unhandled throw becomes an opaque 500 + a generic "Something went wrong"
+  // banner with no detail. Catch it and surface the real reason + the right
+  // status so the UI can show something actionable.
+  try {
+    const response = await client.chat.completions.create({
+      model: model.modelId,
+      stream: true,
+      messages: [{ role: "system", content: model.systemPrompt }, ...messages],
+    });
 
-  // Type assertion needed: openai@4.x Stream types don't align with ai@2.x
-  // expected types at compile time, but runtime behavior is compatible.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const stream = OpenAIStream(response as any);
-  return new StreamingTextResponse(stream);
+    // Type assertion needed: openai@4.x Stream types don't align with ai@2.x
+    // expected types at compile time, but runtime behavior is compatible.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const stream = OpenAIStream(response as any);
+    return new StreamingTextResponse(stream);
+  } catch (err: unknown) {
+    // OpenAI SDK errors carry .status and .message; fall back gracefully.
+    const e = err as { status?: number; message?: string };
+    const status = typeof e?.status === "number" ? e.status : 502;
+    const detail = e?.message || "Unknown error from the model provider.";
+    console.error(
+      `Chat generation failed [${modelSlug} via ${provider}] (${status}): ${detail}`,
+    );
+    const friendly =
+      status === 429
+        ? "The model is rate-limited right now. Please wait a moment and try again."
+        : `The ${model.displayName} model couldn't respond (${provider}: ${detail}). Please try again.`;
+    return jsonError(friendly, status === 429 ? 429 : 502);
+  }
 }

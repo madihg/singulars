@@ -77,8 +77,8 @@ export const HERO_IMAGES: {
       alt: "Frontière.exe at Index Space Greenpoint, May 2026",
     },
     "recover-exe": {
-      src: "/images/frontiere-exe/featured.JPG",
-      alt: "recover.exe — remote Singulars at Breaking the Code, Porto",
+      src: "/images/recover-exe/featured.JPG",
+      alt: "Casa dos Livros, Porto — the venue for recover.exe at Breaking the Code",
     },
   },
 };
@@ -131,8 +131,22 @@ const descriptions: Record<string, PerformanceDescription> = {
         text: "recover — what a system does after a fault. Performed at a distance. For Breaking the Code: Hacktivating Non-Normative Algorithms at Casa dos Livros in Porto, the poet writes into the room from another continent. The duel survives the latency, the dropouts, the recovery.",
       },
       {
+        type: "image",
+        src: "/images/recover-exe/conference-banner.jpg",
+        alt: "Breaking the Code: Hacktivating Non-Normative Algorithms — International Conference, 18-19 June 2026. Theme 2026: Error 403 – Critical Refusals.",
+      },
+      {
+        type: "italic",
+        text: "The conference's 2026 theme: Error 403 – Critical Refusals. recover.exe answers it in kind — a performance built on a fragile remote rig that performs its own recovery.",
+      },
+      {
         type: "paragraph",
         text: "Singulars is normally a live in-the-room duel: I sit down, the audience picks a theme, I get 30 minutes, the model gets 3 seconds, both poems hang anonymously, the room votes, the winning human poem feeds the next fine-tune. recover.exe asks what happens when the body is on another continent.",
+      },
+      {
+        type: "image",
+        src: "/images/recover-exe/library.jpg",
+        alt: "Inside Casa dos Livros — shelves of Portuguese literature",
       },
       {
         type: "paragraph",
