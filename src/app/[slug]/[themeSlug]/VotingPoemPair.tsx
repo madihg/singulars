@@ -220,7 +220,10 @@ export default function VotingPoemPair({
                 {poem.text}
               </div>
 
-              {/* Vote results - always show count; "Your vote" and dots when voted/trained */}
+              {/* Vote results — only after the visitor has voted (or the
+                  performance is trained). Hidden pre-vote so the running
+                  tally can't anchor the next voter's choice. */}
+              {showResults && (
               <div
                 aria-live="polite"
                 aria-label={`Vote results: ${count} ${count === 1 ? "vote" : "votes"}${isVotedPoem ? ", your vote" : ""}`}
@@ -247,7 +250,7 @@ export default function VotingPoemPair({
                   >
                     {count} {count === 1 ? "vote" : "votes"}
                   </span>
-                  {showResults && isVotedPoem && (
+                  {isVotedPoem && (
                     <span
                       style={{
                         fontFamily: '"Diatype Mono Variable", monospace',
@@ -302,10 +305,40 @@ export default function VotingPoemPair({
                   </div>
                 )}
               </div>
+              )}
             </div>
           );
         })}
       </div>
+
+      {/* Combined-only tally shown to pre-vote visitors. The per-poem
+          split stays hidden until they cast their vote (or the perf
+          flips to trained), to avoid anchoring. */}
+      {!showResults && performanceStatus === "training" && (
+        <p
+          aria-live="polite"
+          style={{
+            textAlign: "center",
+            marginTop: "1.5rem",
+            fontFamily: '"Diatype Mono Variable", monospace',
+            fontSize: "0.85rem",
+            color: "rgba(0,0,0,0.55)",
+          }}
+        >
+          {poems.reduce(
+            (s, p) => s + (voteCounts[p.id] ?? p.vote_count ?? 0),
+            0,
+          )}{" "}
+          vote
+          {poems.reduce(
+            (s, p) => s + (voteCounts[p.id] ?? p.vote_count ?? 0),
+            0,
+          ) === 1
+            ? ""
+            : "s"}{" "}
+          on this pair so far · split revealed after you vote
+        </p>
+      )}
 
       {/* Voting state messages */}
       {isVoting && (

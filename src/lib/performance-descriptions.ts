@@ -76,6 +76,10 @@ export const HERO_IMAGES: {
       src: "/images/frontiere-exe/featured.JPG",
       alt: "Frontière.exe at Index Space Greenpoint, May 2026",
     },
+    "recover-exe": {
+      src: "/images/frontiere-exe/featured.JPG",
+      alt: "recover.exe — remote Singulars at Breaking the Code, Porto",
+    },
   },
 };
 
@@ -85,6 +89,8 @@ export const CARD_DESCRIPTIONS: Record<string, string> = {
     "The duel moves to the desert. At the Currents New Media Festival in 2027, the poet and machine write under the light of Santa Fe.",
   "frontiere-exe":
     "邊界 night in Brooklyn. The duel arrives at Index Space Greenpoint, hosted by bianjie.systems, supported by Gray Area and FWB. May 13, 2026, 10pm – 12am.",
+  "recover-exe":
+    "Performed at a distance. At Breaking the Code in Porto, the poet writes from another continent — the duel survives the latency, the dropouts, the recovery. June 19, 2026.",
   "reverse-exe":
     "A live poetry duel at the Media Archaeology Lab. The poet writes among vintage machines while the model trains on the archive of past performances.",
   "hard-exe":
@@ -112,6 +118,33 @@ export function getPerformanceHeroImage(slug: string): HeroImage | null {
 }
 
 const descriptions: Record<string, PerformanceDescription> = {
+  "recover-exe": {
+    title: "Recover.exe",
+    date: "Jun '26",
+    location: "Casa dos Livros, Porto (online via Breaking the Code)",
+    series: "Part VII of Singulars",
+    liveUrl: "https://coda.letras.up.pt/brkcode/conference/",
+    datasetUrl: "",
+    content: [
+      {
+        type: "italic",
+        text: "recover — what a system does after a fault. Performed at a distance. For Breaking the Code: Hacktivating Non-Normative Algorithms at Casa dos Livros in Porto, the poet writes into the room from another continent. The duel survives the latency, the dropouts, the recovery.",
+      },
+      {
+        type: "paragraph",
+        text: "Singulars is normally a live in-the-room duel: I sit down, the audience picks a theme, I get 30 minutes, the model gets 3 seconds, both poems hang anonymously, the room votes, the winning human poem feeds the next fine-tune. recover.exe asks what happens when the body is on another continent.",
+      },
+      {
+        type: "paragraph",
+        text: "The piece runs over the conference's Microsoft Teams link for sound and presence, with a dedicated browser on the venue screen that the room actually watches: my webcam streamed in live, the theme once it's chosen, both poems anonymized once they land, a QR for the audience to scan and vote with their phones, and a countdown to the next phase. Everything is paste-driven from a control on my laptop — when the realtime channel drops, the screen never blanks. It holds the last good state and reconnects quietly.",
+      },
+      {
+        type: "paragraph",
+        text: "The model I'm battling is frontière.exe, the current trained checkpoint from the May 13 show in Brooklyn. recover.exe will retrain on whatever wins and loses in Porto.",
+      },
+    ],
+  },
+
   "frontiere-exe": {
     title: "Frontière.exe",
     date: "May '26",

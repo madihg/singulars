@@ -53,18 +53,35 @@ export async function GET(request: Request) {
         );
       }
 
-      const voteCounts = (poems || []).reduce(
-        (acc, p) => ({ ...acc, [p.id]: p.vote_count }),
-        {} as Record<string, number>,
-      );
-
       const votedPoemId = votes && votes.length > 0 ? votes[0].poem_id : null;
+      const hasVoted = !!votedPoemId;
 
+      // Privacy rule (2026-06-16): pre-vote viewers only get the combined
+      // total; the per-poem split is hidden so it can't anchor their vote.
+      // After voting, the full breakdown is revealed.
+      if (hasVoted) {
+        const voteCounts = (poems || []).reduce(
+          (acc, p) => ({ ...acc, [p.id]: p.vote_count }),
+          {} as Record<string, number>,
+        );
+        return NextResponse.json({
+          fingerprint,
+          voted_poem_id: votedPoemId,
+          vote_counts: voteCounts,
+          has_voted: true,
+        });
+      }
+
+      const total = (poems || []).reduce(
+        (s, p) => s + (Number(p.vote_count) || 0),
+        0,
+      );
       return NextResponse.json({
         fingerprint,
-        voted_poem_id: votedPoemId,
-        vote_counts: voteCounts,
-        has_voted: !!votedPoemId,
+        voted_poem_id: null,
+        vote_counts: null,
+        total_votes: total,
+        has_voted: false,
       });
     }
 

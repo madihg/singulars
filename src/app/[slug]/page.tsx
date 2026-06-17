@@ -516,20 +516,42 @@ export default async function PerformancePage({
                   >
                     {poem.text}
                   </div>
-                  <div
-                    style={{
-                      fontFamily: '"Diatype Mono Variable", monospace',
-                      fontSize: "0.8rem",
-                      color: "rgba(0,0,0,0.5)",
-                      marginTop: "0.5rem",
-                    }}
-                  >
-                    {poem.vote_count ?? 0}{" "}
-                    {(poem.vote_count ?? 0) === 1 ? "vote" : "votes"}
-                  </div>
+                  {/* Per-poem vote count only when the perf is `trained`
+                      (voting closed, tally finalized). While still
+                      `training`, we surface only the combined pair count
+                      below — never the split — so it can't anchor voters. */}
+                  {performance.status === "trained" && (
+                    <div
+                      style={{
+                        fontFamily: '"Diatype Mono Variable", monospace',
+                        fontSize: "0.8rem",
+                        color: "rgba(0,0,0,0.5)",
+                        marginTop: "0.5rem",
+                      }}
+                    >
+                      {poem.vote_count ?? 0}{" "}
+                      {(poem.vote_count ?? 0) === 1 ? "vote" : "votes"}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
+            {performance.status === "training" && (
+              <p
+                style={{
+                  fontFamily: '"Diatype Mono Variable", monospace',
+                  fontSize: "0.8rem",
+                  color: "rgba(0,0,0,0.45)",
+                  marginTop: "1rem",
+                }}
+              >
+                {themeGroup.poems.reduce(
+                  (s, p) => s + (p.vote_count ?? 0),
+                  0,
+                )}{" "}
+                votes on this pair so far · split revealed once voting closes
+              </p>
+            )}
           </div>
         ))}
       </section>
