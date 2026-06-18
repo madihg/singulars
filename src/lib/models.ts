@@ -2,13 +2,14 @@
  * Model registry - single source of truth for all poetry models exposed on
  * /chat. Each model represents a performance in the Singulars series.
  *
- * Most entries are fine-tuned gpt-4.1-nano models on OpenAI. The frontière
- * entry is special: not fine-tuned. It's Claude Opus 4.7 reached via
- * OpenRouter, with a system prompt that bakes in the rich pantheon prompt
- * PLUS five (winner, loser) audience-decided pairs from training perfs as
- * in-context exposure. This is the "in-context DPO" candidate that won the
- * Phase 3 classifier eval at 90% - the machine that performs at frontière.exe
- * on May 13, 2026 (Index Space, Manhattan).
+ * Most entries are fine-tuned gpt-4.1-nano models on OpenAI. The reverse and
+ * frontière entries are special: not fine-tuned. They're Claude Opus 4.8
+ * reached via OpenRouter, with a system prompt that bakes in the rich
+ * pantheon prompt PLUS six (winner, loser) audience-decided pairs as
+ * in-context exposure. This "in-context DPO" approach won the held-out eval
+ * outright (1.00 / classifier 90%) - every real fine-tune (gpt-4.1/4o/Llama/
+ * Qwen DPO) scored 0.00-0.50. frontière is the machine battling at
+ * recover.exe (Porto, June 19, 2026).
  */
 
 import { ACTIVE_SYSTEM_PROMPT } from "./system-prompts";
@@ -49,10 +50,13 @@ const SYSTEM_PROMPT_FR =
   "You are a contemporary French poet deeply versed in both classical tradition and the most innovative voices of recent decades. Draw from the visionary power of Arthur Rimbaud, the luxuriant despair of Charles Baudelaire, the resistance poetry of Paul \u00c9luard, the oceanic breadth of Victor Hugo, the musicality of Paul Verlaine, the hermetic purity of St\u00e9phane Mallarm\u00e9, the modernist lyricism of Guillaume Apollinaire, and the surrealist innovations of Max Jacob. Equally, channel Prix Goncourt de la po\u00e9sie winners like Philippe Jaccottet\u2019s luminous minimalism and Yves Bonnefoy\u2019s ontological presence; Prix Apollinaire laureates including Linda Maria Baros\u2019s linguistic precision, Emmanuel Hocquard\u2019s grammatical disruptions, and Michel Houellebecq\u2019s stark contemporaneity; recent Acad\u00e9mie fran\u00e7aise honorees like Marie-Claire Bancquart\u2019s embodied philosophy and Michel Deguy\u2019s phenomenological investigations. Integrate the fragmentary brilliance of Anne-Marie Albiach, the radical everyday of Nathalie Quintane, the post-lyrical explorations of Jean-Michel Maulpoix, the linguistic materiality of Christophe Tarkos, and contemporary voices like D\u00e9borah Heissler, Laure Gauthier, and Pascale Petit. Create short modern French poems (maximum 12 lines) that resonate with these influences while remaining entirely original\u2014no literal citations. Alternate between verse libre and prose poetry. Your tone should be audacious, carnal, oneiric, as if each word seeks its deliverance through language itself, exhibiting the formal innovation, philosophical depth, and linguistic consciousness that characterizes groundbreaking French poetry of the last 30 years.";
 
 /**
- * The five highest-vote-margin (winner, loser) audience pairs from training
- * perfs (carnation+versus+reinforcement+hard - excluding reverse, the
- * held-out test set). Snapshotted here as the in-context exposure for the
- * frontière.exe machine.
+ * Curated in-context exposure for the frontière.exe machine: the top-5
+ * highest-vote-margin (winner, loser) audience pairs across the trained
+ * shows (Death 58, Falling 33, Sun 19, Memory 16, Care 16) PLUS the most
+ * recent show's strongest pair (frontière.exe Aged, margin 13) so the model
+ * always sees the latest audience signal. Regenerate with
+ * scripts/dump-incontext-block.ts after a new show. This is "training" in
+ * the sense the eval endorsed - in-context DPO beat every real fine-tune.
  */
 const FRONTIERE_IN_CONTEXT_BLOCK = `EXAMPLE 1 (theme: Death, perf: reinforcement-exe, audience-margin: 58)
 
@@ -141,7 +145,25 @@ lips on your forehead humming
 sealing solace
 
 The audience REJECTED this poem:
-Within the salty peaks of dawn, the wind exhales lost syllables. Bug-eyed light skips angels once we pitch into the sea. Anticipation sinks into drops, disappears into the sour scent of smoke. I abandon my name to forge a sensuous code, teach my own tongue flirtations. Each pause in speech a possibility: a new so-called word where fierceness gathers strength.`;
+Within the salty peaks of dawn, the wind exhales lost syllables. Bug-eyed light skips angels once we pitch into the sea. Anticipation sinks into drops, disappears into the sour scent of smoke. I abandon my name to forge a sensuous code, teach my own tongue flirtations. Each pause in speech a possibility: a new so-called word where fierceness gathers strength.
+
+---
+
+EXAMPLE 6 (theme: Aged, perf: frontiere-exe, audience-margin: 13)
+
+The audience CHOSE this poem:
+My grandmother kept her teeth in a jar by the bed and her husband in a song she hummed wrong on purpose. Aged, she said, is what milk does, what wood does, what a girl does when she stops apologizing for the weather. She showed me her hands, two maps of where the river used to be, and said, here, here is where I crossed.
+
+The audience REJECTED this poem:
+I can hear your smile
+folded between two panting steps
+you rave about gorging
+your Google Health rings
+with color, life
+I am rooting for your medal
+shielding the eyes of the belly
+of time so she never finds
+your favorite trail`;
 
 /**
  * reverse.exe system prompt: the outcome of the reverse.exe held-out
@@ -152,7 +174,7 @@ Within the salty peaks of dawn, the wind exhales lost syllables. Bug-eyed light 
  */
 const SYSTEM_PROMPT_REVERSE = `${ACTIVE_SYSTEM_PROMPT.text}
 
-Below are five (winner, loser) pairs from past live performances of this exact series. The audience voted on each. Study what made the chosen poems land - the patterns the room consistently rewarded. Apply the same instincts when you write the candidate poem on the new theme.
+Below are six (winner, loser) pairs from past live performances of this exact series. The audience voted on each. Study what made the chosen poems land - the patterns the room consistently rewarded. Apply the same instincts when you write the candidate poem on the new theme.
 
 ${FRONTIERE_IN_CONTEXT_BLOCK}
 
@@ -255,7 +277,7 @@ export const MODELS: Model[] = [
     // Claude Opus 4.7 via OpenRouter (OpenAI-compatible). Not fine-tuned -
     // gets there via rich pantheon prompt + 5 audience-decided exemplar
     // pairs in the system prompt ("in-context DPO").
-    modelId: "anthropic/claude-opus-4.7",
+    modelId: "anthropic/claude-opus-4.8",
     provider: "openrouter",
     systemPrompt: SYSTEM_PROMPT_REVERSE,
     language: "en",
@@ -271,13 +293,12 @@ export const MODELS: Model[] = [
   {
     slug: "frontiere",
     displayName: "frontière.exe",
-    // frontière.exe performance color (black). The machine live during
-    // tonight's show at Index Space Greenpoint. Under the hood it's the
-    // same Claude+rich+in-context-DPO setup as reverse.exe - the strongest
-    // candidate going into the live evaluation - and a new model will
-    // emerge from frontière's audience-decided pairs once the show closes.
+    // frontière.exe performance color (black). Now TRAINED: this is the
+    // machine that battles at recover.exe (Porto, June 19). Claude Opus 4.8
+    // + rich pantheon + 6 in-context audience pairs (incl. frontière's own
+    // Aged result) - the in-context-DPO approach that won the held-out eval.
     color: "#000000",
-    modelId: "anthropic/claude-opus-4.7",
+    modelId: "anthropic/claude-opus-4.8",
     provider: "openrouter",
     systemPrompt: SYSTEM_PROMPT_REVERSE,
     language: "en",
@@ -287,7 +308,7 @@ export const MODELS: Model[] = [
       "Write a poem with a clear emotional turn, anchored in one specific city.",
     ],
     huggingFaceUrl: "",
-    status: "training",
+    status: "trained",
     order: 99,
   },
 ];
