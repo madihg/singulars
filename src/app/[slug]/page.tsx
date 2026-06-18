@@ -418,23 +418,21 @@ export default async function PerformancePage({
               alignItems: "center",
             }}
           >
-            {themes.length > 0 && (
-              <a
-                href="#themes"
-                style={{
-                  fontFamily: '"Diatype Mono Variable", monospace',
-                  fontSize: "0.85rem",
-                  color: a11yColor,
-                  textDecoration: "none",
-                  padding: "0.45rem 0.9rem",
-                  border: `1px solid ${performance.color}`,
-                  background: "transparent",
-                  letterSpacing: "0.03em",
-                }}
-              >
-                read the poems ↓
-              </a>
-            )}
+            <a
+              href="#themes"
+              style={{
+                fontFamily: '"Diatype Mono Variable", monospace',
+                fontSize: "0.85rem",
+                color: a11yColor,
+                textDecoration: "none",
+                padding: "0.45rem 0.9rem",
+                border: `1px solid ${performance.color}`,
+                background: "transparent",
+                letterSpacing: "0.03em",
+              }}
+            >
+              read the poems ↓
+            </a>
             {chatModel && (
               <a
                 href={`/chat?model=${chatModel.slug}`}
@@ -492,6 +490,20 @@ export default async function PerformancePage({
         >
           Themes
         </h2>
+        {themes.length === 0 && (
+          <p
+            style={{
+              fontSize: "1rem",
+              color: "rgba(0,0,0,0.55)",
+              lineHeight: 1.5,
+              marginTop: "-1rem",
+            }}
+          >
+            {performance.status === "training"
+              ? "The poems appear here during the performance — once both poems land, you can read them and vote."
+              : "Poems for this performance aren’t posted yet."}
+          </p>
+        )}
         {themes.map((themeGroup) => (
           <div
             key={themeGroup.theme_slug}
