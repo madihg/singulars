@@ -18,7 +18,7 @@ import crypto from "crypto";
 export const COOKIE_NAME = "theme-admin-token";
 export const COOKIE_MAX_AGE_SECONDS = 86_400; // 24h
 
-function getAdminPassword(): string {
+export function getAdminPassword(): string {
   return (
     process.env.ADMIN_PASSWORD ||
     process.env.THEME_ADMIN_PASSWORD ||

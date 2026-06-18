@@ -1,14 +1,15 @@
 import { notFound } from "next/navigation";
 import { getServiceClient, getSupabase } from "@/lib/supabase";
+import { isStageControlKeyValid } from "@/lib/stage-auth";
 import ControlView from "./ControlView";
 
 export const dynamic = "force-dynamic";
 
 /**
  * /[slug]/control — operator surface. The performer opens this on their
- * laptop with ?key=... matching STAGE_CONTROL_KEY. We do the key check
- * server-side so the page itself 404s when unauthorized. The actual
- * mutating endpoint also re-checks the key on each request.
+ * laptop with ?key=... matching STAGE_CONTROL_KEY or the admin password. We
+ * do the key check server-side so the page itself gates when unauthorized.
+ * The actual mutating endpoint also re-checks the key on each request.
  */
 export default async function ControlPage({
   params,
@@ -17,8 +18,7 @@ export default async function ControlPage({
   params: { slug: string };
   searchParams: { key?: string };
 }) {
-  const expected = process.env.STAGE_CONTROL_KEY;
-  if (!expected || !searchParams.key || searchParams.key !== expected) {
+  if (!isStageControlKeyValid(searchParams.key)) {
     return (
       <main
         style={{
@@ -30,7 +30,8 @@ export default async function ControlPage({
       >
         <p>unauthorized.</p>
         <p style={{ fontSize: "0.85rem", marginTop: "1rem" }}>
-          append <code>?key=…</code> with the STAGE_CONTROL_KEY value.
+          append <code>?key=…</code> with your admin password (or the
+          STAGE_CONTROL_KEY value).
         </p>
       </main>
     );
@@ -56,7 +57,7 @@ export default async function ControlPage({
     <ControlView
       performance={perf}
       initialState={state}
-      controlKey={searchParams.key}
+      controlKey={searchParams.key as string}
     />
   );
 }

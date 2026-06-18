@@ -412,12 +412,6 @@ export default async function PerformancePage({
             >
               read the poems ↓
             </a>
-            <Link
-              href={`/${performance.slug}/about`}
-              style={{ color: "rgba(0,0,0,0.6)", fontSize: "0.9rem" }}
-            >
-              About this performance &rarr;
-            </Link>
           </div>
         )}
       </header>

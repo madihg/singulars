@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase";
+import { isStageControlKeyValid } from "@/lib/stage-auth";
 
 /**
  * POST /api/stage/[slug]/update
@@ -15,15 +16,8 @@ export async function POST(
 ) {
   const url = new URL(req.url);
   const key = url.searchParams.get("key");
-  const expected = process.env.STAGE_CONTROL_KEY;
 
-  if (!expected) {
-    return NextResponse.json(
-      { error: "STAGE_CONTROL_KEY not configured on server" },
-      { status: 503 },
-    );
-  }
-  if (!key || key !== expected) {
+  if (!isStageControlKeyValid(key)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

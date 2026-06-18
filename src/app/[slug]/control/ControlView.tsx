@@ -54,7 +54,7 @@ export default function ControlView({
   );
   const [videoUrl, setVideoUrl] = useState(initialState?.video_embed_url ?? "");
   const [windowSeconds, setWindowSeconds] = useState(
-    initialState?.window_seconds ?? 1200,
+    initialState?.window_seconds ?? 1800,
   );
   const [writingStartsAt, setWritingStartsAt] = useState(
     initialState?.writing_starts_at
@@ -114,6 +114,18 @@ export default function ControlView({
 
   const setPhase = useCallback(
     (p: Phase) => post({ phase: p }, `phase:${p}`),
+    [post],
+  );
+
+  // Start the writing window NOW: stamp writing_starts_at=now and flip to
+  // 'writing'. The stage computes the countdown from this timestamp so the
+  // venue screen and this laptop stay in sync across the network.
+  const startWritingNow = useCallback(
+    () =>
+      post(
+        { phase: "writing", writing_starts_at: new Date().toISOString() },
+        "start-writing",
+      ),
     [post],
   );
 
@@ -232,6 +244,33 @@ export default function ControlView({
               </button>
             );
           })}
+        </div>
+
+        {/* Start-the-clock action: stamps the writing window start so the
+            stage timer counts down from now, synced across devices. */}
+        <div style={{ marginTop: "0.85rem", display: "flex", gap: "0.75rem", alignItems: "center", flexWrap: "wrap" }}>
+          <button
+            onClick={startWritingNow}
+            disabled={saving === "start-writing"}
+            style={{
+              padding: "0.6rem 1.1rem",
+              border: `1px solid ${accent}`,
+              background: accent,
+              color: "#fff",
+              fontFamily: monoFont,
+              fontSize: "0.9rem",
+              cursor: saving === "start-writing" ? "wait" : "pointer",
+              letterSpacing: "0.03em",
+              textTransform: "lowercase",
+            }}
+          >
+            {saving === "start-writing"
+              ? "starting…"
+              : `▶ start writing window now (${Math.round(windowSeconds / 60)} min)`}
+          </button>
+          <span style={{ fontFamily: monoFont, fontSize: "0.75rem", color: "rgba(0,0,0,0.45)" }}>
+            stamps the timer start; the stage counts down from this moment.
+          </span>
         </div>
       </section>
 

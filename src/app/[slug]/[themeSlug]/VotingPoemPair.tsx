@@ -29,12 +29,16 @@ interface VotingPoemPairProps {
   poems: Poem[];
   performanceColor: string;
   performanceStatus: "upcoming" | "training" | "trained";
+  /** Where "read more about the piece" points: an on-page #about anchor when
+   *  the perf has a description, else the performance page. */
+  aboutHref: string;
 }
 
 export default function VotingPoemPair({
   poems,
   performanceColor,
   performanceStatus,
+  aboutHref,
 }: VotingPoemPairProps) {
   const [hasVoted, setHasVoted] = useState(false);
   const [votedPoemId, setVotedPoemId] = useState<string | null>(null);
@@ -415,6 +419,128 @@ export default function VotingPoemPair({
           </button>
         </div>
       )}
+
+      {/* After voting (or once results are final), gently invite the next
+          step: suggest a theme, or read about the piece. Sentence case,
+          hairline cards, calm hover. Applies to every voting page. */}
+      {showResults && (
+        <PostVoteInvites
+          performanceColor={performanceColor}
+          a11yColor={a11yColor}
+          aboutHref={aboutHref}
+        />
+      )}
+    </div>
+  );
+}
+
+function PostVoteInvites({
+  performanceColor,
+  a11yColor,
+  aboutHref,
+}: {
+  performanceColor: string;
+  a11yColor: string;
+  aboutHref: string;
+}) {
+  const invites = [
+    {
+      href: "/theme-voting",
+      label: "what's next",
+      title: "Suggest the next theme",
+      sub: "Help choose what the poet and machine write on next.",
+      internal: true,
+    },
+    {
+      href: aboutHref,
+      label: "the piece",
+      title: "Read more about the piece",
+      sub: "The story behind this performance and the series.",
+      internal: true,
+    },
+  ];
+
+  return (
+    <div style={{ marginTop: "3rem" }}>
+      <div
+        style={{
+          fontFamily: '"Diatype Mono Variable", monospace',
+          fontSize: "0.7rem",
+          letterSpacing: "0.08em",
+          textTransform: "uppercase",
+          color: "rgba(0,0,0,0.4)",
+          textAlign: "center",
+          marginBottom: "1.25rem",
+        }}
+      >
+        before you go
+      </div>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+          gap: "1rem",
+        }}
+      >
+        {invites.map((it) => (
+          <a
+            key={it.title}
+            href={it.href}
+            style={{
+              display: "block",
+              border: "1px solid rgba(0,0,0,0.14)",
+              padding: "1.25rem 1.35rem",
+              textDecoration: "none",
+              color: "inherit",
+              transition: "border-color 0.2s ease, background 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = performanceColor;
+              e.currentTarget.style.background = performanceColor + "0A";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = "rgba(0,0,0,0.14)";
+              e.currentTarget.style.background = "transparent";
+            }}
+          >
+            <div
+              style={{
+                fontFamily: '"Diatype Mono Variable", monospace',
+                fontSize: "0.68rem",
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                color: a11yColor,
+                marginBottom: "0.6rem",
+              }}
+            >
+              {it.label}
+            </div>
+            <div
+              style={{
+                fontFamily: '"Diatype Variable", sans-serif',
+                fontSize: "1.15rem",
+                fontWeight: 600,
+                lineHeight: 1.25,
+                marginBottom: "0.4rem",
+              }}
+            >
+              {it.title}{" "}
+              <span aria-hidden style={{ color: a11yColor }}>
+                &rarr;
+              </span>
+            </div>
+            <div
+              style={{
+                fontSize: "0.9rem",
+                lineHeight: 1.5,
+                color: "rgba(0,0,0,0.6)",
+              }}
+            >
+              {it.sub}
+            </div>
+          </a>
+        ))}
+      </div>
     </div>
   );
 }

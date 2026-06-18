@@ -8,6 +8,10 @@ interface Props {
   content: PerformanceDescription["content"];
   performanceColor: string;
   a11yColor: string;
+  /** Start expanded (default true). Voting pages can pass false to keep focus. */
+  defaultOpen?: boolean;
+  /** Optional anchor id so a CTA elsewhere can scroll to this section. */
+  id?: string;
 }
 
 /**
@@ -24,12 +28,15 @@ export default function CollapsibleDescription({
   content,
   performanceColor,
   a11yColor,
+  defaultOpen = true,
+  id,
 }: Props) {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(defaultOpen);
 
   return (
     <section
-      style={{ marginBottom: "3rem" }}
+      id={id}
+      style={{ marginBottom: "3rem", scrollMarginTop: "1.5rem" }}
       aria-label="About this performance"
     >
       <button
