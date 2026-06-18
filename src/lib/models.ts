@@ -342,6 +342,21 @@ export function getModelBySlug(slug: string): Model | undefined {
   return MODELS.find((m) => m.slug === slug);
 }
 
+/** The performance-page slug a model corresponds to (e.g. "frontiere" →
+ *  "frontiere-exe"; both carnation models → "carnation-exe"). */
+export function performanceSlugForModel(m: Model): string {
+  if (m.slug === "carnation-fr" || m.slug === "carnation-eng") {
+    return "carnation-exe";
+  }
+  return `${m.slug}-exe`;
+}
+
+/** Find the chat model for a performance slug, if one exists (lets a
+ *  performance page link to "chat with this model"). */
+export function getModelByPerformanceSlug(perfSlug: string): Model | undefined {
+  return MODELS.find((m) => performanceSlugForModel(m) === perfSlug);
+}
+
 /**
  * Display order for the sidebar / mobile selector: trained models first
  * (newest by `order` ascending), then training models below a divider.

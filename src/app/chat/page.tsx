@@ -1,12 +1,14 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useChat } from "ai/react";
 import TextareaAutosize from "react-textarea-autosize";
 import {
   MODELS,
   getSortedModels,
   getDefaultModel,
+  performanceSlugForModel,
+  isValidModelSlug,
   type Model,
   type ModelSlug,
 } from "@/lib/models";
@@ -61,6 +63,14 @@ export default function ChatPage() {
     },
     [activeSlug, setMessages, setInput],
   );
+
+  // Preselect a model from ?model=<slug> (e.g. a performance page linking
+  // "chat with this model"). Runs once on mount to avoid hydration mismatch.
+  useEffect(() => {
+    const m = new URLSearchParams(window.location.search).get("model");
+    if (m && isValidModelSlug(m)) switchModel(m as ModelSlug);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleExampleClick = useCallback(
     (prompt: string) => {
@@ -517,6 +527,22 @@ function WelcomeScreen({
           {model.displayName}
         </h1>
       </div>
+
+      {/* Link to this model's performance page */}
+      <a
+        href={`/${performanceSlugForModel(model)}`}
+        style={{
+          fontFamily: '"Diatype Mono Variable", monospace',
+          fontSize: "0.8rem",
+          color: model.color,
+          textDecoration: "none",
+          borderBottom: `1px solid ${model.color}`,
+          paddingBottom: "2px",
+          marginTop: "-0.5rem",
+        }}
+      >
+        Learn more about the performance &rarr;
+      </a>
 
       <p
         style={{

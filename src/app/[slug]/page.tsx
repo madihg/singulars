@@ -11,6 +11,7 @@ import {
 } from "@/lib/performance-descriptions";
 import CollapsibleDescription from "@/components/CollapsibleDescription";
 import VotingPoemPair from "./[themeSlug]/VotingPoemPair";
+import { getModelByPerformanceSlug } from "@/lib/models";
 
 export const dynamic = "force-dynamic";
 
@@ -145,6 +146,7 @@ export default async function PerformancePage({
 
   const themes = groupByTheme(performance.poems);
   const a11yColor = accessibleTextColor(performance.color);
+  const chatModel = getModelByPerformanceSlug(performance.slug);
 
   const cssVars = {
     "--performance-color": performance.color,
@@ -406,7 +408,7 @@ export default async function PerformancePage({
           </div>
         )}
 
-        {hasDescription(performance.slug) && (
+        {(hasDescription(performance.slug) || chatModel) && (
           <div
             style={{
               marginTop: "1.25rem",
@@ -416,21 +418,42 @@ export default async function PerformancePage({
               alignItems: "center",
             }}
           >
-            <a
-              href="#themes"
-              style={{
-                fontFamily: '"Diatype Mono Variable", monospace',
-                fontSize: "0.85rem",
-                color: a11yColor,
-                textDecoration: "none",
-                padding: "0.45rem 0.9rem",
-                border: `1px solid ${performance.color}`,
-                background: "transparent",
-                letterSpacing: "0.03em",
-              }}
-            >
-              read the poems ↓
-            </a>
+            {themes.length > 0 && (
+              <a
+                href="#themes"
+                style={{
+                  fontFamily: '"Diatype Mono Variable", monospace',
+                  fontSize: "0.85rem",
+                  color: a11yColor,
+                  textDecoration: "none",
+                  padding: "0.45rem 0.9rem",
+                  border: `1px solid ${performance.color}`,
+                  background: "transparent",
+                  letterSpacing: "0.03em",
+                }}
+              >
+                read the poems ↓
+              </a>
+            )}
+            {chatModel && (
+              <a
+                href={`/chat?model=${chatModel.slug}`}
+                style={{
+                  fontFamily: '"Diatype Mono Variable", monospace',
+                  fontSize: "0.85rem",
+                  color: a11yColor,
+                  textDecoration: "none",
+                  padding: "0.45rem 0.9rem",
+                  border: `1px solid ${performance.color}`,
+                  background: "transparent",
+                  letterSpacing: "0.03em",
+                }}
+              >
+                {chatModel.status === "training"
+                  ? "meet the model →"
+                  : "chat with the model →"}
+              </a>
+            )}
           </div>
         )}
       </header>
