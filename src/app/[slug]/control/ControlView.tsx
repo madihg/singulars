@@ -231,7 +231,7 @@ export default function ControlView({
             fontWeight: 600,
           }}
         >
-          {state?.sandbox ? "● sandbox — not recording" : "● production — live"}
+          {state?.sandbox ? "● test mode — not recording" : "● live — recording"}
         </span>
         <button
           onClick={() => post({ sandbox: !state?.sandbox }, "sandbox")}
@@ -251,13 +251,13 @@ export default function ControlView({
           {saving === "sandbox"
             ? "switching…"
             : state?.sandbox
-              ? "→ go live (production)"
-              : "→ back to sandbox"}
+              ? "→ go live (record votes)"
+              : "→ back to test mode"}
         </button>
         <span style={{ fontFamily: monoFont, fontSize: "0.72rem", color: "rgba(0,0,0,0.45)" }}>
           {state?.sandbox
             ? "test freely — poems show on stage but aren't saved and can't be voted on."
-            : "poems commit to the database and the audience can vote. flip the show live."}
+            : "poems commit to the database and the audience can vote. you're live."}
         </span>
       </section>
 

@@ -61,21 +61,31 @@ export default function MiniVoting() {
           date: string;
         }> = await listRes.json();
 
-        const target =
-          performances.find((p) => p.status === "training") ||
-          performances
+        // Candidate order: the live (training) perf first, then trained by
+        // date desc. We try each until we find one that actually HAS poems —
+        // a training perf with no poems yet (pre-show) must NOT crash the
+        // widget; it should fall back to the latest finished duel.
+        const candidates = [
+          ...performances.filter((p) => p.status === "training"),
+          ...performances
             .filter((p) => p.status === "trained")
-            .sort((a, b) => (b.date || "").localeCompare(a.date || ""))[0];
+            .sort((a, b) => (b.date || "").localeCompare(a.date || "")),
+        ];
 
-        if (!target) {
-          throw new Error("No training or trained performance available");
+        let data: { id: string; name: string; slug: string; color: string; status: Performance["status"]; poems: Poem[] } | null = null;
+        for (const cand of candidates) {
+          const res = await fetch(`/api/performances/${cand.slug}`);
+          if (!res.ok) continue;
+          const d = await res.json();
+          if (Array.isArray(d.poems) && d.poems.length > 0) {
+            data = d;
+            break;
+          }
         }
 
-        const res = await fetch(`/api/performances/${target.slug}`);
-        if (!res.ok) {
-          throw new Error("Failed to fetch performance data");
+        if (!data) {
+          throw new Error("No performance with poems available");
         }
-        const data = await res.json();
 
         // Group poems by theme
         const themeMap = new Map<string, Poem[]>();

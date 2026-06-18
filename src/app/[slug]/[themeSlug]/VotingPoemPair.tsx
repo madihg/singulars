@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { getFingerprint } from "@/lib/fingerprint";
-import { accessibleTextColor } from "@/lib/color-utils";
+import { accessibleTextColor, readableForegroundOn } from "@/lib/color-utils";
 
 interface Poem {
   id: string;
@@ -46,6 +46,7 @@ export default function VotingPoemPair({
 }: VotingPoemPairProps) {
   const [hasVoted, setHasVoted] = useState(false);
   const [votedPoemId, setVotedPoemId] = useState<string | null>(null);
+  const [selectedPoemId, setSelectedPoemId] = useState<string | null>(null);
   const [voteCounts, setVoteCounts] = useState<Record<string, number>>({});
   const [isVoting, setIsVoting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -92,9 +93,22 @@ export default function VotingPoemPair({
     }
   }, [poems, performanceStatus]);
 
-  const handleVote = useCallback(
-    async (poemId: string) => {
+  // Step 1: tap a poem to SELECT it (a frame appears + a submit button). Tap
+  // again to deselect. No vote is cast until "submit".
+  const handleSelect = useCallback(
+    (poemId: string) => {
       if (hasVoted || isVoting) return;
+      setSelectedPoemId((prev) => (prev === poemId ? null : poemId));
+      setErrorMsg(null);
+    },
+    [hasVoted, isVoting],
+  );
+
+  // Step 2: submit the selected poem.
+  const handleSubmit = useCallback(
+    async () => {
+      const poemId = selectedPoemId;
+      if (!poemId || hasVoted || isVoting) return;
 
       // Trained performance: voting is closed, so this is a PREVIEW only —
       // reveal the split locally, persist nothing. The note below points to
@@ -136,7 +150,7 @@ export default function VotingPoemPair({
         setIsVoting(false);
       }
     },
-    [hasVoted, isVoting, performanceStatus],
+    [selectedPoemId, hasVoted, isVoting, performanceStatus],
   );
 
   const handleUndo = useCallback(async () => {
@@ -161,6 +175,7 @@ export default function VotingPoemPair({
         if (data.vote_counts) setVoteCounts(data.vote_counts);
         setHasVoted(false);
         setVotedPoemId(null);
+        setSelectedPoemId(null);
       } else {
         setErrorMsg(data.error || "Could not undo vote");
       }
@@ -184,36 +199,25 @@ export default function VotingPoemPair({
 
   return (
     <div>
-      {/* Instruction text - above poems */}
-      {canVote && !isVoting && (
-        <p
-          style={{
-            textAlign: "center",
-            color: "rgba(0,0,0,0.5)",
-            fontSize: "0.85rem",
-            marginBottom: "1.5rem",
-          }}
-        >
-          {isTrained
-            ? "Tap the poem you prefer to see how the room voted"
-            : "Click on the poem you prefer to cast your vote"}
-        </p>
-      )}
-
-      {/* Combined pair total BEFORE voting — never the per-poem split, so the
-          running tally can't anchor the next voter. */}
+      {/* One left-aligned line before voting: combined pair total (bold) +
+          what to do. Never the per-poem split, so it can't anchor voters. */}
       {!showResults && (
         <p
           style={{
-            textAlign: "center",
+            textAlign: "left",
             fontFamily: '"Diatype Mono Variable", monospace',
-            fontSize: "0.8rem",
-            color: "rgba(0,0,0,0.45)",
-            marginBottom: "1.5rem",
+            fontSize: "0.85rem",
+            color: "rgba(0,0,0,0.55)",
+            marginBottom: "1.25rem",
+            lineHeight: 1.5,
           }}
         >
-          {combinedTotal} {combinedTotal === 1 ? "vote" : "votes"} on this pair
-          so far · who&apos;s ahead is revealed once you vote
+          <strong style={{ color: a11yColor, fontWeight: 700 }}>
+            {combinedTotal} {combinedTotal === 1 ? "vote" : "votes"}
+          </strong>
+          {isTrained
+            ? " on this pair — tap a poem to see who the room voted for (this duel is closed)."
+            : " on this pair so far — pick the poem you prefer, then submit your vote."}
         </p>
       )}
 
@@ -227,6 +231,8 @@ export default function VotingPoemPair({
       >
         {poems.map((poem) => {
           const isVotedPoem = votedPoemId === poem.id;
+          const isSelected = selectedPoemId === poem.id;
+          const framed = isVotedPoem || isSelected;
           const count = voteCounts[poem.id] ?? poem.vote_count;
 
           return (
@@ -234,23 +240,25 @@ export default function VotingPoemPair({
               key={poem.id}
               data-poem-id={poem.id}
               data-voteable={canVote ? "true" : undefined}
-              onClick={() => canVote && handleVote(poem.id)}
+              onClick={() => canVote && handleSelect(poem.id)}
               role={canVote ? "button" : undefined}
-              aria-label={canVote ? "Vote for this poem" : "Poem"}
+              aria-label={canVote ? "Select this poem" : "Poem"}
+              aria-pressed={canVote ? isSelected : undefined}
               tabIndex={canVote ? 0 : undefined}
               onKeyDown={(e) => {
                 if (canVote && (e.key === "Enter" || e.key === " ")) {
                   e.preventDefault();
-                  handleVote(poem.id);
+                  handleSelect(poem.id);
                 }
               }}
               style={{
-                padding: "2rem",
-                borderTop: `2px solid ${isVotedPoem ? performanceColor : "rgba(0,0,0,0.12)"}`,
+                padding: "1.75rem",
+                border: `2px solid ${framed ? performanceColor : "rgba(0,0,0,0.12)"}`,
+                background: isSelected ? performanceColor + "0A" : "transparent",
                 cursor: canVote
                   ? `url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20'><circle cx='10' cy='10' r='8' fill='${encodeURIComponent(performanceColor)}'/></svg>") 10 10, pointer`
                   : "default",
-                transition: "opacity 0.3s ease",
+                transition: "border-color 0.2s ease, background 0.2s ease",
                 position: "relative",
               }}
             >
@@ -357,33 +365,32 @@ export default function VotingPoemPair({
         })}
       </div>
 
-      {/* Combined-only tally shown to pre-vote visitors. The per-poem
-          split stays hidden until they cast their vote (or the perf
-          flips to trained), to avoid anchoring. */}
-      {!showResults && performanceStatus === "training" && (
-        <p
-          aria-live="polite"
-          style={{
-            textAlign: "center",
-            marginTop: "1.5rem",
-            fontFamily: '"Diatype Mono Variable", monospace',
-            fontSize: "0.85rem",
-            color: "rgba(0,0,0,0.55)",
-          }}
-        >
-          {poems.reduce(
-            (s, p) => s + (voteCounts[p.id] ?? p.vote_count ?? 0),
-            0,
-          )}{" "}
-          vote
-          {poems.reduce(
-            (s, p) => s + (voteCounts[p.id] ?? p.vote_count ?? 0),
-            0,
-          ) === 1
-            ? ""
-            : "s"}{" "}
-          on this pair so far · split revealed after you vote
-        </p>
+      {/* Submit — appears once a poem is selected (step 2). */}
+      {canVote && selectedPoemId && (
+        <div style={{ textAlign: "center", marginTop: "1.75rem" }}>
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={isVoting}
+            style={{
+              padding: "0.75rem 2.25rem",
+              fontSize: "1rem",
+              fontWeight: 700,
+              fontFamily: '"Standard", sans-serif',
+              color: readableForegroundOn(performanceColor),
+              backgroundColor: performanceColor,
+              border: "none",
+              cursor: isVoting ? "wait" : "pointer",
+              transition: "opacity 0.2s ease",
+            }}
+          >
+            {isVoting
+              ? "submitting…"
+              : isTrained
+                ? "See who won"
+                : "Submit my vote"}
+          </button>
+        </div>
       )}
 
       {/* Voting state messages */}

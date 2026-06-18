@@ -32,6 +32,14 @@ interface PerformanceRow {
   location: string;
 }
 
+interface Round {
+  theme: string;
+  theme_slug: string;
+  human_votes: number;
+  machine_votes: number;
+  total: number;
+}
+
 interface Props {
   performance: PerformanceRow;
   initialState: StageStateRow | null;
@@ -67,7 +75,26 @@ export default function StageView({
     }
   });
   const [pollHealth, setPollHealth] = useState<"ok" | "degraded">("ok");
+  const [viewerCount, setViewerCount] = useState(0);
+  const [rounds, setRounds] = useState<Round[]>([]);
   const failCountRef = useRef(0);
+  const viewerIdRef = useRef<string | null>(null);
+  if (!viewerIdRef.current && typeof window !== "undefined") {
+    try {
+      const k = `singulars:viewer:${performance.slug}`;
+      let v = localStorage.getItem(k);
+      if (!v) {
+        v =
+          typeof crypto !== "undefined" && crypto.randomUUID
+            ? crypto.randomUUID()
+            : `v${Date.now()}${Math.floor(Math.random() * 1e6)}`;
+        localStorage.setItem(k, v);
+      }
+      viewerIdRef.current = v;
+    } catch {
+      viewerIdRef.current = `v${Date.now()}`;
+    }
+  }
 
   useEffect(() => {
     if (typeof window === "undefined" || !state) return;
@@ -88,12 +115,17 @@ export default function StageView({
         return;
       }
       try {
-        const res = await fetch(`/api/stage/${performance.slug}`, {
+        const viewerQ = viewerIdRef.current
+          ? `?viewer=${encodeURIComponent(viewerIdRef.current)}`
+          : "";
+        const res = await fetch(`/api/stage/${performance.slug}${viewerQ}`, {
           cache: "no-store",
         });
         if (!res.ok) throw new Error("non-ok");
         const data = await res.json();
         if (data.stage) setState(data.stage as StageStateRow);
+        if (typeof data.viewer_count === "number") setViewerCount(data.viewer_count);
+        if (Array.isArray(data.rounds)) setRounds(data.rounds as Round[]);
         failCountRef.current = 0;
         setPollHealth("ok");
         timer = setTimeout(tick, POLL_MS);
@@ -156,6 +188,25 @@ export default function StageView({
         }}
       >
         <div>
+          {/* Test-mode badge — aligned with the title, in the page aesthetic
+              (red-bordered rectangle, not a yellow block). */}
+          {state?.sandbox && (
+            <div
+              style={{
+                display: "inline-block",
+                border: `1px solid ${color}`,
+                color,
+                fontFamily: MONO,
+                fontSize: "0.65rem",
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                padding: "0.25rem 0.6rem",
+                marginBottom: "0.6rem",
+              }}
+            >
+              test mode · not recording
+            </div>
+          )}
           <h1
             style={{
               fontFamily: DISPLAY,
@@ -180,7 +231,40 @@ export default function StageView({
             a machine trained on his own poems.
           </p>
         </div>
-        <StatusBadge phase={phase} theme={state?.theme ?? null} color={color} />
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-end",
+            gap: "0.6rem",
+            flexShrink: 0,
+          }}
+        >
+          {!staticMode && (
+            <div
+              style={{
+                fontFamily: MONO,
+                fontSize: "0.8rem",
+                color: "rgba(255,255,255,0.65)",
+                display: "flex",
+                alignItems: "center",
+                gap: "0.4rem",
+              }}
+            >
+              <span
+                style={{
+                  width: 7,
+                  height: 7,
+                  borderRadius: "50%",
+                  background: color,
+                  display: "inline-block",
+                }}
+              />
+              {viewerCount} {viewerCount === 1 ? "viewer" : "viewers"}
+            </div>
+          )}
+          <StatusBadge phase={phase} theme={state?.theme ?? null} color={color} />
+        </div>
       </header>
 
       {/* Body: poems on the left, camera + QR on the right */}
@@ -193,16 +277,19 @@ export default function StageView({
           gap: "2rem",
         }}
       >
-        {/* MAIN — the last poem pair (always, if present) */}
-        <section style={{ minHeight: 0, display: "flex", flexDirection: "column" }}>
-          {hasPoems ? (
-            <PoemsPair state={state} color={color} showHumanFirst={showHumanFirst} />
-          ) : (
-            <EmptyMain phase={phase} color={color} />
-          )}
+        {/* MAIN — the current poem pair, plus the earlier rounds + tallies */}
+        <section style={{ minHeight: 0, display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+          <div style={{ flex: 1, minHeight: 0, display: "flex" }}>
+            {hasPoems ? (
+              <PoemsPair state={state} color={color} showHumanFirst={showHumanFirst} />
+            ) : (
+              <EmptyMain phase={phase} color={color} />
+            )}
+          </div>
+          <RoundsStrip rounds={rounds} currentSlug={state?.theme_slug ?? null} />
         </section>
 
-        {/* RIGHT — camera (top) then QR + instructions (same width as camera) */}
+        {/* RIGHT — camera (top), QR + instructions, then the explanation */}
         <aside
           style={{
             display: "flex",
@@ -224,6 +311,7 @@ export default function StageView({
             staticMode={staticMode}
           />
           <QRBlock url={qrUrl} color={color} hasTheme={!!state?.theme_slug} />
+          <AboutBox color={color} />
         </aside>
       </div>
 
@@ -244,25 +332,6 @@ export default function StageView({
         />
       )}
 
-      {/* Sandbox marker — votes/poems are NOT being recorded. */}
-      {state?.sandbox && (
-        <div
-          style={{
-            position: "fixed",
-            top: 12,
-            left: 12,
-            fontFamily: MONO,
-            fontSize: "0.65rem",
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
-            color: "#000",
-            background: "#f59e0b",
-            padding: "0.2rem 0.5rem",
-          }}
-        >
-          sandbox · not recording
-        </div>
-      )}
     </main>
   );
 }
@@ -782,6 +851,93 @@ function QRBlock({
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+/* ---------- earlier rounds + their tallies ---------- */
+
+function RoundsStrip({
+  rounds,
+  currentSlug,
+}: {
+  rounds: Round[];
+  currentSlug: string | null;
+}) {
+  const past = rounds.filter((r) => r.theme_slug !== currentSlug && r.total > 0);
+  if (past.length === 0) return null;
+  return (
+    <div
+      style={{
+        borderTop: "1px solid rgba(255,255,255,0.12)",
+        paddingTop: "0.85rem",
+        flexShrink: 0,
+      }}
+    >
+      <div
+        style={{
+          fontFamily: MONO,
+          fontSize: "0.65rem",
+          letterSpacing: "0.12em",
+          textTransform: "uppercase",
+          color: "rgba(255,255,255,0.45)",
+          marginBottom: "0.6rem",
+        }}
+      >
+        earlier rounds
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem 1.5rem" }}>
+        {past.map((r) => (
+          <div
+            key={r.theme_slug}
+            style={{
+              fontFamily: MONO,
+              fontSize: "0.85rem",
+              color: "rgba(255,255,255,0.85)",
+            }}
+          >
+            <span style={{ color: "#fff" }}>{r.theme}</span>{" "}
+            <span style={{ color: "rgba(255,255,255,0.55)" }}>
+              you {r.human_votes} · {OPPONENT} {r.machine_votes}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ---------- short "what is this" explanation ---------- */
+
+function AboutBox({ color }: { color: string }) {
+  return (
+    <div style={{ border: `1px solid ${color}`, padding: "0.9rem 1.1rem" }}>
+      <div
+        style={{
+          fontFamily: MONO,
+          fontSize: "0.7rem",
+          letterSpacing: "0.1em",
+          textTransform: "uppercase",
+          color,
+          marginBottom: "0.5rem",
+        }}
+      >
+        what is this
+      </div>
+      <p
+        style={{
+          margin: 0,
+          fontFamily: "Standard, sans-serif",
+          fontSize: "0.92rem",
+          lineHeight: 1.55,
+          color: "rgba(255,255,255,0.82)",
+        }}
+      >
+        Singulars is a series of live duels between a poet and a machine trained
+        on his own poems. The room votes, and the winning poems train the next
+        machine. recover.exe is performed at a distance — Halim writes into the
+        room from another continent.
+      </p>
     </div>
   );
 }
