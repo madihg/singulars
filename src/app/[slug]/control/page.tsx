@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getServiceClient, getSupabase } from "@/lib/supabase";
 import { isStageControlKeyValid } from "@/lib/stage-auth";
 import ControlView from "./ControlView";
+import KeyPrompt from "./KeyPrompt";
 
 export const dynamic = "force-dynamic";
 
@@ -19,20 +20,33 @@ export default async function ControlPage({
   searchParams: { key?: string };
 }) {
   if (!isStageControlKeyValid(searchParams.key)) {
+    const triedKey =
+      typeof searchParams.key === "string" && searchParams.key.length > 0;
     return (
       <main
         style={{
           minHeight: "100vh",
           padding: "4rem 2rem",
           fontFamily: '"Diatype Mono Variable", monospace',
-          color: "rgba(0,0,0,0.6)",
+          color: "rgba(0,0,0,0.85)",
         }}
       >
-        <p>unauthorized.</p>
-        <p style={{ fontSize: "0.85rem", marginTop: "1rem" }}>
-          append <code>?key=…</code> with your admin password (or the
-          STAGE_CONTROL_KEY value).
-        </p>
+        <h1
+          style={{
+            fontFamily: '"Terminal Grotesque", sans-serif',
+            fontSize: "2rem",
+            fontWeight: 400,
+            margin: "0 0 1.5rem 0",
+          }}
+        >
+          {params.slug} · control
+        </h1>
+        {triedKey ? (
+          <p style={{ color: "#dc2626", fontSize: "0.85rem", marginBottom: "1.5rem" }}>
+            that key didn&apos;t match. try again.
+          </p>
+        ) : null}
+        <KeyPrompt />
       </main>
     );
   }
