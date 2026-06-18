@@ -2,10 +2,11 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
+import { iceServers, waitForIceGathering } from "@/lib/webrtc";
 
 interface StageStateRow {
   performance_id: string;
-  phase: "pre-show" | "writing" | "poems" | "vote" | "result";
+  phase: "pre-show" | "writing" | "break";
   theme: string | null;
   theme_slug: string | null;
   human_poem: string;
@@ -14,6 +15,9 @@ interface StageStateRow {
   writing_starts_at: string | null;
   porto_tz: string;
   video_embed_url: string | null;
+  camera_on: boolean;
+  webrtc_offer: string | null;
+  webrtc_answer: string | null;
   updated_at: string;
 }
 
@@ -37,8 +41,6 @@ const CACHE_KEY = (slug: string) => `singulars:stage:${slug}`;
 const POLL_MS = 2000;
 const MONO = '"Diatype Mono Variable", monospace';
 const DISPLAY = '"Terminal Grotesque", sans-serif';
-
-// The machine Halim battles at recover.exe.
 const OPPONENT = "frontière";
 
 function fmt(seconds: number): string {
@@ -71,7 +73,7 @@ export default function StageView({
     try {
       localStorage.setItem(CACHE_KEY(performance.slug), JSON.stringify(state));
     } catch {
-      // quota / disabled storage — ignore
+      /* ignore */
     }
   }, [state, performance.slug]);
 
@@ -79,7 +81,6 @@ export default function StageView({
     if (staticMode) return;
     let timer: ReturnType<typeof setTimeout> | null = null;
     let stopped = false;
-
     async function tick() {
       if (stopped || document.hidden) {
         timer = setTimeout(tick, POLL_MS);
@@ -112,7 +113,6 @@ export default function StageView({
   const phase = state?.phase ?? "pre-show";
   const color = performance.color;
 
-  // Stable anonymized order: seed by perf id so reloads don't flip A/B.
   const showHumanFirst = useMemo(() => {
     const seed = performance.id
       .split("")
@@ -120,9 +120,6 @@ export default function StageView({
     return seed % 2 === 0;
   }, [performance.id]);
 
-  // QR always points at the poem-voting page for the current theme once it
-  // exists; before that, the performance page (read about the piece). Never
-  // the theme-suggestion page - theme suggestion now happens AFTER voting.
   const qrUrl = useMemo(() => {
     if (typeof window === "undefined") return "";
     const origin = window.location.origin;
@@ -130,6 +127,8 @@ export default function StageView({
       return `${origin}/${performance.slug}/${state.theme_slug}`;
     return `${origin}/${performance.slug}`;
   }, [performance.slug, state?.theme_slug]);
+
+  const hasPoems = !!(state && (state.human_poem || state.machine_poem));
 
   return (
     <main
@@ -142,12 +141,12 @@ export default function StageView({
         position: "relative",
         display: "flex",
         flexDirection: "column",
-        gap: "2rem",
+        gap: "1.75rem",
         fontFamily: '"Standard", sans-serif',
       }}
       data-phase={phase}
     >
-      {/* Header: title + "battling frontière" */}
+      {/* Header: title + battling line + STATUS */}
       <header
         style={{
           display: "flex",
@@ -160,7 +159,7 @@ export default function StageView({
           <h1
             style={{
               fontFamily: DISPLAY,
-              fontSize: "4.5rem",
+              fontSize: "4rem",
               lineHeight: 0.9,
               fontWeight: 400,
               margin: 0,
@@ -172,20 +171,19 @@ export default function StageView({
           <p
             style={{
               fontFamily: MONO,
-              fontSize: "1rem",
+              fontSize: "0.95rem",
               color: "rgba(255,255,255,0.7)",
-              margin: "0.85rem 0 0 0",
-              letterSpacing: "0.02em",
+              margin: "0.7rem 0 0 0",
             }}
           >
-            Halim is writing against{" "}
-            <span style={{ color }}>{OPPONENT}</span> — a machine trained on
-            his own poems.
+            Halim is writing against <span style={{ color }}>{OPPONENT}</span> —
+            a machine trained on his own poems.
           </p>
         </div>
+        <StatusBadge phase={phase} theme={state?.theme ?? null} color={color} />
       </header>
 
-      {/* Body: main (poems / state) on the left, camera + QR on the right */}
+      {/* Body: poems on the left, camera + QR on the right */}
       <div
         style={{
           flex: 1,
@@ -195,47 +193,40 @@ export default function StageView({
           gap: "2rem",
         }}
       >
-        {/* MAIN */}
+        {/* MAIN — the last poem pair (always, if present) */}
         <section style={{ minHeight: 0, display: "flex", flexDirection: "column" }}>
-          {phase === "pre-show" ? (
-            <PreShow
-              writingStartsAt={state?.writing_starts_at ?? null}
-              color={color}
-            />
-          ) : phase === "writing" ? (
-            <WritingState theme={state?.theme ?? null} color={color} />
+          {hasPoems ? (
+            <PoemsPair state={state} color={color} showHumanFirst={showHumanFirst} />
           ) : (
-            <PoemsPair
-              state={state}
-              color={color}
-              showHumanFirst={showHumanFirst}
-              revealAuthorship={phase === "result"}
-            />
+            <EmptyMain phase={phase} color={color} />
           )}
         </section>
 
-        {/* RIGHT: camera (top) + QR (below) */}
+        {/* RIGHT — camera (top) then QR + instructions (same width as camera) */}
         <aside
           style={{
             display: "flex",
             flexDirection: "column",
-            gap: "1.5rem",
+            gap: "1.25rem",
             minHeight: 0,
           }}
         >
           <CameraTile
+            slug={performance.slug}
+            cameraOn={!!state?.camera_on}
+            offer={state?.webrtc_offer ?? null}
             videoUrl={state?.video_embed_url ?? null}
-            theme={state?.theme ?? null}
             phase={phase}
+            theme={state?.theme ?? null}
             windowSeconds={state?.window_seconds ?? 1800}
             writingStartsAt={state?.writing_starts_at ?? null}
             color={color}
+            staticMode={staticMode}
           />
           <QRBlock url={qrUrl} color={color} hasTheme={!!state?.theme_slug} />
         </aside>
       </div>
 
-      {/* Polling-health dot */}
       {!staticMode && (
         <div
           aria-hidden
@@ -256,23 +247,149 @@ export default function StageView({
   );
 }
 
-/* ---------- Camera tile with theme + timer overlays ---------- */
+/* ---------- status ---------- */
+
+function StatusBadge({
+  phase,
+  theme,
+  color,
+}: {
+  phase: string;
+  theme: string | null;
+  color: string;
+}) {
+  const writing = phase === "writing";
+  const label =
+    phase === "pre-show"
+      ? "pre-show"
+      : writing
+        ? theme
+          ? `writing on ${theme}`
+          : "writing"
+        : "not writing — on break";
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "0.6rem",
+        border: `1px solid ${writing ? color : "rgba(255,255,255,0.25)"}`,
+        padding: "0.6rem 1rem",
+        flexShrink: 0,
+      }}
+    >
+      <span
+        style={{
+          width: 9,
+          height: 9,
+          borderRadius: "50%",
+          background: writing ? color : "rgba(255,255,255,0.4)",
+          boxShadow: writing ? `0 0 8px ${color}` : "none",
+          flexShrink: 0,
+        }}
+      />
+      <span
+        style={{
+          fontFamily: MONO,
+          fontSize: "1rem",
+          color: writing ? "#fff" : "rgba(255,255,255,0.7)",
+          letterSpacing: "0.02em",
+        }}
+      >
+        {label}
+      </span>
+    </div>
+  );
+}
+
+/* ---------- camera (WebRTC viewer) ---------- */
 
 function CameraTile({
+  slug,
+  cameraOn,
+  offer,
   videoUrl,
-  theme,
   phase,
+  theme,
   windowSeconds,
   writingStartsAt,
   color,
+  staticMode,
 }: {
+  slug: string;
+  cameraOn: boolean;
+  offer: string | null;
   videoUrl: string | null;
-  theme: string | null;
   phase: string;
+  theme: string | null;
   windowSeconds: number;
   writingStartsAt: string | null;
   color: string;
+  staticMode: boolean;
 }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const pcRef = useRef<RTCPeerConnection | null>(null);
+  const lastOfferRef = useRef<string | null>(null);
+  const [streamLive, setStreamLive] = useState(false);
+
+  // WebRTC viewer: when control publishes an offer (camera on), answer it.
+  useEffect(() => {
+    if (staticMode) return;
+    if (!cameraOn || !offer) {
+      if (pcRef.current) {
+        pcRef.current.close();
+        pcRef.current = null;
+      }
+      lastOfferRef.current = null;
+      setStreamLive(false);
+      return;
+    }
+    if (offer === lastOfferRef.current) return; // already handled
+    lastOfferRef.current = offer;
+    let cancelled = false;
+
+    (async () => {
+      try {
+        if (pcRef.current) pcRef.current.close();
+        const pc = new RTCPeerConnection({ iceServers: iceServers() });
+        pcRef.current = pc;
+        pc.ontrack = (e) => {
+          if (videoRef.current && e.streams[0]) {
+            videoRef.current.srcObject = e.streams[0];
+            setStreamLive(true);
+          }
+        };
+        pc.oniceconnectionstatechange = () => {
+          const s = pc.iceConnectionState;
+          if (s === "failed" || s === "disconnected" || s === "closed") {
+            setStreamLive(false);
+          }
+        };
+        await pc.setRemoteDescription(JSON.parse(offer));
+        const ans = await pc.createAnswer();
+        await pc.setLocalDescription(ans);
+        await waitForIceGathering(pc);
+        if (cancelled) return;
+        await fetch(`/api/stage/${slug}/answer`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            webrtc_answer: JSON.stringify(pc.localDescription),
+          }),
+        });
+      } catch {
+        /* leave placeholder up */
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [cameraOn, offer, slug, staticMode]);
+
+  const showVideo = cameraOn && streamLive;
+  const showIframe = !showVideo && !!videoUrl; // fallback (Daily/Whereby/etc.)
+
   return (
     <div
       style={{
@@ -285,15 +402,34 @@ function CameraTile({
         flexShrink: 0,
       }}
     >
-      {videoUrl ? (
+      {/* live camera */}
+      <video
+        ref={videoRef}
+        autoPlay
+        playsInline
+        muted
+        style={{
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+          display: showVideo ? "block" : "none",
+          transform: "scaleX(-1)", // mirror so it reads natural
+        }}
+      />
+
+      {/* fallback iframe */}
+      {showIframe && (
         <iframe
-          src={videoUrl}
+          src={videoUrl!}
           allow="camera; microphone; autoplay; fullscreen"
           allowFullScreen
           style={{ width: "100%", height: "100%", border: "none", display: "block" }}
           title="live video"
         />
-      ) : (
+      )}
+
+      {/* placeholder */}
+      {!showVideo && !showIframe && (
         <div
           style={{
             position: "absolute",
@@ -308,12 +444,16 @@ function CameraTile({
             color: "rgba(255,255,255,0.4)",
           }}
         >
-          live — waiting for Halim to come online
+          {phase === "break"
+            ? "Halim is on break"
+            : cameraOn
+              ? "connecting to Halim's camera…"
+              : "camera off — waiting for Halim"}
         </div>
       )}
 
-      {/* LIVE badge top-left */}
-      {videoUrl && (
+      {/* LIVE badge */}
+      {showVideo && (
         <div
           style={{
             position: "absolute",
@@ -337,14 +477,13 @@ function CameraTile({
               height: 7,
               borderRadius: "50%",
               background: color,
-              display: "inline-block",
             }}
           />
-          live
+          live · San Francisco
         </div>
       )}
 
-      {/* Timer overlay top-right */}
+      {/* timer overlay */}
       <TimerOverlay
         phase={phase}
         windowSeconds={windowSeconds}
@@ -352,7 +491,7 @@ function CameraTile({
         color={color}
       />
 
-      {/* Theme overlay, subtle, bottom-left */}
+      {/* theme overlay */}
       {theme && (
         <div
           style={{
@@ -365,10 +504,12 @@ function CameraTile({
             fontFamily: MONO,
             fontSize: "0.85rem",
             color: "rgba(255,255,255,0.9)",
-            letterSpacing: "0.02em",
           }}
         >
-          <span style={{ color, opacity: 0.9 }}>writing on:</span> {theme}
+          <span style={{ color }}>
+            {phase === "writing" ? "writing on:" : "theme:"}
+          </span>{" "}
+          {theme}
         </div>
       )}
     </div>
@@ -388,26 +529,18 @@ function TimerOverlay({
 }) {
   const [now, setNow] = useState(() => Date.now());
   const running = phase === "writing" && !!writingStartsAt;
-
   useEffect(() => {
     if (!running) return;
     const t = setInterval(() => setNow(Date.now()), 500);
     return () => clearInterval(t);
   }, [running]);
 
-  // During writing: count down from writing_starts_at + window_seconds (server
-  // timestamp => synced across devices). Otherwise: static window length, so
-  // the room sees e.g. 30:00 before the clock starts.
+  if (phase === "pre-show") return null;
   let remaining = windowSeconds;
   if (running && writingStartsAt) {
-    const elapsed = (now - new Date(writingStartsAt).getTime()) / 1000;
-    remaining = windowSeconds - elapsed;
+    remaining = windowSeconds - (now - new Date(writingStartsAt).getTime()) / 1000;
   }
   const done = running && remaining <= 0;
-
-  // Only show the timer once the show is underway (writing or later). In
-  // pre-show the big countdown lives in the main column instead.
-  if (phase === "pre-show") return null;
 
   return (
     <div
@@ -434,7 +567,7 @@ function TimerOverlay({
       <div
         style={{
           fontFamily: DISPLAY,
-          fontSize: "2.4rem",
+          fontSize: "2.2rem",
           lineHeight: 1,
           color: running ? color : "rgba(255,255,255,0.6)",
         }}
@@ -445,38 +578,9 @@ function TimerOverlay({
   );
 }
 
-/* ---------- Main-column states ---------- */
+/* ---------- main column ---------- */
 
-function PreShow({
-  writingStartsAt,
-  color,
-}: {
-  writingStartsAt: string | null;
-  color: string;
-}) {
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    if (!writingStartsAt) return;
-    const t = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(t);
-  }, [writingStartsAt]);
-
-  let countdown: string | null = null;
-  let portoTime: string | null = null;
-  if (writingStartsAt) {
-    const target = new Date(writingStartsAt).getTime();
-    const diff = Math.max(0, Math.floor((target - now) / 1000));
-    const hh = String(Math.floor(diff / 3600)).padStart(2, "0");
-    const mm = String(Math.floor((diff % 3600) / 60)).padStart(2, "0");
-    const ss = String(diff % 60).padStart(2, "0");
-    countdown = `${hh}:${mm}:${ss}`;
-    portoTime = new Date(target).toLocaleTimeString("en-GB", {
-      timeZone: "Europe/Lisbon",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  }
-
+function EmptyMain({ phase, color }: { phase: string; color: string }) {
   return (
     <div
       style={{
@@ -495,90 +599,12 @@ function PreShow({
           fontSize: "1rem",
           letterSpacing: "0.12em",
           textTransform: "uppercase",
-          color: "rgba(255,255,255,0.5)",
+          color: phase === "writing" ? color : "rgba(255,255,255,0.5)",
           marginBottom: "1rem",
         }}
       >
-        pre-show
+        {phase === "writing" ? "poet writing" : phase === "break" ? "on break" : "pre-show"}
       </div>
-      {countdown ? (
-        <>
-          <div style={{ fontFamily: DISPLAY, fontSize: "6rem", lineHeight: 1, color }}>
-            {countdown}
-          </div>
-          <div
-            style={{
-              fontFamily: MONO,
-              fontSize: "1rem",
-              color: "rgba(255,255,255,0.6)",
-              marginTop: "1rem",
-            }}
-          >
-            Halim writes live at {portoTime} Porto time.
-          </div>
-        </>
-      ) : (
-        <div
-          style={{
-            fontFamily: "Standard, sans-serif",
-            fontSize: "1.4rem",
-            lineHeight: 1.5,
-            color: "rgba(255,255,255,0.7)",
-            maxWidth: 520,
-          }}
-        >
-          The duel begins shortly. Scan the code to follow along and vote when
-          the poems land.
-        </div>
-      )}
-    </div>
-  );
-}
-
-function WritingState({
-  theme,
-  color,
-}: {
-  theme: string | null;
-  color: string;
-}) {
-  return (
-    <div
-      style={{
-        flex: 1,
-        border: "1px solid rgba(255,255,255,0.08)",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "flex-start",
-        justifyContent: "center",
-        padding: "3rem",
-      }}
-    >
-      <div
-        style={{
-          fontFamily: MONO,
-          fontSize: "1rem",
-          letterSpacing: "0.12em",
-          textTransform: "uppercase",
-          color,
-          marginBottom: "1.25rem",
-        }}
-      >
-        poet writing
-      </div>
-      {theme && (
-        <div
-          style={{
-            fontFamily: DISPLAY,
-            fontSize: "3.5rem",
-            lineHeight: 1,
-            color: "#fff",
-            marginBottom: "1.25rem",
-          }}
-        >
-          {theme}
-        </div>
-      )}
       <div
         style={{
           fontFamily: "Standard, sans-serif",
@@ -588,7 +614,9 @@ function WritingState({
           maxWidth: 520,
         }}
       >
-        Both poems appear here, side by side, when the window closes.
+        {phase === "writing"
+          ? "Both poems appear here, side by side, when the window closes."
+          : "The duel begins shortly. Scan the code to follow along and vote when the poems land."}
       </div>
     </div>
   );
@@ -598,36 +626,18 @@ function PoemsPair({
   state,
   color,
   showHumanFirst,
-  revealAuthorship,
 }: {
   state: StageStateRow | null;
   color: string;
   showHumanFirst: boolean;
-  revealAuthorship: boolean;
 }) {
-  if (!state || (!state.human_poem && !state.machine_poem)) {
-    return (
-      <div
-        style={{
-          flex: 1,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontFamily: MONO,
-          color: "rgba(255,255,255,0.4)",
-        }}
-      >
-        waiting for poems…
-      </div>
-    );
-  }
-
+  if (!state) return null;
   const left = showHumanFirst
-    ? { text: state.human_poem, label: "Poem A", actual: "Halim" as const }
-    : { text: state.machine_poem, label: "Poem A", actual: "Machine" as const };
+    ? { text: state.human_poem, label: "Poem A" }
+    : { text: state.machine_poem, label: "Poem A" };
   const right = showHumanFirst
-    ? { text: state.machine_poem, label: "Poem B", actual: "Machine" as const }
-    : { text: state.human_poem, label: "Poem B", actual: "Halim" as const };
+    ? { text: state.machine_poem, label: "Poem B" }
+    : { text: state.human_poem, label: "Poem B" };
 
   return (
     <div
@@ -657,17 +667,17 @@ function PoemsPair({
               fontSize: "0.85rem",
               letterSpacing: "0.1em",
               textTransform: "uppercase",
-              color: revealAuthorship ? color : "rgba(255,255,255,0.5)",
+              color: "rgba(255,255,255,0.5)",
               marginBottom: "1.25rem",
             }}
           >
-            {revealAuthorship ? p.actual : p.label}
+            {p.label}
           </div>
           <div
             style={{
               whiteSpace: "pre-line",
               fontFamily: "Standard, sans-serif",
-              fontSize: "1.35rem",
+              fontSize: "1.3rem",
               lineHeight: 1.6,
               color: "#fff",
               flex: 1,
@@ -681,7 +691,7 @@ function PoemsPair({
   );
 }
 
-/* ---------- QR ---------- */
+/* ---------- QR + instructions (matched width, no toggle) ---------- */
 
 function QRBlock({
   url,
@@ -692,64 +702,66 @@ function QRBlock({
   color: string;
   hasTheme: boolean;
 }) {
-  const [helpOpen, setHelpOpen] = useState(false);
   if (!url) return null;
-
+  const steps = [
+    "Scan the code with your phone.",
+    "Read both poems, tap the one you like.",
+    "Then suggest the next theme.",
+  ];
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+    <div style={{ display: "flex", gap: "1rem", alignItems: "stretch", width: "100%" }}>
       <div
         style={{
-          fontFamily: MONO,
-          fontSize: "0.8rem",
-          letterSpacing: "0.08em",
-          textTransform: "uppercase",
-          color: "rgba(255,255,255,0.6)",
+          background: "#fff",
+          padding: "0.6rem",
+          border: `1px solid ${color}`,
+          flexShrink: 0,
+          display: "flex",
+          alignItems: "center",
         }}
       >
-        {hasTheme ? "scan to vote on the poems" : "scan to follow along"}
+        <QRCodeSVG value={url} size={132} bgColor="#fff" fgColor="#000" />
       </div>
-      <div style={{ display: "flex", gap: "0.6rem", alignItems: "stretch" }}>
-        <div style={{ background: "#fff", padding: "0.6rem", border: `1px solid ${color}` }}>
-          <QRCodeSVG value={url} size={140} bgColor="#fff" fgColor="#000" />
-        </div>
-        <button
-          aria-label="Show instructions"
-          onClick={() => setHelpOpen((h) => !h)}
-          style={{
-            width: 48,
-            border: `1px solid ${color}`,
-            background: helpOpen ? color : "transparent",
-            color: helpOpen ? "#000" : "#fff",
-            fontFamily: MONO,
-            fontSize: "1.3rem",
-            cursor: "pointer",
-          }}
-        >
-          ?
-        </button>
-      </div>
-      {helpOpen && (
+      <div
+        style={{
+          flex: 1,
+          border: `1px solid ${color}`,
+          padding: "0.9rem 1.1rem",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          gap: "0.55rem",
+          minWidth: 0,
+        }}
+      >
         <div
           style={{
-            maxWidth: 300,
-            border: `1px solid ${color}`,
-            padding: "0.85rem",
             fontFamily: MONO,
-            fontSize: "0.82rem",
-            lineHeight: 1.6,
-            color: "rgba(255,255,255,0.85)",
-            background: "#000",
+            fontSize: "0.7rem",
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+            color,
           }}
         >
-          1. Scan the QR with your phone.
-          <br />
-          2. Read both poems and vote for the one you prefer.
-          <br />
-          3. Then suggest the next theme.
-          <br />
-          4. Your vote trains the next model.
+          {hasTheme ? "scan to vote" : "scan to follow along"}
         </div>
-      )}
+        {steps.map((s, i) => (
+          <div
+            key={i}
+            style={{
+              fontFamily: MONO,
+              fontSize: "0.82rem",
+              color: "rgba(255,255,255,0.85)",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
+            <span style={{ color, marginRight: "0.5rem" }}>{i + 1}</span>
+            {s}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

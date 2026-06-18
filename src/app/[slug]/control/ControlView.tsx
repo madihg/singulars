@@ -1,9 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { iceServers, waitForIceGathering } from "@/lib/webrtc";
 
-type Phase = "pre-show" | "writing" | "poems" | "vote" | "result";
-const PHASES: Phase[] = ["pre-show", "writing", "poems", "vote", "result"];
+type Phase = "pre-show" | "writing" | "break";
+const PHASES: Phase[] = ["pre-show", "writing", "break"];
 
 interface StageStateRow {
   performance_id: string;
@@ -16,6 +17,9 @@ interface StageStateRow {
   writing_starts_at: string | null;
   porto_tz: string;
   video_embed_url: string | null;
+  camera_on: boolean;
+  webrtc_offer: string | null;
+  webrtc_answer: string | null;
   updated_at: string;
 }
 
@@ -49,23 +53,15 @@ export default function ControlView({
   const [state, setState] = useState<StageStateRow | null>(initialState);
   const [theme, setTheme] = useState(initialState?.theme ?? "");
   const [humanPoem, setHumanPoem] = useState(initialState?.human_poem ?? "");
-  const [machinePoem, setMachinePoem] = useState(
-    initialState?.machine_poem ?? "",
-  );
+  const [machinePoem, setMachinePoem] = useState(initialState?.machine_poem ?? "");
   const [videoUrl, setVideoUrl] = useState(initialState?.video_embed_url ?? "");
   const [windowSeconds, setWindowSeconds] = useState(
     initialState?.window_seconds ?? 1800,
   );
-  const [writingStartsAt, setWritingStartsAt] = useState(
-    initialState?.writing_starts_at
-      ? new Date(initialState.writing_starts_at).toISOString().slice(0, 16)
-      : "",
-  );
+  const [cameraOn, setCameraOn] = useState(initialState?.camera_on ?? false);
   const [saving, setSaving] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Light polling so the operator sees state changes (e.g. from a second
-  // tab or a teammate). 3s is plenty.
   useEffect(() => {
     const t = setInterval(async () => {
       try {
@@ -76,7 +72,7 @@ export default function ControlView({
         const data = await res.json();
         if (data.stage) setState(data.stage as StageStateRow);
       } catch {
-        // ignore
+        /* ignore */
       }
     }, 3000);
     return () => clearInterval(t);
@@ -99,9 +95,10 @@ export default function ControlView({
           const data = await res.json().catch(() => ({}));
           throw new Error(data.error || "save failed");
         }
-        // Optimistic local merge — the next poll will reconcile.
         setState((s) =>
-          s ? ({ ...s, ...patch, updated_at: new Date().toISOString() } as StageStateRow) : s,
+          s
+            ? ({ ...s, ...patch, updated_at: new Date().toISOString() } as StageStateRow)
+            : s,
         );
       } catch (e) {
         setError((e as Error).message);
@@ -112,24 +109,28 @@ export default function ControlView({
     [controlKey, performance.slug],
   );
 
+  // Phase changes also drive the camera: writing turns it on, break/pre-show
+  // turn it off. (Manual toggle still available below.)
   const setPhase = useCallback(
-    (p: Phase) => post({ phase: p }, `phase:${p}`),
+    (p: Phase) => {
+      post({ phase: p }, `phase:${p}`);
+      if (p === "writing") setCameraOn(true);
+      else setCameraOn(false);
+    },
     [post],
   );
 
-  // Start the writing window NOW: stamp writing_starts_at=now and flip to
-  // 'writing'. The stage computes the countdown from this timestamp so the
-  // venue screen and this laptop stay in sync across the network.
-  const startWritingNow = useCallback(
-    () =>
-      post(
-        { phase: "writing", writing_starts_at: new Date().toISOString() },
-        "start-writing",
-      ),
-    [post],
-  );
+  // Start the writing window NOW: stamp writing_starts_at=now, flip to
+  // 'writing', and turn the camera on. The stage syncs off this timestamp.
+  const startWritingNow = useCallback(() => {
+    post(
+      { phase: "writing", writing_starts_at: new Date().toISOString() },
+      "start-writing",
+    );
+    setCameraOn(true);
+  }, [post]);
 
-  // Keyboard shortcuts: 1-5 for phases, Cmd/Ctrl+L focuses video field.
+  // Keyboard: 1-3 phases, Cmd/Ctrl+Enter saves a textarea, Cmd/Ctrl+L video.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
@@ -140,7 +141,6 @@ export default function ControlView({
           target.isContentEditable);
       if (inField) {
         if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "enter") {
-          // Cmd+Enter inside a textarea saves that field
           const id = target?.getAttribute("data-field");
           if (id === "human_poem") {
             e.preventDefault();
@@ -157,7 +157,7 @@ export default function ControlView({
         document.getElementById("video-url-input")?.focus();
         return;
       }
-      const idx = ["1", "2", "3", "4", "5"].indexOf(e.key);
+      const idx = ["1", "2", "3"].indexOf(e.key);
       if (idx >= 0) {
         e.preventDefault();
         setPhase(PHASES[idx]);
@@ -207,8 +207,8 @@ export default function ControlView({
         </a>
       </header>
 
-      {/* Phase pill row */}
-      <section style={{ marginBottom: "1.5rem" }}>
+      {/* Phase pills */}
+      <section style={{ marginBottom: "1.25rem" }}>
         <div
           style={{
             fontFamily: monoFont,
@@ -219,11 +219,16 @@ export default function ControlView({
             marginBottom: "0.5rem",
           }}
         >
-          phase ( press 1–5 )
+          phase ( press 1–3 )
         </div>
         <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
           {PHASES.map((p, i) => {
             const active = state?.phase === p;
+            const labelMap: Record<Phase, string> = {
+              "pre-show": "pre-show",
+              writing: "writing (camera on)",
+              break: "break (camera off)",
+            };
             return (
               <button
                 key={p}
@@ -240,15 +245,21 @@ export default function ControlView({
                   textTransform: "lowercase",
                 }}
               >
-                {i + 1}. {p}
+                {i + 1}. {labelMap[p]}
               </button>
             );
           })}
         </div>
 
-        {/* Start-the-clock action: stamps the writing window start so the
-            stage timer counts down from now, synced across devices. */}
-        <div style={{ marginTop: "0.85rem", display: "flex", gap: "0.75rem", alignItems: "center", flexWrap: "wrap" }}>
+        <div
+          style={{
+            marginTop: "0.85rem",
+            display: "flex",
+            gap: "0.75rem",
+            alignItems: "center",
+            flexWrap: "wrap",
+          }}
+        >
           <button
             onClick={startWritingNow}
             disabled={saving === "start-writing"}
@@ -266,44 +277,27 @@ export default function ControlView({
           >
             {saving === "start-writing"
               ? "starting…"
-              : `▶ start writing window now (${Math.round(windowSeconds / 60)} min)`}
+              : `▶ start writing — camera on + ${Math.round(windowSeconds / 60)}min timer`}
           </button>
-          <span style={{ fontFamily: monoFont, fontSize: "0.75rem", color: "rgba(0,0,0,0.45)" }}>
-            stamps the timer start; the stage counts down from this moment.
-          </span>
         </div>
       </section>
 
-      {/* Two-column body */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: "1.5rem",
-        }}
-      >
-        <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-          <Field label="video embed url (Cmd/Ctrl+L)" hint="Daily.co / Whereby / Twitch / YouTube Live embed URL">
-            <input
-              id="video-url-input"
-              type="url"
-              value={videoUrl}
-              onChange={(e) => setVideoUrl(e.target.value)}
-              placeholder="https://…"
-              style={inputStyle}
-            />
-            <RowActions>
-              <SaveBtn
-                onClick={() => post({ video_embed_url: videoUrl }, "video_embed_url")}
-                saving={saving === "video_embed_url"}
-                accent={accent}
-              >
-                save video url
-              </SaveBtn>
-            </RowActions>
-          </Field>
+      {/* Camera */}
+      <section style={{ marginBottom: "1.75rem" }}>
+        <CameraPublisher
+          slug={performance.slug}
+          controlKey={controlKey}
+          on={cameraOn}
+          onToggle={() => setCameraOn((v) => !v)}
+          answer={state?.webrtc_answer ?? null}
+          accent={accent}
+        />
+      </section>
 
-          <Field label="theme">
+      {/* Two-column body */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+          <Field label="theme (what you're writing on)">
             <input
               type="text"
               value={theme}
@@ -318,36 +312,6 @@ export default function ControlView({
                 accent={accent}
               >
                 lock theme
-              </SaveBtn>
-            </RowActions>
-          </Field>
-
-          <Field
-            label="writing starts at (local time)"
-            hint="for the pre-show countdown on the stage"
-          >
-            <input
-              type="datetime-local"
-              value={writingStartsAt}
-              onChange={(e) => setWritingStartsAt(e.target.value)}
-              style={inputStyle}
-            />
-            <RowActions>
-              <SaveBtn
-                onClick={() =>
-                  post(
-                    {
-                      writing_starts_at: writingStartsAt
-                        ? new Date(writingStartsAt).toISOString()
-                        : null,
-                    },
-                    "writing_starts_at",
-                  )
-                }
-                saving={saving === "writing_starts_at"}
-                accent={accent}
-              >
-                save start time
               </SaveBtn>
             </RowActions>
           </Field>
@@ -369,15 +333,38 @@ export default function ControlView({
               </SaveBtn>
             </RowActions>
           </Field>
+
+          <Field
+            label="video fallback url (optional)"
+            hint="only used if the live camera can't connect — e.g. a Daily/Whereby room"
+          >
+            <input
+              id="video-url-input"
+              type="url"
+              value={videoUrl}
+              onChange={(e) => setVideoUrl(e.target.value)}
+              placeholder="https://…"
+              style={inputStyle}
+            />
+            <RowActions>
+              <SaveBtn
+                onClick={() => post({ video_embed_url: videoUrl }, "video_embed_url")}
+                saving={saving === "video_embed_url"}
+                accent={accent}
+              >
+                save fallback url
+              </SaveBtn>
+            </RowActions>
+          </Field>
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-          <Field label="human poem (Cmd/Ctrl+Enter to save)">
+          <Field label="my poem (Cmd/Ctrl+Enter to save)">
             <textarea
               data-field="human_poem"
               value={humanPoem}
               onChange={(e) => setHumanPoem(e.target.value)}
-              rows={8}
+              rows={7}
               style={textareaStyle}
             />
             <RowActions>
@@ -386,17 +373,17 @@ export default function ControlView({
                 saving={saving === "human_poem"}
                 accent={accent}
               >
-                save human poem
+                save my poem
               </SaveBtn>
             </RowActions>
           </Field>
 
-          <Field label="machine poem (paste from /chat)">
+          <Field label="machine poem (paste from /chat · frontière)">
             <textarea
               data-field="machine_poem"
               value={machinePoem}
               onChange={(e) => setMachinePoem(e.target.value)}
-              rows={8}
+              rows={7}
               style={textareaStyle}
             />
             <RowActions>
@@ -409,6 +396,10 @@ export default function ControlView({
               </SaveBtn>
             </RowActions>
           </Field>
+          <p style={{ fontFamily: monoFont, fontSize: "0.75rem", color: "rgba(0,0,0,0.45)", margin: 0, lineHeight: 1.5 }}>
+            once both poems + a locked theme are saved, the QR voting opens
+            automatically.
+          </p>
         </div>
       </div>
 
@@ -428,7 +419,6 @@ export default function ControlView({
         </div>
       )}
 
-      {/* Stage preview iframe */}
       <section style={{ marginTop: "2.5rem" }}>
         <div
           style={{
@@ -440,16 +430,11 @@ export default function ControlView({
             marginBottom: "0.5rem",
           }}
         >
-          stage preview (static mode)
+          stage preview (static)
         </div>
         <iframe
           src={`/${performance.slug}/stage?static=1`}
-          style={{
-            width: "100%",
-            height: 480,
-            border: `1px solid ${accent}`,
-            background: "#000",
-          }}
+          style={{ width: "100%", height: 480, border: `1px solid ${accent}`, background: "#000" }}
           title="stage preview"
         />
       </section>
@@ -463,13 +448,257 @@ export default function ControlView({
           lineHeight: 1.6,
         }}
       >
-        shortcuts: 1–5 phase · Cmd/Ctrl+L video url · Cmd/Ctrl+Enter save textarea
+        shortcuts: 1–3 phase · Cmd/Ctrl+L video url · Cmd/Ctrl+Enter save textarea
         <br />
-        last updated: {state?.updated_at ? new Date(state.updated_at).toLocaleTimeString() : "—"}
+        last updated:{" "}
+        {state?.updated_at ? new Date(state.updated_at).toLocaleTimeString() : "—"}
       </footer>
     </main>
   );
 }
+
+/* ---------- camera publisher (getUserMedia → WebRTC) ---------- */
+
+function CameraPublisher({
+  slug,
+  controlKey,
+  on,
+  onToggle,
+  answer,
+  accent,
+}: {
+  slug: string;
+  controlKey: string;
+  on: boolean;
+  onToggle: () => void;
+  answer: string | null;
+  accent: string;
+}) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const pcRef = useRef<RTCPeerConnection | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const appliedAnswerRef = useRef<string | null>(null);
+  const [status, setStatus] = useState<
+    "off" | "starting" | "waiting" | "live" | "error"
+  >("off");
+  const [errMsg, setErrMsg] = useState<string | null>(null);
+
+  const postUpdate = useCallback(
+    async (patch: Record<string, unknown>) => {
+      try {
+        await fetch(
+          `/api/stage/${slug}/update?key=${encodeURIComponent(controlKey)}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(patch),
+          },
+        );
+      } catch {
+        /* ignore */
+      }
+    },
+    [slug, controlKey],
+  );
+
+  const teardownLocal = useCallback(() => {
+    if (pcRef.current) {
+      pcRef.current.close();
+      pcRef.current = null;
+    }
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+    }
+    if (videoRef.current) videoRef.current.srcObject = null;
+    appliedAnswerRef.current = null;
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!on) {
+      teardownLocal();
+      setStatus("off");
+      postUpdate({ camera_on: false, webrtc_offer: null, webrtc_answer: null });
+      return;
+    }
+    (async () => {
+      try {
+        setStatus("starting");
+        setErrMsg(null);
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { width: { ideal: 1280 }, height: { ideal: 720 } },
+          audio: false,
+        });
+        if (cancelled) {
+          stream.getTracks().forEach((t) => t.stop());
+          return;
+        }
+        streamRef.current = stream;
+        if (videoRef.current) videoRef.current.srcObject = stream;
+
+        const pc = new RTCPeerConnection({ iceServers: iceServers() });
+        pcRef.current = pc;
+        stream.getTracks().forEach((t) => pc.addTrack(t, stream));
+        pc.onconnectionstatechange = () => {
+          const s = pc.connectionState;
+          if (s === "connected") setStatus("live");
+          else if (s === "failed" || s === "disconnected") setStatus("waiting");
+        };
+
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        await waitForIceGathering(pc);
+        if (cancelled) return;
+        appliedAnswerRef.current = null;
+        await postUpdate({
+          camera_on: true,
+          webrtc_offer: JSON.stringify(pc.localDescription),
+          webrtc_answer: null,
+        });
+        setStatus("waiting");
+      } catch (e) {
+        setStatus("error");
+        setErrMsg(
+          (e as Error)?.message?.includes("Permission") ||
+            (e as Error)?.name === "NotAllowedError"
+            ? "camera permission denied — allow it in the browser"
+            : "couldn't start the camera",
+        );
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [on]);
+
+  // Apply the stage's answer once it arrives.
+  useEffect(() => {
+    if (!on || !answer || !pcRef.current) return;
+    if (answer === appliedAnswerRef.current) return;
+    appliedAnswerRef.current = answer;
+    (async () => {
+      try {
+        if (pcRef.current && !pcRef.current.currentRemoteDescription) {
+          await pcRef.current.setRemoteDescription(JSON.parse(answer));
+        }
+      } catch {
+        /* ignore */
+      }
+    })();
+  }, [answer, on]);
+
+  const statusText =
+    status === "live"
+      ? "live — streaming to the venue"
+      : status === "waiting"
+        ? "camera on — connecting to the venue…"
+        : status === "starting"
+          ? "starting camera…"
+          : status === "error"
+            ? errMsg || "camera error"
+            : "camera off";
+
+  const mono = '"Diatype Mono Variable", monospace';
+
+  return (
+    <div>
+      <div
+        style={{
+          fontFamily: mono,
+          fontSize: "0.75rem",
+          letterSpacing: "0.08em",
+          textTransform: "uppercase",
+          color: "rgba(0,0,0,0.6)",
+          marginBottom: "0.5rem",
+        }}
+      >
+        your camera (films you → shows on the venue screen)
+      </div>
+      <div style={{ display: "flex", gap: "1rem", alignItems: "flex-start", flexWrap: "wrap" }}>
+        <div
+          style={{
+            width: 240,
+            aspectRatio: "16 / 10",
+            background: "#000",
+            border: `1px solid ${on ? accent : "rgba(0,0,0,0.2)"}`,
+            overflow: "hidden",
+            flexShrink: 0,
+          }}
+        >
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              transform: "scaleX(-1)",
+              display: on ? "block" : "none",
+            }}
+          />
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+          <button
+            onClick={onToggle}
+            style={{
+              padding: "0.6rem 1.1rem",
+              border: `1px solid ${accent}`,
+              background: on ? "transparent" : accent,
+              color: on ? accent : "#fff",
+              fontFamily: mono,
+              fontSize: "0.9rem",
+              cursor: "pointer",
+              letterSpacing: "0.03em",
+              textTransform: "lowercase",
+            }}
+          >
+            {on ? "turn camera off" : "turn camera on"}
+          </button>
+          <div
+            style={{
+              fontFamily: mono,
+              fontSize: "0.8rem",
+              color:
+                status === "live"
+                  ? accent
+                  : status === "error"
+                    ? "#dc2626"
+                    : "rgba(0,0,0,0.55)",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.4rem",
+            }}
+          >
+            <span
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: "50%",
+                background:
+                  status === "live"
+                    ? accent
+                    : status === "error"
+                      ? "#dc2626"
+                      : "rgba(0,0,0,0.3)",
+              }}
+            />
+            {statusText}
+          </div>
+          <p style={{ fontFamily: mono, fontSize: "0.72rem", color: "rgba(0,0,0,0.4)", margin: 0, maxWidth: 260, lineHeight: 1.5 }}>
+            turns on automatically when you start writing. audio goes through
+            Teams, not here.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------- field primitives ---------- */
 
 function Field({
   label,
@@ -495,13 +724,7 @@ function Field({
         {label}
       </div>
       {hint && (
-        <div
-          style={{
-            fontSize: "0.8rem",
-            color: "rgba(0,0,0,0.45)",
-            marginBottom: "0.4rem",
-          }}
-        >
+        <div style={{ fontSize: "0.8rem", color: "rgba(0,0,0,0.45)", marginBottom: "0.4rem" }}>
           {hint}
         </div>
       )}

@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
 
 interface StageStateRow {
   performance_id: string;
-  phase: "pre-show" | "writing" | "poems" | "vote" | "result";
+  phase: "pre-show" | "writing" | "break";
   theme: string | null;
   theme_slug: string | null;
   human_poem: string;
@@ -23,6 +23,9 @@ interface StageStateRow {
   writing_starts_at: string | null;
   porto_tz: string;
   video_embed_url: string | null;
+  camera_on: boolean;
+  webrtc_offer: string | null;
+  webrtc_answer: string | null;
   updated_at: string;
 }
 
