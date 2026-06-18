@@ -21,7 +21,8 @@ export type ModelSlug =
   | "reinforcement"
   | "hard"
   | "reverse"
-  | "frontiere";
+  | "frontiere"
+  | "recover";
 
 export type ModelProvider = "openai" | "openrouter";
 
@@ -309,7 +310,31 @@ export const MODELS: Model[] = [
     ],
     huggingFaceUrl: "",
     status: "trained",
-    order: 99,
+    // order 0 = the very top: frontière is the latest TRAINED model (its show
+    // closed most recently), so it sits above reverse and all the rest. RULE:
+    // the newest trained model always takes the top slot (lowest order).
+    order: 0,
+  },
+  {
+    slug: "recover",
+    displayName: "recover.exe",
+    // recover.exe performance color (vermilion). TRAINING: live during the
+    // remote show at Casa dos Livros, Porto. Locked on /chat until the show
+    // closes and its audience-decided pairs land - then it becomes the next
+    // trained model and moves to the top, and the next show takes this slot.
+    color: "#FF4D2E",
+    modelId: "anthropic/claude-opus-4.8",
+    provider: "openrouter",
+    systemPrompt: SYSTEM_PROMPT_REVERSE,
+    language: "en",
+    examplePrompts: [
+      "Write a short poem about a specific dinner you'll never forget.",
+      "Compose a poem in the voice of someone confessing something to a friend.",
+      "Write a poem with a clear emotional turn, anchored in one specific city.",
+    ],
+    huggingFaceUrl: "",
+    status: "training",
+    order: 100,
   },
 ];
 
@@ -320,6 +345,12 @@ export function getModelBySlug(slug: string): Model | undefined {
 /**
  * Display order for the sidebar / mobile selector: trained models first
  * (newest by `order` ascending), then training models below a divider.
+ *
+ * PROJECT RULE (maintain `order` to match): the latest TRAINED model is always
+ * at the very top (lowest order). The currently-running show is a `training`
+ * model and sits at the bottom under the divider. When a show closes, flip its
+ * model to `trained` and give it order 0 (it jumps to the top); add the next
+ * show as a new `training` entry at the bottom.
  */
 export function getSortedModels(): Model[] {
   return [...MODELS].sort((a, b) => {

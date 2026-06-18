@@ -65,7 +65,7 @@ export async function handleChat(req: Request) {
     return jsonError(
       `Invalid model: ${String(
         modelSlug,
-      )}. Valid slugs: carnation-fr, carnation-eng, versus, reinforcement, hard, reverse, frontiere`,
+      )}. Valid slugs: carnation-fr, carnation-eng, versus, reinforcement, hard, reverse, frontiere, recover`,
       400,
     );
   }
