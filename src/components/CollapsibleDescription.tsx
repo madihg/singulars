@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PerformanceContentBlocks from "./PerformanceContentBlocks";
 import type { PerformanceDescription } from "@/lib/performance-descriptions";
 
@@ -32,6 +32,25 @@ export default function CollapsibleDescription({
   id,
 }: Props) {
   const [open, setOpen] = useState(defaultOpen);
+
+  // Auto-expand when linked to via #<id> (e.g. a "read more about the piece"
+  // CTA → "#about"), and scroll it into view. Covers both initial load with
+  // the hash and in-page hash changes.
+  useEffect(() => {
+    if (!id) return;
+    const openIfHash = () => {
+      if (window.location.hash === `#${id}`) {
+        setOpen(true);
+        // let the section paint before scrolling
+        setTimeout(() => {
+          document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+        }, 60);
+      }
+    };
+    openIfHash();
+    window.addEventListener("hashchange", openIfHash);
+    return () => window.removeEventListener("hashchange", openIfHash);
+  }, [id]);
 
   return (
     <section

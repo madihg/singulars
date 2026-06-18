@@ -32,6 +32,9 @@ interface VotingPoemPairProps {
   /** Where "read more about the piece" points: an on-page #about anchor when
    *  the perf has a description, else the performance page. */
   aboutHref: string;
+  /** The currently-live (training) performance slug, for the "vote on the
+   *  live one" note shown on closed/trained performances. */
+  livePerfSlug?: string | null;
 }
 
 export default function VotingPoemPair({
@@ -39,6 +42,7 @@ export default function VotingPoemPair({
   performanceColor,
   performanceStatus,
   aboutHref,
+  livePerfSlug,
 }: VotingPoemPairProps) {
   const [hasVoted, setHasVoted] = useState(false);
   const [votedPoemId, setVotedPoemId] = useState<string | null>(null);
@@ -90,7 +94,18 @@ export default function VotingPoemPair({
 
   const handleVote = useCallback(
     async (poemId: string) => {
-      if (hasVoted || isVoting || performanceStatus !== "training") return;
+      if (hasVoted || isVoting) return;
+
+      // Trained performance: voting is closed, so this is a PREVIEW only —
+      // reveal the split locally, persist nothing. The note below points to
+      // the live duel.
+      if (performanceStatus === "trained") {
+        setHasVoted(true);
+        setVotedPoemId(poemId);
+        return;
+      }
+
+      if (performanceStatus !== "training") return;
 
       setIsVoting(true);
       setErrorMsg(null);
@@ -156,8 +171,16 @@ export default function VotingPoemPair({
     }
   }, [votedPoemId, isVoting, performanceStatus]);
 
-  const canVote = performanceStatus === "training" && !hasVoted && !isVoting;
-  const showResults = hasVoted || performanceStatus === "trained";
+  const isTrained = performanceStatus === "trained";
+  // Clickable for a real vote (training) or a preview (trained), until acted.
+  const canVote =
+    (performanceStatus === "training" || isTrained) && !hasVoted && !isVoting;
+  // The per-poem split is revealed only after the visitor acts.
+  const showResults = hasVoted;
+  const combinedTotal = poems.reduce(
+    (s, p) => s + (voteCounts[p.id] ?? p.vote_count ?? 0),
+    0,
+  );
 
   return (
     <div>
@@ -171,7 +194,26 @@ export default function VotingPoemPair({
             marginBottom: "1.5rem",
           }}
         >
-          Click on the poem you prefer to cast your vote
+          {isTrained
+            ? "Tap the poem you prefer to see how the room voted"
+            : "Click on the poem you prefer to cast your vote"}
+        </p>
+      )}
+
+      {/* Combined pair total BEFORE voting — never the per-poem split, so the
+          running tally can't anchor the next voter. */}
+      {!showResults && (
+        <p
+          style={{
+            textAlign: "center",
+            fontFamily: '"Diatype Mono Variable", monospace',
+            fontSize: "0.8rem",
+            color: "rgba(0,0,0,0.45)",
+            marginBottom: "1.5rem",
+          }}
+        >
+          {combinedTotal} {combinedTotal === 1 ? "vote" : "votes"} on this pair
+          so far · who&apos;s ahead is revealed once you vote
         </p>
       )}
 
@@ -417,6 +459,34 @@ export default function VotingPoemPair({
           >
             {isVoting ? "undoing…" : "voted by mistake? undo vote"}
           </button>
+        </div>
+      )}
+
+      {/* Trained / closed performance: the preview vote isn't recorded.
+          Point people to the live duel. */}
+      {hasVoted && isTrained && (
+        <div
+          style={{
+            textAlign: "center",
+            marginTop: "1.5rem",
+            fontFamily: '"Diatype Mono Variable", monospace',
+            fontSize: "0.85rem",
+            color: "rgba(0,0,0,0.6)",
+            lineHeight: 1.6,
+          }}
+        >
+          This duel is closed — your vote here isn&apos;t recorded.
+          <br />
+          <a
+            href={livePerfSlug ? `/${livePerfSlug}` : "/"}
+            style={{
+              color: a11yColor,
+              textDecoration: "underline",
+              textUnderlineOffset: "3px",
+            }}
+          >
+            Vote on the live duel, the model in training →
+          </a>
         </div>
       )}
 

@@ -55,6 +55,7 @@ export async function POST(
     "camera_on",
     "webrtc_offer",
     "webrtc_answer",
+    "sandbox",
   ] as const;
 
   const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
@@ -81,11 +82,20 @@ export async function POST(
   // dedicated phase.
   const { data: latest } = await supabase
     .from("stage_state")
-    .select("theme, theme_slug, human_poem, machine_poem")
+    .select("theme, theme_slug, human_poem, machine_poem, sandbox")
     .eq("performance_id", perf.id)
     .single();
 
-  if (latest?.theme_slug && latest.human_poem && latest.machine_poem) {
+  // Only commit to singulars.poems (and open voting) in PRODUCTION mode.
+  // In sandbox the poems still show on the stage (from stage_state) but
+  // nothing is written to the DB and no votes can be cast — so dry-runs
+  // never pollute the real tallies.
+  if (
+    !latest?.sandbox &&
+    latest?.theme_slug &&
+    latest.human_poem &&
+    latest.machine_poem
+  ) {
     const { data: existing } = await supabase
       .from("poems")
       .select("id, author_type")

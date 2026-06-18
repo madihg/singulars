@@ -3,11 +3,6 @@ import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { notFound } from "next/navigation";
 import VotingPoemPair from "./VotingPoemPair";
 import { accessibleTextColor, getStatusPillStyle } from "@/lib/color-utils";
-import {
-  hasDescription,
-  getPerformanceDescription,
-} from "@/lib/performance-descriptions";
-import CollapsibleDescription from "@/components/CollapsibleDescription";
 
 export const dynamic = "force-dynamic";
 
@@ -203,31 +198,14 @@ export default async function ThemeVotingPage({
         </p>
       )}
 
-      {/* Interactive voting poem pair */}
+      {/* Interactive voting poem pair. "Read more about the piece" points to
+          the performance page's about section (which auto-expands on #about). */}
       <VotingPoemPair
         poems={poems}
         performanceColor={performance.color}
         performanceStatus={performance.status}
-        aboutHref={hasDescription(performance.slug) ? "#about" : `/${performance.slug}`}
+        aboutHref={`/${performance.slug}#about`}
       />
-
-      {/* About this performance — available inline so people who scanned in
-          can read about the piece without leaving the vote. */}
-      {hasDescription(performance.slug) &&
-        (() => {
-          const desc = getPerformanceDescription(performance.slug);
-          return desc ? (
-            <div style={{ marginTop: "3.5rem" }}>
-              <CollapsibleDescription
-                content={desc.content}
-                performanceColor={performance.color}
-                a11yColor={a11yColor}
-                defaultOpen={false}
-                id="about"
-              />
-            </div>
-          ) : null;
-        })()}
     </main>
   );
 }

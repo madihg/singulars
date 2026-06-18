@@ -18,6 +18,7 @@ interface StageStateRow {
   camera_on: boolean;
   webrtc_offer: string | null;
   webrtc_answer: string | null;
+  sandbox: boolean;
   updated_at: string;
 }
 
@@ -120,13 +121,12 @@ export default function StageView({
     return seed % 2 === 0;
   }, [performance.id]);
 
+  // QR always points to the performance page (the room reads the poems there,
+  // with the about section collapsed, and votes inline).
   const qrUrl = useMemo(() => {
     if (typeof window === "undefined") return "";
-    const origin = window.location.origin;
-    if (state?.theme_slug)
-      return `${origin}/${performance.slug}/${state.theme_slug}`;
-    return `${origin}/${performance.slug}`;
-  }, [performance.slug, state?.theme_slug]);
+    return `${window.location.origin}/${performance.slug}`;
+  }, [performance.slug]);
 
   const hasPoems = !!(state && (state.human_poem || state.machine_poem));
 
@@ -242,6 +242,26 @@ export default function StageView({
             opacity: 0.65,
           }}
         />
+      )}
+
+      {/* Sandbox marker — votes/poems are NOT being recorded. */}
+      {state?.sandbox && (
+        <div
+          style={{
+            position: "fixed",
+            top: 12,
+            left: 12,
+            fontFamily: MONO,
+            fontSize: "0.65rem",
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            color: "#000",
+            background: "#f59e0b",
+            padding: "0.2rem 0.5rem",
+          }}
+        >
+          sandbox · not recording
+        </div>
       )}
     </main>
   );
@@ -743,7 +763,7 @@ function QRBlock({
             color,
           }}
         >
-          {hasTheme ? "scan to vote" : "scan to follow along"}
+          {hasTheme ? "scan to read & vote" : "scan to follow along"}
         </div>
         {steps.map((s, i) => (
           <div

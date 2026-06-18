@@ -26,6 +26,7 @@ interface StageStateRow {
   camera_on: boolean;
   webrtc_offer: string | null;
   webrtc_answer: string | null;
+  sandbox: boolean;
   updated_at: string;
 }
 

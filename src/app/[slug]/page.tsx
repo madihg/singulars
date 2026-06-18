@@ -10,8 +10,24 @@ import {
   getPerformanceHeroImage,
 } from "@/lib/performance-descriptions";
 import CollapsibleDescription from "@/components/CollapsibleDescription";
+import VotingPoemPair from "./[themeSlug]/VotingPoemPair";
 
 export const dynamic = "force-dynamic";
+
+/** The currently-live (training) performance, for the "vote on the live one"
+ *  note shown when previewing a closed/trained performance. */
+async function getLiveTrainingSlug(): Promise<string | null> {
+  const supabase = getServiceClient() || getSupabase();
+  if (!supabase) return null;
+  const { data } = await supabase
+    .from("performances")
+    .select("slug")
+    .eq("status", "training")
+    .order("date", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return data?.slug ?? null;
+}
 
 interface Poem {
   id: string;
@@ -118,7 +134,10 @@ export default async function PerformancePage({
 }: {
   params: { slug: string };
 }) {
-  const performance = await getPerformance(params.slug);
+  const [performance, liveTrainingSlug] = await Promise.all([
+    getPerformance(params.slug),
+    getLiveTrainingSlug(),
+  ]);
 
   if (!performance) {
     notFound();
@@ -429,6 +448,8 @@ export default async function PerformancePage({
               content={desc.content}
               performanceColor={performance.color}
               a11yColor={a11yColor}
+              defaultOpen={false}
+              id="about"
             />
           ) : null;
         })()}
@@ -457,95 +478,27 @@ export default async function PerformancePage({
               paddingLeft: "1.5rem",
             }}
           >
-            <Link
-              href={`/${performance.slug}/${themeGroup.theme_slug}`}
+            <h3
               style={{
-                color: "inherit",
+                fontSize: "1.3rem",
+                fontWeight: 500,
+                marginBottom: "1.5rem",
+                lineHeight: 1.2,
+                color: a11yColor,
               }}
             >
-              <h3
-                style={{
-                  fontSize: "1.3rem",
-                  fontWeight: 500,
-                  marginBottom: "1.5rem",
-                  cursor: "pointer",
-                  lineHeight: 1.2,
-                }}
-              >
-                {themeGroup.theme}
-                <span
-                  style={{
-                    fontSize: "0.85rem",
-                    color: "rgba(0,0,0,0.4)",
-                    marginLeft: "0.5rem",
-                  }}
-                >
-                  &rarr;
-                </span>
-              </h3>
-            </Link>
+              {themeGroup.theme}
+            </h3>
 
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-                gap: "2rem",
-              }}
-            >
-              {themeGroup.poems.map((poem) => (
-                <div
-                  key={poem.id}
-                  style={{
-                    padding: "1.5rem 0",
-                    borderTop: "1px solid rgba(0,0,0,0.12)",
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: "0.95rem",
-                      lineHeight: 1.7,
-                      whiteSpace: "pre-line",
-                      color: "rgba(0,0,0,0.85)",
-                    }}
-                  >
-                    {poem.text}
-                  </div>
-                  {/* Per-poem vote count only when the perf is `trained`
-                      (voting closed, tally finalized). While still
-                      `training`, we surface only the combined pair count
-                      below — never the split — so it can't anchor voters. */}
-                  {performance.status === "trained" && (
-                    <div
-                      style={{
-                        fontFamily: '"Diatype Mono Variable", monospace',
-                        fontSize: "0.8rem",
-                        color: "rgba(0,0,0,0.5)",
-                        marginTop: "0.5rem",
-                      }}
-                    >
-                      {poem.vote_count ?? 0}{" "}
-                      {(poem.vote_count ?? 0) === 1 ? "vote" : "votes"}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-            {performance.status === "training" && (
-              <p
-                style={{
-                  fontFamily: '"Diatype Mono Variable", monospace',
-                  fontSize: "0.8rem",
-                  color: "rgba(0,0,0,0.45)",
-                  marginTop: "1rem",
-                }}
-              >
-                {themeGroup.poems.reduce(
-                  (s, p) => s + (p.vote_count ?? 0),
-                  0,
-                )}{" "}
-                votes on this pair so far · split revealed once voting closes
-              </p>
-            )}
+            {/* Vote right here on the performance page (the QR target). The
+                pair total shows before voting; the split + undo after. */}
+            <VotingPoemPair
+              poems={themeGroup.poems}
+              performanceColor={performance.color}
+              performanceStatus={performance.status}
+              aboutHref={hasDescription(performance.slug) ? "#about" : `/${performance.slug}`}
+              livePerfSlug={liveTrainingSlug}
+            />
           </div>
         ))}
       </section>
