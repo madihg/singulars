@@ -114,25 +114,23 @@ export default function ControlView({
     [controlKey, performance.slug],
   );
 
-  // Phase changes also drive the camera: writing turns it on, break/pre-show
-  // turn it off. (Manual toggle still available below.)
+  // Phase is INDEPENDENT of the camera. Changing phase never touches the
+  // camera — the camera is a standalone on/off (below) so it behaves
+  // predictably regardless of pre-show / writing / break.
   const setPhase = useCallback(
     (p: Phase) => {
       post({ phase: p }, `phase:${p}`);
-      if (p === "writing") setCameraOn(true);
-      else setCameraOn(false);
     },
     [post],
   );
 
-  // Start the writing window NOW: stamp writing_starts_at=now, flip to
-  // 'writing', and turn the camera on. The stage syncs off this timestamp.
+  // Start the writing window NOW: stamp writing_starts_at=now and flip to
+  // 'writing' so the stage timer counts down. Does NOT touch the camera.
   const startWritingNow = useCallback(() => {
     post(
       { phase: "writing", writing_starts_at: new Date().toISOString() },
       "start-writing",
     );
-    setCameraOn(true);
   }, [post]);
 
   // PUBLISH the current theme + both poems to the stage: snapshots them into
@@ -301,8 +299,8 @@ export default function ControlView({
             const active = state?.phase === p;
             const labelMap: Record<Phase, string> = {
               "pre-show": "pre-show",
-              writing: "writing (camera on)",
-              break: "break (camera off)",
+              writing: "writing",
+              break: "break",
             };
             return (
               <button
@@ -352,7 +350,7 @@ export default function ControlView({
           >
             {saving === "start-writing"
               ? "starting…"
-              : `▶ start writing — camera on + ${Math.round(windowSeconds / 60)}min timer`}
+              : `▶ start writing — ${Math.round(windowSeconds / 60)}min timer`}
           </button>
         </div>
       </section>
@@ -851,7 +849,8 @@ function CameraPublisher({
             {statusText}
           </div>
           <p style={{ fontFamily: mono, fontSize: "0.72rem", color: "rgba(0,0,0,0.4)", margin: 0, maxWidth: 260, lineHeight: 1.5 }}>
-            turns on automatically when you start writing. audio goes through
+            independent of the phase — turn it on or off whenever; it stays
+            that way through pre-show / writing / break. audio goes through
             Teams, not here.
           </p>
         </div>

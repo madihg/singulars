@@ -579,11 +579,10 @@ function CameraTile({
             color: "rgba(255,255,255,0.4)",
           }}
         >
-          {phase === "break"
-            ? "Halim is on break"
-            : cameraOn
-              ? "connecting to Halim's camera…"
-              : "camera off — waiting for Halim"}
+          {/* Camera state only — independent of the phase. */}
+          {cameraOn
+            ? "connecting to Halim's camera…"
+            : "camera off"}
         </div>
       )}
 
@@ -641,10 +640,7 @@ function CameraTile({
             color: "rgba(255,255,255,0.9)",
           }}
         >
-          <span style={{ color }}>
-            {phase === "writing" ? "writing on:" : "theme:"}
-          </span>{" "}
-          {theme}
+          <span style={{ color }}>theme:</span> {theme}
         </div>
       )}
     </div>
