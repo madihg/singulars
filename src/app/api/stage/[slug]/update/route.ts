@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase";
 import { isStageControlKeyValid } from "@/lib/stage-auth";
+import { isValidAdminCookie } from "@/lib/admin-auth";
 
 /**
  * POST /api/stage/[slug]/update
@@ -17,7 +18,8 @@ export async function POST(
   const url = new URL(req.url);
   const key = url.searchParams.get("key");
 
-  if (!isStageControlKeyValid(key)) {
+  // Authorized via ?key= or an active /admin login cookie.
+  if (!isStageControlKeyValid(key) && !isValidAdminCookie(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -56,6 +58,10 @@ export async function POST(
     "webrtc_offer",
     "webrtc_answer",
     "sandbox",
+    "published_theme",
+    "published_theme_slug",
+    "published_human_poem",
+    "published_machine_poem",
   ] as const;
 
   const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
@@ -75,32 +81,32 @@ export async function POST(
     );
   }
 
-  // Side-effect: as soon as BOTH poems + a locked theme are present,
-  // materialize them into singulars.poems so the QR voting page works, and
-  // open voting (status='training'). Decoupled from phase - the phases are
-  // just pre-show / writing / break now; voting follows the poems, not a
-  // dedicated phase.
+  // Side-effect: when a pair is PUBLISHED (published_* set) and we're live
+  // (not sandbox), materialize it into singulars.poems so it appears on the
+  // performance page + is votable, and open voting (status='training').
+  // The published_* snapshot is what the stage shows; the draft theme/poems
+  // (theme/human_poem/machine_poem) drive the camera + the operator's
+  // working area only. In sandbox, the pair shows on the stage but is never
+  // committed (dry-runs don't pollute the tallies).
   const { data: latest } = await supabase
     .from("stage_state")
-    .select("theme, theme_slug, human_poem, machine_poem, sandbox")
+    .select(
+      "published_theme, published_theme_slug, published_human_poem, published_machine_poem, sandbox",
+    )
     .eq("performance_id", perf.id)
     .single();
 
-  // Only commit to singulars.poems (and open voting) in PRODUCTION mode.
-  // In sandbox the poems still show on the stage (from stage_state) but
-  // nothing is written to the DB and no votes can be cast — so dry-runs
-  // never pollute the real tallies.
   if (
     !latest?.sandbox &&
-    latest?.theme_slug &&
-    latest.human_poem &&
-    latest.machine_poem
+    latest?.published_theme_slug &&
+    latest.published_human_poem &&
+    latest.published_machine_poem
   ) {
     const { data: existing } = await supabase
       .from("poems")
       .select("id, author_type")
       .eq("performance_id", perf.id)
-      .eq("theme_slug", latest.theme_slug);
+      .eq("theme_slug", latest.published_theme_slug);
 
     const haveHuman = existing?.some((p) => p.author_type === "human");
     const haveMachine = existing?.some((p) => p.author_type === "machine");
@@ -109,9 +115,9 @@ export async function POST(
     if (!haveHuman) {
       rows.push({
         performance_id: perf.id,
-        theme: latest.theme,
-        theme_slug: latest.theme_slug,
-        text: latest.human_poem,
+        theme: latest.published_theme,
+        theme_slug: latest.published_theme_slug,
+        text: latest.published_human_poem,
         author_name: "Halim Madi",
         author_type: "human",
         vote_count: 0,
@@ -120,9 +126,9 @@ export async function POST(
     if (!haveMachine) {
       rows.push({
         performance_id: perf.id,
-        theme: latest.theme,
-        theme_slug: latest.theme_slug,
-        text: latest.machine_poem,
+        theme: latest.published_theme,
+        theme_slug: latest.published_theme_slug,
+        text: latest.published_machine_poem,
         author_name: "Machine",
         author_type: "machine",
         vote_count: 0,

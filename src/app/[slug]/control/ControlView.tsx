@@ -21,6 +21,10 @@ interface StageStateRow {
   webrtc_offer: string | null;
   webrtc_answer: string | null;
   sandbox: boolean;
+  published_theme: string | null;
+  published_theme_slug: string | null;
+  published_human_poem: string | null;
+  published_machine_poem: string | null;
   updated_at: string;
 }
 
@@ -130,6 +134,23 @@ export default function ControlView({
     );
     setCameraOn(true);
   }, [post]);
+
+  // PUBLISH the current theme + both poems to the stage: snapshots them into
+  // published_* (what the stage shows). When live (not test mode), the API
+  // also commits them to singulars.poems → they appear on the performance
+  // page and become votable. Locking a NEW theme afterwards only changes the
+  // camera; the published pair stays until you publish the next one.
+  const publishPoems = useCallback(() => {
+    post(
+      {
+        published_theme: theme,
+        published_theme_slug: slugify(theme),
+        published_human_poem: humanPoem,
+        published_machine_poem: machinePoem,
+      },
+      "publish",
+    );
+  }, [post, theme, humanPoem, machinePoem]);
 
   // Keyboard: 1-3 phases, Cmd/Ctrl+Enter saves a textarea, Cmd/Ctrl+L video.
   useEffect(() => {
@@ -451,11 +472,54 @@ export default function ControlView({
             </RowActions>
           </Field>
           <p style={{ fontFamily: monoFont, fontSize: "0.75rem", color: "rgba(0,0,0,0.45)", margin: 0, lineHeight: 1.5 }}>
-            once both poems + a locked theme are saved, the QR voting opens
-            automatically.
+            saving keeps a draft; nothing shows on stage until you publish.
           </p>
         </div>
       </div>
+
+      {/* PUBLISH — snapshots this theme + both poems onto the stage. When
+          live (not test mode), also commits them to the site + opens voting. */}
+      <section style={{ marginTop: "1.5rem" }}>
+        <button
+          onClick={publishPoems}
+          disabled={saving === "publish" || !theme.trim() || !humanPoem.trim() || !machinePoem.trim()}
+          style={{
+            width: "100%",
+            padding: "0.85rem 1.25rem",
+            border: `1px solid ${accent}`,
+            background:
+              !theme.trim() || !humanPoem.trim() || !machinePoem.trim()
+                ? "rgba(0,0,0,0.04)"
+                : accent,
+            color:
+              !theme.trim() || !humanPoem.trim() || !machinePoem.trim()
+                ? "rgba(0,0,0,0.4)"
+                : "#fff",
+            fontFamily: monoFont,
+            fontSize: "0.95rem",
+            cursor:
+              saving === "publish"
+                ? "wait"
+                : !theme.trim() || !humanPoem.trim() || !machinePoem.trim()
+                  ? "not-allowed"
+                  : "pointer",
+            letterSpacing: "0.03em",
+            textTransform: "lowercase",
+          }}
+        >
+          {saving === "publish"
+            ? "publishing…"
+            : `▶ publish poems to stage${state?.sandbox ? " (test — not committed)" : " + site + voting"}`}
+        </button>
+        <p style={{ fontFamily: monoFont, fontSize: "0.75rem", color: "rgba(0,0,0,0.45)", marginTop: "0.5rem", lineHeight: 1.5 }}>
+          {state?.published_theme
+            ? `on stage now: "${state.published_theme}". `
+            : ""}
+          publishes the pair above under theme &ldquo;{theme || "…"}&rdquo;. lock a
+          new theme afterwards to start the next round — the camera switches, the
+          published pair stays until you publish again.
+        </p>
+      </section>
 
       {error && (
         <div

@@ -19,6 +19,10 @@ interface StageStateRow {
   webrtc_offer: string | null;
   webrtc_answer: string | null;
   sandbox: boolean;
+  published_theme: string | null;
+  published_theme_slug: string | null;
+  published_human_poem: string | null;
+  published_machine_poem: string | null;
   updated_at: string;
 }
 
@@ -160,7 +164,13 @@ export default function StageView({
     return `${window.location.origin}/${performance.slug}`;
   }, [performance.slug]);
 
-  const hasPoems = !!(state && (state.human_poem || state.machine_poem));
+  // The stage shows the PUBLISHED pair (the snapshot), with its own theme —
+  // not the operator's draft, and not the current writing theme (which only
+  // drives the camera overlay).
+  const hasPoems = !!(
+    state &&
+    (state.published_human_poem || state.published_machine_poem)
+  );
 
   return (
     <main
@@ -286,7 +296,7 @@ export default function StageView({
               <EmptyMain phase={phase} color={color} />
             )}
           </div>
-          <RoundsStrip rounds={rounds} currentSlug={state?.theme_slug ?? null} />
+          <RoundsStrip rounds={rounds} currentSlug={state?.published_theme_slug ?? null} />
         </section>
 
         {/* RIGHT — camera (top), QR + instructions, then the explanation */}
@@ -721,24 +731,50 @@ function PoemsPair({
   showHumanFirst: boolean;
 }) {
   if (!state) return null;
+  const human = state.published_human_poem ?? "";
+  const machine = state.published_machine_poem ?? "";
   const left = showHumanFirst
-    ? { text: state.human_poem, label: "Poem A" }
-    : { text: state.machine_poem, label: "Poem A" };
+    ? { text: human, label: "Poem A" }
+    : { text: machine, label: "Poem A" };
   const right = showHumanFirst
-    ? { text: state.machine_poem, label: "Poem B" }
-    : { text: state.human_poem, label: "Poem B" };
+    ? { text: machine, label: "Poem B" }
+    : { text: human, label: "Poem B" };
 
   return (
     <div
       style={{
         flex: 1,
-        display: "grid",
-        gridTemplateColumns: "1fr 1fr",
-        gap: "1.75rem",
+        display: "flex",
+        flexDirection: "column",
+        gap: "1.25rem",
         minHeight: 0,
       }}
     >
-      {[left, right].map((p) => (
+      {/* The theme the published pair was published WITH (stays put across
+          rounds, independent of the camera's current writing theme). */}
+      {state.published_theme && (
+        <div
+          style={{
+            fontFamily: DISPLAY,
+            fontSize: "2.25rem",
+            lineHeight: 1,
+            color,
+            flexShrink: 0,
+          }}
+        >
+          {state.published_theme}
+        </div>
+      )}
+      <div
+        style={{
+          flex: 1,
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: "1.75rem",
+          minHeight: 0,
+        }}
+      >
+        {[left, right].map((p) => (
         <article
           key={p.label}
           style={{
@@ -775,7 +811,8 @@ function PoemsPair({
             {p.text || "—"}
           </div>
         </article>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }

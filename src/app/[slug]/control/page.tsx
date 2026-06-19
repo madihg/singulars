@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getServiceClient, getSupabase } from "@/lib/supabase";
 import { isStageControlKeyValid } from "@/lib/stage-auth";
+import { isValidAdminCookieFromStore } from "@/lib/admin-auth";
 import ControlView from "./ControlView";
 import KeyPrompt from "./KeyPrompt";
 
@@ -19,7 +20,11 @@ export default async function ControlPage({
   params: { slug: string };
   searchParams: { key?: string };
 }) {
-  if (!isStageControlKeyValid(searchParams.key)) {
+  // Authorized via ?key= (STAGE_CONTROL_KEY or admin password) OR an active
+  // /admin login cookie (so the link from /admin just works).
+  const authed =
+    isStageControlKeyValid(searchParams.key) || isValidAdminCookieFromStore();
+  if (!authed) {
     const triedKey =
       typeof searchParams.key === "string" && searchParams.key.length > 0;
     return (
@@ -71,7 +76,7 @@ export default async function ControlPage({
     <ControlView
       performance={perf}
       initialState={state}
-      controlKey={searchParams.key as string}
+      controlKey={searchParams.key ?? ""}
     />
   );
 }

@@ -27,6 +27,10 @@ interface StageStateRow {
   webrtc_offer: string | null;
   webrtc_answer: string | null;
   sandbox: boolean;
+  published_theme: string | null;
+  published_theme_slug: string | null;
+  published_human_poem: string | null;
+  published_machine_poem: string | null;
   updated_at: string;
 }
 

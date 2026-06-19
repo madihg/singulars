@@ -245,8 +245,25 @@ function StatCard({
   return inner;
 }
 
+async function fetchLivePerfSlug(): Promise<string | null> {
+  const supabase = getServiceClient();
+  if (!supabase) return null;
+  const { data } = await supabase
+    .from("performances")
+    .select("slug")
+    .eq("status", "training")
+    .order("date", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return (data as { slug?: string } | null)?.slug ?? null;
+}
+
 export default async function AdminDashboardPage() {
-  const [counts, costs] = await Promise.all([fetchCounts(), fetchCosts()]);
+  const [counts, costs, liveSlug] = await Promise.all([
+    fetchCounts(),
+    fetchCosts(),
+    fetchLivePerfSlug(),
+  ]);
   const migrationApplied = counts.evalRuns !== null;
   const combinedMonth = costs.evalMonth + costs.finetuneMonth;
   const monthOverBudget = combinedMonth > TYPICAL_MONTH_USD * 2;
@@ -304,6 +321,51 @@ export default async function AdminDashboardPage() {
           value={counts.votes}
           hint={`${counts.votesOnline} online · ${counts.votes - counts.votesOnline} paper ballots`}
         />
+      </div>
+
+      <h2 style={{ ...sectionHeadingStyle, marginBottom: "1rem" }}>
+        live stage
+      </h2>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+          gap: "1rem",
+          marginBottom: "2.5rem",
+        }}
+      >
+        {liveSlug ? (
+          <>
+            <a
+              href={`/${liveSlug}/control`}
+              style={{ ...statCardStyle, textDecoration: "none", color: "inherit", display: "block" }}
+            >
+              <div style={statValueStyle}>control →</div>
+              <div style={statLabelStyle}>{liveSlug} · operator</div>
+            </a>
+            <a
+              href={`/${liveSlug}/stage`}
+              target="_blank"
+              rel="noreferrer"
+              style={{ ...statCardStyle, textDecoration: "none", color: "inherit", display: "block" }}
+            >
+              <div style={statValueStyle}>stage ↗</div>
+              <div style={statLabelStyle}>{liveSlug} · venue screen</div>
+            </a>
+          </>
+        ) : (
+          <div
+            style={{
+              ...statCardStyle,
+              fontFamily: FONT_MONO,
+              fontSize: "0.85rem",
+              color: "var(--text-secondary)",
+            }}
+          >
+            no performance is in &lsquo;training&rsquo; right now. flip one to
+            training to drive its stage.
+          </div>
+        )}
       </div>
 
       <h2 style={{ ...sectionHeadingStyle, marginBottom: "1rem" }}>
