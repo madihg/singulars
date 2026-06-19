@@ -10,7 +10,6 @@
  */
 
 import { AdminNav } from "./AdminNav";
-import { pageStyle } from "@/lib/admin-styles";
 
 export const dynamic = "force-dynamic";
 
@@ -19,10 +18,12 @@ export default function AuthedAdminLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Shell = left sidebar (AdminNav) + main content column. The flex/responsive
+  // rules live in AdminNav's scoped <style> (.admin-shell / .admin-main).
   return (
-    <div style={pageStyle}>
+    <div className="admin-shell">
       <AdminNav />
-      <main>{children}</main>
+      <main className="admin-main">{children}</main>
     </div>
   );
 }

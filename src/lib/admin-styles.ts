@@ -21,13 +21,6 @@ export const monoStyle: CSSProperties = {
   fontFamily: FONT_MONO,
 };
 
-export const pageStyle: CSSProperties = {
-  maxWidth: 800,
-  margin: "0 auto",
-  padding: "4rem 2rem",
-  minHeight: "100vh",
-};
-
 export const loginPageStyle: CSSProperties = {
   maxWidth: 400,
   margin: "0 auto",
