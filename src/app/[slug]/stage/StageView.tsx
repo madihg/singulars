@@ -971,7 +971,7 @@ function RoundsStrip({
           >
             <span style={{ color: "#fff" }}>{r.theme}</span>{" "}
             <span style={{ color: "rgba(255,255,255,0.55)" }}>
-              you {r.human_votes} · {OPPONENT} {r.machine_votes}
+              {r.total} {r.total === 1 ? "vote" : "votes"}
             </span>
           </div>
         ))}
