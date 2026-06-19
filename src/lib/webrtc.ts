@@ -55,7 +55,11 @@ export function iceServers(): RTCIceServer[] {
  */
 export function waitForIceGathering(
   pc: RTCPeerConnection,
-  timeoutMs = 4000,
+  // 8s (was 4s): relay candidates from a TURN server over TCP/443 routinely
+  // take 3-6s to gather, especially from a restrictive network. Since signaling
+  // is non-trickle, any candidate not gathered before this resolves is lost for
+  // good — too short a cap silently drops the relay path and media never flows.
+  timeoutMs = 8000,
 ): Promise<void> {
   if (pc.iceGatheringState === "complete") return Promise.resolve();
   return new Promise((resolve) => {

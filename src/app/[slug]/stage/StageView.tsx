@@ -429,6 +429,7 @@ function CameraTile({
   const videoRef = useRef<HTMLVideoElement>(null);
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const lastOfferRef = useRef<string | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const [streamLive, setStreamLive] = useState(false);
 
   // WebRTC viewer: when control publishes an offer (camera on), answer it.
@@ -439,12 +440,17 @@ function CameraTile({
         pcRef.current.close();
         pcRef.current = null;
       }
+      streamRef.current = null;
       lastOfferRef.current = null;
       setStreamLive(false);
       return;
     }
     if (offer === lastOfferRef.current) return; // already handled
     lastOfferRef.current = offer;
+    // A new offer means the publisher re-published (e.g. a retry). Drop the
+    // stale stream and fall back to "connecting…" until the new one flows.
+    streamRef.current = null;
+    setStreamLive(false);
     let cancelled = false;
 
     (async () => {
@@ -453,16 +459,32 @@ function CameraTile({
         const pc = new RTCPeerConnection({ iceServers: iceServers() });
         pcRef.current = pc;
         pc.ontrack = (e) => {
-          if (videoRef.current && e.streams[0]) {
-            videoRef.current.srcObject = e.streams[0];
-            setStreamLive(true);
+          const [stream] = e.streams;
+          if (stream) streamRef.current = stream;
+          // Go "live" only when media is ACTUALLY flowing. ontrack fires at
+          // SDP time (setRemoteDescription), long before any frames arrive — a
+          // remote track starts `muted` and fires `unmute` when the first
+          // packets land. Gating on that (not ontrack) is what stops the black
+          // "LIVE" tile AND the frameless <video> that otherwise keeps the
+          // browser tab spinner loading forever.
+          const track = e.track;
+          if (track) {
+            if (!track.muted) setStreamLive(true);
+            track.onunmute = () => setStreamLive(true);
+            track.onmute = () => setStreamLive(false);
           }
+        };
+        // Hide only on a HARD failure. A transient "disconnected" usually
+        // self-heals without media actually stopping; track.onmute above
+        // already covers the case where frames really stop, so we don't tear
+        // the tile down (and remount the <video>) on every ICE blip.
+        pc.onconnectionstatechange = () => {
+          const s = pc.connectionState;
+          if (s === "failed" || s === "closed") setStreamLive(false);
         };
         pc.oniceconnectionstatechange = () => {
           const s = pc.iceConnectionState;
-          if (s === "failed" || s === "disconnected" || s === "closed") {
-            setStreamLive(false);
-          }
+          if (s === "failed" || s === "closed") setStreamLive(false);
         };
         await pc.setRemoteDescription(JSON.parse(offer));
         const ans = await pc.createAnswer();
@@ -489,6 +511,16 @@ function CameraTile({
   const showVideo = cameraOn && streamLive;
   const showIframe = !showVideo && !!videoUrl; // fallback (Daily/Whereby/etc.)
 
+  // Attach the stream only once we actually mount + show the <video> (i.e. media
+  // is flowing). Mounting the element only when live means a never-completing
+  // connection never leaves a stalled autoplay <video> spinning the tab.
+  useEffect(() => {
+    if (showVideo && videoRef.current && streamRef.current) {
+      videoRef.current.srcObject = streamRef.current;
+      videoRef.current.play().catch(() => {});
+    }
+  }, [showVideo]);
+
   return (
     <div
       style={{
@@ -501,20 +533,24 @@ function CameraTile({
         flexShrink: 0,
       }}
     >
-      {/* live camera */}
-      <video
-        ref={videoRef}
-        autoPlay
-        playsInline
-        muted
-        style={{
-          width: "100%",
-          height: "100%",
-          objectFit: "cover",
-          display: showVideo ? "block" : "none",
-          transform: "scaleX(-1)", // mirror so it reads natural
-        }}
-      />
+      {/* live camera — mounted ONLY when media is actually flowing. A
+          half-open (frameless) connection must not leave a <video> stalling,
+          or the browser tab spinner loads forever. */}
+      {showVideo && (
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            display: "block",
+            transform: "scaleX(-1)", // mirror so it reads natural
+          }}
+        />
+      )}
 
       {/* fallback iframe */}
       {showIframe && (

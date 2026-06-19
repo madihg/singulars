@@ -600,6 +600,9 @@ function CameraPublisher({
     "off" | "starting" | "waiting" | "live" | "error"
   >("off");
   const [errMsg, setErrMsg] = useState<string | null>(null);
+  // Bumped to force a fresh offer/publish when a handshake fails to traverse.
+  const [retryNonce, setRetryNonce] = useState(0);
+  const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const postUpdate = useCallback(
     async (patch: Record<string, unknown>) => {
@@ -634,7 +637,12 @@ function CameraPublisher({
 
   useEffect(() => {
     let cancelled = false;
+    let activePc: RTCPeerConnection | null = null;
     if (!on) {
+      if (retryTimerRef.current) {
+        clearTimeout(retryTimerRef.current);
+        retryTimerRef.current = null;
+      }
       teardownLocal();
       setStatus("off");
       postUpdate({ camera_on: false, webrtc_offer: null, webrtc_answer: null });
@@ -644,24 +652,51 @@ function CameraPublisher({
       try {
         setStatus("starting");
         setErrMsg(null);
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { width: { ideal: 1280 }, height: { ideal: 720 } },
-          audio: false,
-        });
-        if (cancelled) {
-          stream.getTracks().forEach((t) => t.stop());
-          return;
+        // Reuse the already-granted camera across retries so we don't re-prompt
+        // or blink the local preview on every reconnect attempt.
+        let stream = streamRef.current;
+        if (!stream) {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: { width: { ideal: 1280 }, height: { ideal: 720 } },
+            audio: false,
+          });
+          if (cancelled) {
+            stream.getTracks().forEach((t) => t.stop());
+            return;
+          }
+          streamRef.current = stream;
         }
-        streamRef.current = stream;
-        if (videoRef.current) videoRef.current.srcObject = stream;
+        const activeStream = stream;
+        if (videoRef.current) videoRef.current.srcObject = activeStream;
 
+        // Fresh peer connection for this (re)publish — closing any prior one so
+        // a retry doesn't leak/duplicate connections.
+        if (pcRef.current) {
+          pcRef.current.close();
+          pcRef.current = null;
+        }
         const pc = new RTCPeerConnection({ iceServers: iceServers() });
+        activePc = pc;
         pcRef.current = pc;
-        stream.getTracks().forEach((t) => pc.addTrack(t, stream));
+        activeStream.getTracks().forEach((t) => pc.addTrack(t, activeStream));
         pc.onconnectionstatechange = () => {
           const s = pc.connectionState;
-          if (s === "connected") setStatus("live");
-          else if (s === "failed" || s === "disconnected") setStatus("waiting");
+          if (s === "connected") {
+            setStatus("live");
+          } else if (s === "failed") {
+            // The handshake didn't traverse (likely the first attempt on a
+            // restrictive venue network). Re-publish a fresh offer after a beat
+            // so the venue re-answers — no manual camera toggle needed.
+            setStatus("waiting");
+            if (!retryTimerRef.current) {
+              retryTimerRef.current = setTimeout(() => {
+                retryTimerRef.current = null;
+                setRetryNonce((n) => n + 1);
+              }, 2500);
+            }
+          } else if (s === "disconnected") {
+            setStatus("waiting");
+          }
         };
 
         const offer = await pc.createOffer();
@@ -687,9 +722,12 @@ function CameraPublisher({
     })();
     return () => {
       cancelled = true;
+      // Detach the handler so a torn-down PC (closed by the next run) can't
+      // fire a stale "failed" and schedule a duplicate retry.
+      if (activePc) activePc.onconnectionstatechange = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [on]);
+  }, [on, retryNonce]);
 
   // Apply the stage's answer once it arrives.
   useEffect(() => {
@@ -698,7 +736,13 @@ function CameraPublisher({
     appliedAnswerRef.current = answer;
     (async () => {
       try {
-        if (pcRef.current && !pcRef.current.currentRemoteDescription) {
+        // Only apply to a PC that's actually awaiting an answer for its current
+        // offer — guards against a stale answer landing on a freshly rebuilt PC.
+        if (
+          pcRef.current &&
+          pcRef.current.signalingState === "have-local-offer" &&
+          !pcRef.current.currentRemoteDescription
+        ) {
           await pcRef.current.setRemoteDescription(JSON.parse(answer));
         }
       } catch {
