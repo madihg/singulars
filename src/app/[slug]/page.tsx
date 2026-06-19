@@ -513,16 +513,31 @@ export default async function PerformancePage({
               paddingLeft: "1.5rem",
             }}
           >
+            {/* The title links to the dedicated single-theme page (just this
+                pair + voting). The pair below is votable inline too. */}
             <h3
               style={{
                 fontSize: "1.3rem",
                 fontWeight: 500,
                 marginBottom: "1.5rem",
                 lineHeight: 1.2,
-                color: a11yColor,
               }}
             >
-              {themeGroup.theme}
+              <Link
+                href={`/${performance.slug}/${themeGroup.theme_slug}`}
+                style={{ color: a11yColor, textDecoration: "none" }}
+              >
+                {themeGroup.theme}
+                <span
+                  style={{
+                    fontSize: "0.85rem",
+                    color: "rgba(0,0,0,0.4)",
+                    marginLeft: "0.5rem",
+                  }}
+                >
+                  &rarr;
+                </span>
+              </Link>
             </h3>
 
             {/* Vote right here on the performance page (the QR target). The
