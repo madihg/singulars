@@ -62,7 +62,7 @@ export default function MiniVoting() {
         }> = await listRes.json();
 
         // Candidate order: the live (training) perf first, then trained by
-        // date desc. We try each until we find one that actually HAS poems —
+        // date desc. We try each until we find one that actually HAS poems - 
         // a training perf with no poems yet (pre-show) must NOT crash the
         // widget; it should fall back to the latest finished duel.
         const candidates = [

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase";
 
 /**
- * POST /api/stage/[slug]/answer  — PUBLIC (no operator key).
+ * POST /api/stage/[slug]/answer - PUBLIC (no operator key).
  *
  * The venue stage screen is unauthenticated, but it must write its WebRTC
  * SDP answer back so the operator (control) can complete the camera

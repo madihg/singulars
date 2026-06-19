@@ -78,7 +78,7 @@ export const HERO_IMAGES: {
     },
     "recover-exe": {
       src: "/images/recover-exe/featured.JPG",
-      alt: "Casa dos Livros, Porto — the venue for recover.exe at Breaking the Code",
+      alt: "Casa dos Livros, Porto - the venue for recover.exe at Breaking the Code",
     },
   },
 };
@@ -90,7 +90,7 @@ export const CARD_DESCRIPTIONS: Record<string, string> = {
   "frontiere-exe":
     "邊界 night in Brooklyn. The duel arrives at Index Space Greenpoint, hosted by bianjie.systems, supported by Gray Area and FWB. May 13, 2026, 10pm – 12am.",
   "recover-exe":
-    "Performed at a distance. At Breaking the Code in Porto, the poet writes from another continent — the duel survives the latency, the dropouts, the recovery. June 19, 2026.",
+    "Performed at a distance. At Breaking the Code in Porto, the poet writes from another continent - the duel survives the latency, the dropouts, the recovery. June 19, 2026.",
   "reverse-exe":
     "A live poetry duel at the Media Archaeology Lab. The poet writes among vintage machines while the model trains on the archive of past performances.",
   "hard-exe":
@@ -128,16 +128,16 @@ const descriptions: Record<string, PerformanceDescription> = {
     content: [
       {
         type: "italic",
-        text: "recover — what a system does after a fault. Performed at a distance. For Breaking the Code: Hacktivating Non-Normative Algorithms at Casa dos Livros in Porto, the poet writes into the room from another continent. The duel survives the latency, the dropouts, the recovery.",
+        text: "recover - what a system does after a fault. Performed at a distance. For Breaking the Code: Hacktivating Non-Normative Algorithms at Casa dos Livros in Porto, the poet writes into the room from another continent. The duel survives the latency, the dropouts, the recovery.",
       },
       {
         type: "image",
         src: "/images/recover-exe/conference-banner.jpg",
-        alt: "Breaking the Code: Hacktivating Non-Normative Algorithms — International Conference, 18-19 June 2026. Theme 2026: Error 403 – Critical Refusals.",
+        alt: "Breaking the Code: Hacktivating Non-Normative Algorithms - International Conference, 18-19 June 2026. Theme 2026: Error 403 – Critical Refusals.",
       },
       {
         type: "italic",
-        text: "The conference's 2026 theme: Error 403 – Critical Refusals. recover.exe answers it in kind — a performance built on a fragile remote rig that performs its own recovery.",
+        text: "The conference's 2026 theme: Error 403 – Critical Refusals. recover.exe answers it in kind - a performance built on a fragile remote rig that performs its own recovery.",
       },
       {
         type: "paragraph",
@@ -146,11 +146,11 @@ const descriptions: Record<string, PerformanceDescription> = {
       {
         type: "image",
         src: "/images/recover-exe/library.jpg",
-        alt: "Inside Casa dos Livros — shelves of Portuguese literature",
+        alt: "Inside Casa dos Livros - shelves of Portuguese literature",
       },
       {
         type: "paragraph",
-        text: "The piece runs over the conference's Microsoft Teams link for sound and presence, with a dedicated browser on the venue screen that the room actually watches: my webcam streamed in live, the theme once it's chosen, both poems anonymized once they land, a QR for the audience to scan and vote with their phones, and a countdown to the next phase. Everything is paste-driven from a control on my laptop — when the realtime channel drops, the screen never blanks. It holds the last good state and reconnects quietly.",
+        text: "The piece runs over the conference's Microsoft Teams link for sound and presence, with a dedicated browser on the venue screen that the room actually watches: my webcam streamed in live, the theme once it's chosen, both poems anonymized once they land, a QR for the audience to scan and vote with their phones, and a countdown to the next phase. Everything is paste-driven from a control on my laptop - when the realtime channel drops, the screen never blanks. It holds the last good state and reconnects quietly.",
       },
       {
         type: "paragraph",
@@ -169,7 +169,7 @@ const descriptions: Record<string, PerformanceDescription> = {
     content: [
       {
         type: "italic",
-        text: "frontière — French for border, boundary, the edge between two things. The night was hosted by bianjie.systems (邊界, the Chinese for border) at Index Space in Greenpoint, supported by Gray Area and FWB. What follows is the speech that opened the performance.",
+        text: "frontière - French for border, boundary, the edge between two things. The night was hosted by bianjie.systems (邊界, the Chinese for border) at Index Space in Greenpoint, supported by Gray Area and FWB. What follows is the speech that opened the performance.",
       },
       {
         type: "image",

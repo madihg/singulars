@@ -7,7 +7,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
  *
  * Lightweight 1Hz countdown extracted from /timer for reuse by the
  * recover.exe stage + control. Returns {timeLeft, isRunning, start, pause,
- * reset, setTimeLeft}. Pure client-side — for cross-device sync, the parent
+ * reset, setTimeLeft}. Pure client-side - for cross-device sync, the parent
  * is responsible for syncing the initial timeLeft via the API.
  */
 export function useCountdown(totalSeconds: number, autoStart = false) {

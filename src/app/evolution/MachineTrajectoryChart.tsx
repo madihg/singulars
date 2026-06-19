@@ -145,7 +145,7 @@ export function MachineTrajectoryChart() {
             margin: "0 0 1.5rem 0",
           }}
         >
-          retroactive classifier scoring in progress —{" "}
+          retroactive classifier scoring in progress - {" "}
           {data.scoring_progress.poems_scored} of{" "}
           {data.scoring_progress.poems_total} poems scored ({progressPct}%).
           trajectory will appear once at least one performance is fully scored.

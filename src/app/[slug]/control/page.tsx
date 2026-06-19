@@ -8,7 +8,7 @@ import KeyPrompt from "./KeyPrompt";
 export const dynamic = "force-dynamic";
 
 /**
- * /[slug]/control — operator surface. The performer opens this on their
+ * /[slug]/control - operator surface. The performer opens this on their
  * laptop with ?key=... matching STAGE_CONTROL_KEY or the admin password. We
  * do the key check server-side so the page itself gates when unauthorized.
  * The actual mutating endpoint also re-checks the key on each request.

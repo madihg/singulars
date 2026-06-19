@@ -5,7 +5,7 @@ import { isValidAdminCookie } from "@/lib/admin-auth";
 
 /**
  * POST /api/stage/[slug]/update
- * Key-gated operator write. Body is a partial of stage_state — merged into
+ * Key-gated operator write. Body is a partial of stage_state - merged into
  * the row + updated_at=now(). Also handles the side-effect of inserting
  * poems rows on first phase transition past 'poems' (the audience voting
  * page reuses singulars.poems), and flipping performances.status between
@@ -54,6 +54,7 @@ export async function POST(
     "window_seconds",
     "writing_starts_at",
     "video_embed_url",
+    "break_message",
     "camera_on",
     "webrtc_offer",
     "webrtc_answer",

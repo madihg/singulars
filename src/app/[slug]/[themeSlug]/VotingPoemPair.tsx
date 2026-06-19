@@ -110,7 +110,7 @@ export default function VotingPoemPair({
       const poemId = selectedPoemId;
       if (!poemId || hasVoted || isVoting) return;
 
-      // Trained performance: voting is closed, so this is a PREVIEW only —
+      // Trained performance: voting is closed, so this is a PREVIEW only - 
       // reveal the split locally, persist nothing. The note below points to
       // the live duel.
       if (performanceStatus === "trained") {
@@ -216,8 +216,8 @@ export default function VotingPoemPair({
             {combinedTotal} {combinedTotal === 1 ? "vote" : "votes"}
           </strong>
           {isTrained
-            ? " on this pair — tap a poem to see who the room voted for (this duel is closed)."
-            : " on this pair so far — pick the poem you prefer, then submit your vote."}
+            ? " on this pair - tap a poem to see who the room voted for (this duel is closed)."
+            : " on this pair so far - pick the poem you prefer, then submit your vote."}
         </p>
       )}
 
@@ -274,7 +274,7 @@ export default function VotingPoemPair({
                 {poem.text}
               </div>
 
-              {/* Vote results — only after the visitor has voted (or the
+              {/* Vote results - only after the visitor has voted (or the
                   performance is trained). Hidden pre-vote so the running
                   tally can't anchor the next voter's choice. */}
               {showResults && (
@@ -365,7 +365,7 @@ export default function VotingPoemPair({
         })}
       </div>
 
-      {/* Submit — appears once a poem is selected (step 2). */}
+      {/* Submit - appears once a poem is selected (step 2). */}
       {canVote && selectedPoemId && (
         <div style={{ textAlign: "center", marginTop: "1.75rem" }}>
           <button
@@ -482,7 +482,7 @@ export default function VotingPoemPair({
             lineHeight: 1.6,
           }}
         >
-          This duel is closed — your vote here isn&apos;t recorded.
+          This duel is closed - your vote here isn&apos;t recorded.
           <br />
           <a
             href={livePerfSlug ? `/${livePerfSlug}` : "/"}

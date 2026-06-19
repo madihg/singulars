@@ -31,6 +31,8 @@ yarn-error.log*
 # env files
 .env
 .env*.local
+.env*.bak
+*.bak
 
 # vercel
 .vercel
@@ -42,3 +44,6 @@ next-env.d.ts
 # autoforge
 .autoforge/
 claude-progress.txt
+
+# claude code worktrees / local agent dirs (never commit these)
+.claude/

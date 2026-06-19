@@ -1,5 +1,5 @@
 /**
- * POST /api/chat-edge — edge runtime route for OpenRouter models
+ * POST /api/chat-edge - edge runtime route for OpenRouter models
  * (reverse.exe / frontière.exe = Claude Opus via OpenRouter).
  *
  * Why a separate edge route: the Vercel NODE lambda cannot reach

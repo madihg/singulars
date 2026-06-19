@@ -458,7 +458,7 @@ export default async function PerformancePage({
 
       <hr />
 
-      {/* Scraped content (images, paragraphs, galleries) — collapsible.
+      {/* Scraped content (images, paragraphs, galleries) - collapsible.
           Default expanded for SEO/a11y; returning visitors can collapse to
           skip past it. Jump anchor above scrolls directly to #themes. */}
       {hasDescription(performance.slug) &&
@@ -500,7 +500,7 @@ export default async function PerformancePage({
             }}
           >
             {performance.status === "training"
-              ? "The poems appear here during the performance — once both poems land, you can read them and vote."
+              ? "The poems appear here during the performance - once both poems land, you can read them and vote."
               : "Poems for this performance aren’t posted yet."}
           </p>
         )}

@@ -17,6 +17,7 @@ interface StageStateRow {
   writing_starts_at: string | null;
   porto_tz: string;
   video_embed_url: string | null;
+  break_message: string | null;
   camera_on: boolean;
   webrtc_offer: string | null;
   webrtc_answer: string | null;
@@ -64,6 +65,9 @@ export default function ControlView({
     initialState?.window_seconds ?? 1800,
   );
   const [cameraOn, setCameraOn] = useState(initialState?.camera_on ?? false);
+  const [breakMessage, setBreakMessage] = useState(
+    initialState?.break_message ?? "",
+  );
   const [saving, setSaving] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -115,7 +119,7 @@ export default function ControlView({
   );
 
   // Phase is INDEPENDENT of the camera. Changing phase never touches the
-  // camera — the camera is a standalone on/off (below) so it behaves
+  // camera - the camera is a standalone on/off (below) so it behaves
   // predictably regardless of pre-show / writing / break.
   const setPhase = useCallback(
     (p: Phase) => {
@@ -250,7 +254,7 @@ export default function ControlView({
             fontWeight: 600,
           }}
         >
-          {state?.sandbox ? "● test mode — not recording" : "● live — recording"}
+          {state?.sandbox ? "● test mode - not recording" : "● live - recording"}
         </span>
         <button
           onClick={() => post({ sandbox: !state?.sandbox }, "sandbox")}
@@ -275,7 +279,7 @@ export default function ControlView({
         </button>
         <span style={{ fontFamily: monoFont, fontSize: "0.72rem", color: "rgba(0,0,0,0.45)" }}>
           {state?.sandbox
-            ? "test freely — poems show on stage but aren't saved and can't be voted on."
+            ? "test freely - poems show on stage but aren't saved and can't be voted on."
             : "poems commit to the database and the audience can vote. you're live."}
         </span>
       </section>
@@ -350,9 +354,83 @@ export default function ControlView({
           >
             {saving === "start-writing"
               ? "starting…"
-              : `▶ start writing — ${Math.round(windowSeconds / 60)}min timer`}
+              : `▶ start writing - ${Math.round(windowSeconds / 60)}min timer`}
           </button>
         </div>
+
+        {/* Break message: write something to show the room while on break. */}
+        {state?.phase === "break" && (
+          <div style={{ marginTop: "1rem" }}>
+            <div
+              style={{
+                fontFamily: monoFont,
+                fontSize: "0.75rem",
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                color: "rgba(0,0,0,0.6)",
+                marginBottom: "0.5rem",
+              }}
+            >
+              break message (shows big on the venue screen)
+            </div>
+            <textarea
+              value={breakMessage}
+              onChange={(e) => setBreakMessage(e.target.value)}
+              data-field="break_message"
+              rows={3}
+              placeholder="write a message to the room while you're on break…"
+              style={{
+                width: "100%",
+                boxSizing: "border-box",
+                padding: "0.75rem",
+                border: `1px solid ${accent}`,
+                fontFamily: '"Standard", sans-serif',
+                fontSize: "1rem",
+                lineHeight: 1.5,
+                resize: "vertical",
+              }}
+            />
+            <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem", flexWrap: "wrap" }}>
+              <button
+                onClick={() => post({ break_message: breakMessage }, "break_message")}
+                disabled={saving === "break_message"}
+                style={{
+                  padding: "0.5rem 1rem",
+                  border: `1px solid ${accent}`,
+                  background: accent,
+                  color: "#fff",
+                  fontFamily: monoFont,
+                  fontSize: "0.85rem",
+                  cursor: saving === "break_message" ? "wait" : "pointer",
+                  letterSpacing: "0.03em",
+                  textTransform: "lowercase",
+                }}
+              >
+                {saving === "break_message" ? "showing…" : "show on stage"}
+              </button>
+              <button
+                onClick={() => {
+                  setBreakMessage("");
+                  post({ break_message: "" }, "break_message");
+                }}
+                disabled={saving === "break_message"}
+                style={{
+                  padding: "0.5rem 1rem",
+                  border: "1px solid rgba(0,0,0,0.2)",
+                  background: "transparent",
+                  color: "rgba(0,0,0,0.7)",
+                  fontFamily: monoFont,
+                  fontSize: "0.85rem",
+                  cursor: "pointer",
+                  letterSpacing: "0.03em",
+                  textTransform: "lowercase",
+                }}
+              >
+                clear
+              </button>
+            </div>
+          </div>
+        )}
       </section>
 
       {/* Camera */}
@@ -409,7 +487,7 @@ export default function ControlView({
 
           <Field
             label="video fallback url (optional)"
-            hint="only used if the live camera can't connect — e.g. a Daily/Whereby room"
+            hint="only used if the live camera can't connect - e.g. a Daily/Whereby room"
           >
             <input
               id="video-url-input"
@@ -475,7 +553,7 @@ export default function ControlView({
         </div>
       </div>
 
-      {/* PUBLISH — snapshots this theme + both poems onto the stage. When
+      {/* PUBLISH - snapshots this theme + both poems onto the stage. When
           live (not test mode), also commits them to the site + opens voting. */}
       <section style={{ marginTop: "1.5rem" }}>
         <button
@@ -507,14 +585,14 @@ export default function ControlView({
         >
           {saving === "publish"
             ? "publishing…"
-            : `▶ publish poems to stage${state?.sandbox ? " (test — not committed)" : " + site + voting"}`}
+            : `▶ publish poems to stage${state?.sandbox ? " (test - not committed)" : " + site + voting"}`}
         </button>
         <p style={{ fontFamily: monoFont, fontSize: "0.75rem", color: "rgba(0,0,0,0.45)", marginTop: "0.5rem", lineHeight: 1.5 }}>
           {state?.published_theme
             ? `on stage now: "${state.published_theme}". `
             : ""}
           publishes the pair above under theme &ldquo;{theme || "…"}&rdquo;. lock a
-          new theme afterwards to start the next round — the camera switches, the
+          new theme afterwards to start the next round - the camera switches, the
           published pair stays until you publish again.
         </p>
       </section>
@@ -567,7 +645,7 @@ export default function ControlView({
         shortcuts: 1–3 phase · Cmd/Ctrl+L video url · Cmd/Ctrl+Enter save textarea
         <br />
         last updated:{" "}
-        {state?.updated_at ? new Date(state.updated_at).toLocaleTimeString() : "—"}
+        {state?.updated_at ? new Date(state.updated_at).toLocaleTimeString() : " - "}
       </footer>
     </main>
   );
@@ -667,7 +745,7 @@ function CameraPublisher({
         const activeStream = stream;
         if (videoRef.current) videoRef.current.srcObject = activeStream;
 
-        // Fresh peer connection for this (re)publish — closing any prior one so
+        // Fresh peer connection for this (re)publish - closing any prior one so
         // a retry doesn't leak/duplicate connections.
         if (pcRef.current) {
           pcRef.current.close();
@@ -684,7 +762,7 @@ function CameraPublisher({
           } else if (s === "failed") {
             // The handshake didn't traverse (likely the first attempt on a
             // restrictive venue network). Re-publish a fresh offer after a beat
-            // so the venue re-answers — no manual camera toggle needed.
+            // so the venue re-answers - no manual camera toggle needed.
             setStatus("waiting");
             if (!retryTimerRef.current) {
               retryTimerRef.current = setTimeout(() => {
@@ -713,7 +791,7 @@ function CameraPublisher({
         setErrMsg(
           (e as Error)?.message?.includes("Permission") ||
             (e as Error)?.name === "NotAllowedError"
-            ? "camera permission denied — allow it in the browser"
+            ? "camera permission denied - allow it in the browser"
             : "couldn't start the camera",
         );
       }
@@ -735,7 +813,7 @@ function CameraPublisher({
     (async () => {
       try {
         // Only apply to a PC that's actually awaiting an answer for its current
-        // offer — guards against a stale answer landing on a freshly rebuilt PC.
+        // offer - guards against a stale answer landing on a freshly rebuilt PC.
         if (
           pcRef.current &&
           pcRef.current.signalingState === "have-local-offer" &&
@@ -751,9 +829,9 @@ function CameraPublisher({
 
   const statusText =
     status === "live"
-      ? "live — streaming to the venue"
+      ? "live - streaming to the venue"
       : status === "waiting"
-        ? "camera on — connecting to the venue…"
+        ? "camera on - connecting to the venue…"
         : status === "starting"
           ? "starting camera…"
           : status === "error"
@@ -849,7 +927,7 @@ function CameraPublisher({
             {statusText}
           </div>
           <p style={{ fontFamily: mono, fontSize: "0.72rem", color: "rgba(0,0,0,0.4)", margin: 0, maxWidth: 260, lineHeight: 1.5 }}>
-            independent of the phase — turn it on or off whenever; it stays
+            independent of the phase - turn it on or off whenever; it stays
             that way through pre-show / writing / break. audio goes through
             Teams, not here.
           </p>

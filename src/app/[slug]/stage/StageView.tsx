@@ -15,6 +15,7 @@ interface StageStateRow {
   writing_starts_at: string | null;
   porto_tz: string;
   video_embed_url: string | null;
+  break_message: string | null;
   camera_on: boolean;
   webrtc_offer: string | null;
   webrtc_answer: string | null;
@@ -164,7 +165,7 @@ export default function StageView({
     return `${window.location.origin}/${performance.slug}`;
   }, [performance.slug]);
 
-  // The stage shows the PUBLISHED pair (the snapshot), with its own theme —
+  // The stage shows the PUBLISHED pair (the snapshot), with its own theme - 
   // not the operator's draft, and not the current writing theme (which only
   // drives the camera overlay).
   const hasPoems = !!(
@@ -198,7 +199,7 @@ export default function StageView({
         }}
       >
         <div>
-          {/* Test-mode badge — aligned with the title, in the page aesthetic
+          {/* Test-mode badge - aligned with the title, in the page aesthetic
               (red-bordered rectangle, not a yellow block). */}
           {state?.sandbox && (
             <div
@@ -237,8 +238,8 @@ export default function StageView({
               margin: "0.7rem 0 0 0",
             }}
           >
-            Halim is writing against <span style={{ color }}>{OPPONENT}</span> —
-            a machine trained on his own poems.
+            Halim is writing against <span style={{ color }}>{OPPONENT}</span>, a
+            machine trained on poems and audience votes from past performances.
           </p>
         </div>
         <div
@@ -287,10 +288,12 @@ export default function StageView({
           gap: "2rem",
         }}
       >
-        {/* MAIN — the current poem pair, plus the earlier rounds + tallies */}
+        {/* MAIN - the current poem pair, plus the earlier rounds + tallies */}
         <section style={{ minHeight: 0, display: "flex", flexDirection: "column", gap: "1.25rem" }}>
           <div style={{ flex: 1, minHeight: 0, display: "flex" }}>
-            {hasPoems ? (
+            {phase === "break" && state?.break_message ? (
+              <BreakView message={state.break_message} color={color} />
+            ) : hasPoems ? (
               <PoemsPair state={state} color={color} showHumanFirst={showHumanFirst} />
             ) : (
               <EmptyMain phase={phase} color={color} />
@@ -299,7 +302,7 @@ export default function StageView({
           <RoundsStrip rounds={rounds} currentSlug={state?.published_theme_slug ?? null} />
         </section>
 
-        {/* RIGHT — camera (top), QR + instructions, then the explanation */}
+        {/* RIGHT - camera (top), QR + instructions, then the explanation */}
         <aside
           style={{
             display: "flex",
@@ -365,7 +368,7 @@ function StatusBadge({
         ? theme
           ? `writing on ${theme}`
           : "writing"
-        : "not writing — on break";
+        : "not writing - on break";
   return (
     <div
       style={{
@@ -462,7 +465,7 @@ function CameraTile({
           const [stream] = e.streams;
           if (stream) streamRef.current = stream;
           // Go "live" only when media is ACTUALLY flowing. ontrack fires at
-          // SDP time (setRemoteDescription), long before any frames arrive — a
+          // SDP time (setRemoteDescription), long before any frames arrive - a
           // remote track starts `muted` and fires `unmute` when the first
           // packets land. Gating on that (not ontrack) is what stops the black
           // "LIVE" tile AND the frameless <video> that otherwise keeps the
@@ -533,7 +536,7 @@ function CameraTile({
         flexShrink: 0,
       }}
     >
-      {/* live camera — mounted ONLY when media is actually flowing. A
+      {/* live camera - mounted ONLY when media is actually flowing. A
           half-open (frameless) connection must not leave a <video> stalling,
           or the browser tab spinner loads forever. */}
       {showVideo && (
@@ -579,7 +582,7 @@ function CameraTile({
             color: "rgba(255,255,255,0.4)",
           }}
         >
-          {/* Camera state only — independent of the phase. */}
+          {/* Camera state only - independent of the phase. */}
           {cameraOn
             ? "connecting to Halim's camera…"
             : "camera off"}
@@ -711,6 +714,48 @@ function TimerOverlay({
 
 /* ---------- main column ---------- */
 
+// On break, the operator can write a message to the room (control). Shown big.
+function BreakView({ message, color }: { message: string; color: string }) {
+  return (
+    <div
+      style={{
+        flex: 1,
+        border: `1px solid ${color}`,
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        padding: "3rem",
+        minHeight: 0,
+      }}
+    >
+      <div
+        style={{
+          fontFamily: MONO,
+          fontSize: "0.8rem",
+          letterSpacing: "0.14em",
+          textTransform: "uppercase",
+          color,
+          marginBottom: "1.5rem",
+        }}
+      >
+        on break
+      </div>
+      <div
+        style={{
+          whiteSpace: "pre-line",
+          fontFamily: "Standard, sans-serif",
+          fontSize: "2rem",
+          lineHeight: 1.4,
+          color: "#fff",
+          overflow: "auto",
+        }}
+      >
+        {message}
+      </div>
+    </div>
+  );
+}
+
 function EmptyMain({ phase, color }: { phase: string; color: string }) {
   return (
     <div
@@ -840,7 +885,7 @@ function PoemsPair({
               flex: 1,
             }}
           >
-            {p.text || "—"}
+            {p.text || " - "}
           </div>
         </article>
         ))}
@@ -1004,7 +1049,7 @@ function AboutBox({ color }: { color: string }) {
       >
         Singulars is a series of live duels between a poet and a machine trained
         on his own poems. The room votes, and the winning poems train the next
-        machine. recover.exe is performed at a distance — Halim writes into the
+        machine. recover.exe is performed at a distance - Halim writes into the
         room from another continent.
       </p>
     </div>

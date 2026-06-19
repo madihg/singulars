@@ -9,7 +9,7 @@ import { getServiceClient, getSupabase } from "@/lib/supabase";
  * permitted while the performance is in status='training'. Deletes the
  * matching row from singulars.votes and decrements poems.vote_count by 1.
  *
- * Pre-baked tallies (paper ballots) are unaffected — we only decrement by
+ * Pre-baked tallies (paper ballots) are unaffected - we only decrement by
  * one and we only touch the specific poem the user actually voted on.
  */
 

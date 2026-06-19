@@ -196,7 +196,7 @@ export default function ChatPage() {
               lineHeight: 1.5,
             }}
           >
-            this model is training during a live performance — chat opens
+            this model is training during a live performance - chat opens
             once the show closes and the audience-decided pairs land.
           </p>
         ) : null}
@@ -233,7 +233,7 @@ export default function ChatPage() {
             }}
             placeholder={
               isTraining
-                ? "training — chat locked until the show closes"
+                ? "training - chat locked until the show closes"
                 : activeModel.language === "fr"
                   ? "Demandez un poeme..."
                   : "Ask for a poem..."

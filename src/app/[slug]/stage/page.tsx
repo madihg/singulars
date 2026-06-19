@@ -5,7 +5,7 @@ import StageView from "./StageView";
 export const dynamic = "force-dynamic";
 
 /**
- * /[slug]/stage — the fullscreen surface the venue puts on a screen in
+ * /[slug]/stage - the fullscreen surface the venue puts on a screen in
  * the room. Server-renders the initial state from Supabase so the page is
  * usable instantly (and as a graceful `?static=1` fallback when polling is
  * blocked). The <StageView> client child handles the 2-second poll loop
@@ -23,6 +23,7 @@ interface StageStateRow {
   writing_starts_at: string | null;
   porto_tz: string;
   video_embed_url: string | null;
+  break_message: string | null;
   camera_on: boolean;
   webrtc_offer: string | null;
   webrtc_answer: string | null;

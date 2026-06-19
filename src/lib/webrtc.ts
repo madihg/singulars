@@ -3,7 +3,7 @@
  * (control, SF) captures getUserMedia and publishes to the venue screen
  * (stage, Porto). Signaling is non-trickle (we wait for ICE gathering to
  * finish, then exchange the full SDP via Supabase / the stage API), so we
- * don't need a low-latency candidate channel — a couple of polled round
+ * don't need a low-latency candidate channel - a couple of polled round
  * trips is enough.
  *
  * Reliability: STUN for the easy case + public TURN (relay) for restrictive
@@ -58,7 +58,7 @@ export function waitForIceGathering(
   // 8s (was 4s): relay candidates from a TURN server over TCP/443 routinely
   // take 3-6s to gather, especially from a restrictive network. Since signaling
   // is non-trickle, any candidate not gathered before this resolves is lost for
-  // good — too short a cap silently drops the relay path and media never flows.
+  // good - too short a cap silently drops the relay path and media never flows.
   timeoutMs = 8000,
 ): Promise<void> {
   if (pc.iceGatheringState === "complete") return Promise.resolve();

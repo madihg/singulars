@@ -17,7 +17,7 @@ interface Props {
 /**
  * Collapsible wrapper around <PerformanceContentBlocks>.
  *
- * Default state: EXPANDED — content stays in the DOM so search engines and
+ * Default state: EXPANDED - content stays in the DOM so search engines and
  * screen readers can read it. The toggle is for returning visitors who
  * already know the description and want to scroll past it without using
  * the "read the poems ↓" jump anchor at the top.
