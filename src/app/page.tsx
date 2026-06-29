@@ -4,6 +4,7 @@ import { getServiceClient, getSupabase } from "@/lib/supabase";
 export const dynamic = "force-dynamic";
 import MiniVoting from "@/components/MiniVoting";
 import EvolutionThumbnail from "@/components/EvolutionThumbnail";
+import Poets from "@/components/Poets";
 import { accessibleTextColor, getStatusPillStyle } from "@/lib/color-utils";
 import {
   heroImgSrc,
@@ -458,6 +459,9 @@ export default async function SingularsPage() {
            NEXT_PUBLIC_SHOW_EVOLUTION_ON_LANDING=true. */}
         <EvolutionThumbnail />
       </section>
+
+      {/* Poets - short profiles of the humans who have dueled the machine. */}
+      <Poets />
     </main>
   );
 }
