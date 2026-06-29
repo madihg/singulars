@@ -460,6 +460,14 @@ export default async function SingularsPage() {
         <EvolutionThumbnail />
       </section>
 
+      <hr
+        style={{
+          border: "none",
+          borderTop: "2px solid #171717",
+          margin: "3rem 0",
+        }}
+      />
+
       {/* Poets - short profiles of the humans who have dueled the machine. */}
       <Poets />
     </main>

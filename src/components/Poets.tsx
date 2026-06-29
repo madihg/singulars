@@ -34,7 +34,7 @@ const POETS: Poet[] = [
   {
     name: "Elise Liu",
     role: "poet, immersive artist, technologist",
-    img: null,
+    img: "/images/poets/elise-liu.jpg",
     link: { href: "https://eliseliu.com", label: "eliseliu.com" },
     bio: "Elise Liu is an immigrant third-culture kid poet, immersive artist, and technologist. Her work has appeared in Rattle, The Found Poetry Review, Thought Catalog, The Millions, and corporate digital trashcans around the world. She is the recipient of the 2023 Paper Moon Prize for fiction. She lives in San Francisco with two cats and is working on her first novel.",
   },
