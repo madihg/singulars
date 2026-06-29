@@ -41,7 +41,7 @@ const POETS: Poet[] = [
   {
     name: "Halim Madi",
     role: "poet, performer",
-    img: null,
+    img: "/images/poets/halim.png",
     link: { href: "https://www.halimmadi.com", label: "halimmadi.com" },
     bio: "Halim Madi is a poet and performer who works where language meets software. He created Singulars and is the human in each duel, writing against a machine trained on the poems the audience keeps choosing.",
   },
