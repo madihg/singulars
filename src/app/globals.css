@@ -105,6 +105,12 @@ hr {
   outline-offset: 2px;
 }
 
+/* Images that open the full-screen carousel (see ImageLightbox). */
+img[data-lightbox]:focus-visible {
+  outline: 3px solid var(--performance-color, rgba(0, 0, 0, 0.85));
+  outline-offset: 3px;
+}
+
 /* Hero image: B&W by default, color on hover, green dot cursor */
 .hero-image-container img {
   transition: filter 0.5s ease;

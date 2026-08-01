@@ -10,6 +10,7 @@ import {
   getPerformanceHeroImage,
 } from "@/lib/performance-descriptions";
 import CollapsibleDescription from "@/components/CollapsibleDescription";
+import ImageLightbox from "@/components/ImageLightbox";
 import VotingPoemPair from "./[themeSlug]/VotingPoemPair";
 import { getModelByPerformanceSlug } from "@/lib/models";
 
@@ -290,12 +291,16 @@ export default async function PerformancePage({
         <img
           src={heroImgSrc(heroImg)}
           alt={heroImg.alt}
+          data-lightbox=""
+          role="button"
+          tabIndex={0}
           style={{
             width: "100%",
             height: "100%",
             objectFit: isHeroLogo ? "contain" : "cover",
             display: "block",
             background: isHeroLogo ? "#fff" : undefined,
+            cursor: "zoom-in",
           }}
         />
       </div>
@@ -552,6 +557,11 @@ export default async function PerformancePage({
           </div>
         ))}
       </section>
+
+      {/* Click any image on this page to open it full-screen and arrow through
+          the rest. Discovers images via data-lightbox, so it covers the hero
+          and everything inside the (collapsible) description. */}
+      <ImageLightbox accent={performance.color} />
     </main>
   );
 }

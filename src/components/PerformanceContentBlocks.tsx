@@ -78,10 +78,14 @@ export default function PerformanceContentBlocks({
                   src={block.src}
                   alt={block.alt}
                   loading="lazy"
+                  data-lightbox=""
+                  role="button"
+                  tabIndex={0}
                   style={{
                     width: "100%",
                     height: "auto",
                     display: "block",
+                    cursor: "zoom-in",
                   }}
                 />
               </figure>
@@ -108,12 +112,16 @@ export default function PerformanceContentBlocks({
                     src={item.src}
                     alt={item.alt}
                     loading="lazy"
+                    data-lightbox=""
+                    role="button"
+                    tabIndex={0}
                     style={{
                       width: "100%",
                       height: "auto",
                       display: "block",
                       aspectRatio: isDense ? "1" : "auto",
                       objectFit: isDense ? "cover" : "contain",
+                      cursor: "zoom-in",
                     }}
                   />
                 ))}

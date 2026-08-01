@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPerformanceDescription } from "@/lib/performance-descriptions";
 import PerformanceContentBlocks from "@/components/PerformanceContentBlocks";
+import ImageLightbox from "@/components/ImageLightbox";
 
 export const dynamic = "force-dynamic";
 
@@ -145,6 +146,11 @@ export default function PerformanceAboutPage({
           All performances
         </Link>
       </nav>
+
+      {/* This page renders the same content blocks as the performance page, so
+          it needs the carousel too - otherwise those images advertise
+          themselves as clickable and do nothing. */}
+      <ImageLightbox />
     </main>
   );
 }
