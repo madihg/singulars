@@ -77,8 +77,8 @@ export const HERO_IMAGES: {
       alt: "Frontière.exe at Index Space Greenpoint, May 2026",
     },
     "recover-exe": {
-      src: "/images/recover-exe/featured.JPG",
-      alt: "Casa dos Livros, Porto - the venue for recover.exe at Breaking the Code",
+      src: "/images/recover-exe/screen.jpg",
+      alt: "The room at the Instituto de Literatura Comparada during recover.exe - the audience watches the venue screen, Halim streamed in on camera beside the anonymized poems",
     },
   },
 };
@@ -155,6 +155,32 @@ const descriptions: Record<string, PerformanceDescription> = {
       {
         type: "paragraph",
         text: "The model I'm battling is frontière.exe, the current trained checkpoint from the May 13 show in Brooklyn. recover.exe will retrain on whatever wins and loses in Porto.",
+      },
+      {
+        type: "image",
+        src: "/images/recover-exe/screen.jpg",
+        alt: "The room at the Instituto de Literatura Comparada - the audience watches the venue screen, Halim streamed in on camera beside the anonymized poems",
+      },
+      {
+        type: "paragraph",
+        text: "The room kept the piece after the duel ended. For Rewiring Realities: Decoding, Disrupting and Dreaming, the exhibition curated by Joana Chicau and Diogo Marques at the Instituto de Literatura Comparada, Singulars stayed on as an installation - visitors sat down at the machine, put on the headphones, and played the duel themselves.",
+      },
+      {
+        type: "gallery",
+        items: [
+          {
+            src: "/images/recover-exe/rewiring-poster.jpg",
+            alt: "Rewiring Realities: Decoding, Disrupting and Dreaming - the exhibition text at the Instituto de Literatura Comparada",
+          },
+          {
+            src: "/images/recover-exe/visitors.jpg",
+            alt: "Two visitors at the Singulars station, reading the screen together",
+          },
+          {
+            src: "/images/recover-exe/listening.jpg",
+            alt: "A visitor with headphones on, playing the duel at the exhibition",
+          },
+        ],
       },
     ],
   },
