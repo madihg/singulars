@@ -80,6 +80,14 @@ export const HERO_IMAGES: {
       src: "/images/recover-exe/screen.jpg",
       alt: "The room at the Instituto de Literatura Comparada during recover.exe - the audience watches the venue screen, Halim streamed in on camera beside the anonymized poems",
     },
+    "praxis-exe": {
+      src: "/images/reinforcement-exe/L1002255.jpg",
+      alt: "Halim explaining the piece beside a wall of printed poems covered in green voting dots",
+    },
+    "tame-exe": {
+      src: "/images/reinforcement-exe/L1001674.jpg",
+      alt: "The wall of poems in a festival hall, visitors moving past behind the poet",
+    },
   },
 };
 
@@ -87,6 +95,10 @@ export const HERO_IMAGES: {
 export const CARD_DESCRIPTIONS: Record<string, string> = {
   "ground-exe":
     "The duel moves to the desert. At the Currents New Media Festival in 2027, the poet and machine write under the light of Santa Fe.",
+  "tame-exe":
+    "The duel returns to Barcelona. Three days at MozFest, in the foyer between the main stage and the coffee, the festival deciding each pair. October 28 to 30, 2026.",
+  "praxis-exe":
+    "The duel goes to the UN General Assembly. Poems on the wall of a Foreign Policy and Mozilla Foundation simulation on AI and imagination, voted on by the room as it arrives. September 24, 2026.",
   "frontiere-exe":
     "邊界 night in Brooklyn. The duel arrives at Index Space Greenpoint, hosted by bianjie.systems, supported by Gray Area and FWB. May 13, 2026, 10pm – 12am.",
   "recover-exe":

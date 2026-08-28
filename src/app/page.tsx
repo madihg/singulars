@@ -288,7 +288,8 @@ export default async function SingularsPage() {
                   cursor:
                     isUpcoming &&
                     perf.slug !== "ground-exe" &&
-                    perf.slug !== "frontiere-exe"
+                    perf.slug !== "frontiere-exe" &&
+                    perf.slug !== "tame-exe"
                       ? "default"
                       : `url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20'><circle cx='10' cy='10' r='8' fill='${encodeURIComponent(perf.color)}'/></svg>") 10 10, pointer`,
                   transition: "opacity 0.3s ease",
@@ -403,7 +404,9 @@ export default async function SingularsPage() {
                   ? "https://currentsnewmedia.org/"
                   : perf.slug === "frontiere-exe"
                     ? "https://www.instagram.com/bianjie.systems/"
-                    : null;
+                    : perf.slug === "tame-exe"
+                      ? "https://www.mozillafoundation.org/en/festival/"
+                      : null;
               if (externalUrl) {
                 return (
                   <a
