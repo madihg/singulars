@@ -165,7 +165,7 @@ export default function Poets() {
           lineHeight: 1.2,
         }}
       >
-        Poets
+        Participating Poets
       </h2>
       <p
         style={{

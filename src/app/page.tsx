@@ -5,26 +5,33 @@ export const dynamic = "force-dynamic";
 import MiniVoting from "@/components/MiniVoting";
 import EvolutionThumbnail from "@/components/EvolutionThumbnail";
 import Poets from "@/components/Poets";
-import { accessibleTextColor, getStatusPillStyle } from "@/lib/color-utils";
-import {
-  heroImgSrc,
-  HERO_IMAGES,
-  getPerformanceHeroImage,
-  getCardDescription,
-} from "@/lib/performance-descriptions";
+import PerformancesView, {
+  type PerformanceRow,
+} from "@/components/PerformancesView";
+import { heroImgSrc, HERO_IMAGES } from "@/lib/performance-descriptions";
 
-interface Performance {
-  id: string;
-  name: string;
-  slug: string;
-  color: string;
-  location: string;
-  date: string;
+/*
+ * One-page Singulars (Saf session 2, Aug 31 2026):
+ * - About folded in: the blurb lives in the first paragraphs, /about
+ *   now redirects here. No "Learn more about it" click-out.
+ * - Halim's bio near the top, with a "Start a conversation" CTA that
+ *   points at the enquiry form (staging URL for now - flip to the
+ *   production form at promotion).
+ * - Tool chips on one line. Performances browsable as grid, carousel,
+ *   or list. MiniVoting and Further Reading move to the bottom.
+ * - "A project by Halim Madi" link removed: this page is moving under
+ *   halimmadi.com, so it no longer needs to link back out.
+ */
+
+// Flip to the production form URL when the site moves under
+// halimmadi.com/singulars.
+const ENQUIRY_URL = "https://www.halimmadi.com/staging/#enquire";
+
+interface Performance extends PerformanceRow {
   num_poems: number;
   num_poets: number;
   model_link: string | null;
   huggingface_link: string | null;
-  status: "upcoming" | "training" | "trained";
   poets: string[];
   created_at: string;
 }
@@ -46,32 +53,31 @@ async function getPerformances(): Promise<Performance[]> {
   return performances || [];
 }
 
-function formatDate(dateStr: string): string {
-  const [year, month, day] = dateStr.split("-").map(Number);
-  if (year && month && day) {
-    const months = [
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December",
-    ];
-    return `${months[month - 1]} ${day}, ${year}`;
-  }
-  const d = new Date(dateStr + "T00:00:00");
-  return d.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-}
+const substackCards = [
+  {
+    title: "Lessons Learned Inside a Poetry Cage in Buenos Aires",
+    subtitle:
+      "Notes from a performance where an audience became the training loop.",
+    url: "https://halimmadi.substack.com/p/what-i-learned-inside-a-poetry-cage",
+  },
+  {
+    title: "Eat.exe",
+    subtitle: "Drawing a Latent Future with Electric Lines of Desire",
+    url: "https://secondvoice.substack.com/p/eatexe",
+  },
+];
+
+const chipStyle: React.CSSProperties = {
+  fontFamily: '"Diatype Mono Variable", monospace',
+  fontSize: "0.85rem",
+  color: "rgba(0,0,0,0.85)",
+  padding: "0.5rem 1rem",
+  border: "1px solid rgba(0,0,0,0.15)",
+  borderRadius: "6px",
+  textDecoration: "none",
+  transition: "border-color 0.2s ease",
+  whiteSpace: "nowrap",
+};
 
 export default async function SingularsPage() {
   const performances = await getPerformances();
@@ -102,105 +108,77 @@ export default async function SingularsPage() {
         Human vs Machine Poetry Performances
       </p>
 
-      {/* Intro description */}
-      <p
+      {/* Intro - the About blurb, folded in. Everything on one page. */}
+      <section
         style={{
           fontSize: "1rem",
           color: "rgba(0,0,0,0.85)",
           lineHeight: 1.5,
-          marginBottom: "2rem",
+          marginBottom: "1.5rem",
         }}
       >
-        Singulars is a series of live poetry duels between a human poet and a
-        machine. The audience votes to decide the winner, and their votes train
-        the machine for the next performance. A project by{" "}
+        <p style={{ marginBottom: "1rem" }}>
+          Singulars is a series of live poetry performances where a human poet
+          duels a machine. Each performance pits original human poems against
+          AI-generated counterparts on shared themes, and the audience votes to
+          decide the winner. Those votes train the machine for the next
+          performance.
+        </p>
+        <p style={{ marginBottom: "1rem" }}>
+          The project explores the boundary between human creativity and
+          machine generation. Can a language model capture the nuance, emotion,
+          and craft of a human poet? Can an audience tell the difference?
+          Singulars puts these questions to the test in a live, participatory
+          format - a form of artisanal RLHF, a feedback loop between human
+          taste and machine output.
+        </p>
+        <p style={{ marginBottom: 0 }}>
+          Halim Madi is a poet and performer who works where language meets
+          software. He created Singulars and is the human in each duel, writing
+          against a machine trained on the poems the audience keeps choosing.
+        </p>
+      </section>
+
+      {/* CTA - the desk is one click away, high on the page. */}
+      <p style={{ marginBottom: "2rem" }}>
         <a
-          href="https://www.halimmadi.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ color: "rgba(0,0,0,0.85)", textDecoration: "underline" }}
+          href={ENQUIRY_URL}
+          style={{
+            fontFamily: '"Diatype Mono Variable", monospace',
+            fontSize: "0.85rem",
+            letterSpacing: "0.05em",
+            textTransform: "uppercase",
+            color: "#1C39E8",
+            textDecoration: "none",
+            borderBottom: "1px solid #1C39E8",
+            paddingBottom: "2px",
+          }}
         >
-          Halim Madi
+          Start a conversation &rarr;
         </a>
-        .{" "}
-        <Link
-          href="/about"
-          style={{ color: "rgba(0,0,0,0.85)", textDecoration: "none" }}
-        >
-          <span style={{ textDecoration: "underline" }}>
-            Learn more about it
-          </span>
-          .
-        </Link>
       </p>
 
-      {/* Chat / Theme-Voting / Timer links */}
+      {/* Tool chips - one line, scrolls sideways on small screens. */}
       <div
         style={{
           display: "flex",
-          gap: "1.5rem",
+          gap: "1rem",
           marginBottom: "2rem",
-          flexWrap: "wrap",
+          flexWrap: "nowrap",
+          overflowX: "auto",
+          paddingBottom: "0.25rem",
         }}
       >
-        <Link
-          href="/chat"
-          style={{
-            fontFamily: '"Diatype Mono Variable", monospace',
-            fontSize: "0.85rem",
-            color: "rgba(0,0,0,0.85)",
-            padding: "0.5rem 1rem",
-            border: "1px solid rgba(0,0,0,0.15)",
-            borderRadius: "6px",
-            textDecoration: "none",
-            transition: "border-color 0.2s ease",
-          }}
-        >
+        <Link href="/chat" style={chipStyle}>
           Chat with the Models &rarr;
         </Link>
-        <Link
-          href="/evolution"
-          style={{
-            fontFamily: '"Diatype Mono Variable", monospace',
-            fontSize: "0.85rem",
-            color: "rgba(0,0,0,0.85)",
-            padding: "0.5rem 1rem",
-            border: "1px solid rgba(0,0,0,0.15)",
-            borderRadius: "6px",
-            textDecoration: "none",
-            transition: "border-color 0.2s ease",
-          }}
-        >
+        <Link href="/evolution" style={chipStyle}>
           Machine vs Me Over Time &rarr;
         </Link>
-        <Link
-          href="/theme-voting"
-          style={{
-            fontFamily: '"Diatype Mono Variable", monospace',
-            fontSize: "0.85rem",
-            color: "rgba(0,0,0,0.85)",
-            padding: "0.5rem 1rem",
-            border: "1px solid rgba(0,0,0,0.15)",
-            borderRadius: "6px",
-            textDecoration: "none",
-            transition: "border-color 0.2s ease",
-          }}
-        >
+        <Link href="/theme-voting" style={chipStyle}>
           Theme Voting &rarr;
         </Link>
-        <Link
-          href="/timer"
-          style={{
-            fontFamily: '"Diatype Mono Variable", monospace',
-            fontSize: "0.85rem",
-            color: "rgba(0,0,0,0.85)",
-            padding: "0.5rem 1rem",
-            border: "1px solid rgba(0,0,0,0.15)",
-            borderRadius: "6px",
-            textDecoration: "none",
-            transition: "border-color 0.2s ease",
-          }}
-        >
+        <Link href="/timer" style={chipStyle}>
           Performance Timer &rarr;
         </Link>
       </div>
@@ -228,7 +206,32 @@ export default async function SingularsPage() {
         />
       </div>
 
-      {/* Mini-voting experience */}
+      {/* Performances - up top, browsable three ways. */}
+      <PerformancesView
+        performances={performances.map((p) => ({
+          id: p.id,
+          name: p.name,
+          slug: p.slug,
+          color: p.color,
+          location: p.location,
+          date: p.date,
+          status: p.status,
+        }))}
+      />
+
+      {/* Optional evolution thumbnail (US-118). Renders nothing unless
+         NEXT_PUBLIC_SHOW_EVOLUTION_ON_LANDING=true. */}
+      <EvolutionThumbnail />
+
+      <hr
+        style={{
+          border: "none",
+          borderTop: "2px solid #171717",
+          margin: "3rem 0",
+        }}
+      />
+
+      {/* Mini-voting - try the duel for yourself, near the bottom. */}
       <MiniVoting />
 
       <hr
@@ -239,229 +242,8 @@ export default async function SingularsPage() {
         }}
       />
 
-      {/* Performances */}
-      <section style={{ marginBottom: "3rem" }}>
-        <h2
-          style={{
-            fontFamily: '"Diatype Variable", sans-serif',
-            fontSize: "2rem",
-            fontWeight: 700,
-            marginBottom: "2rem",
-            lineHeight: 1.2,
-          }}
-        >
-          Performances
-        </h2>
-
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: "2rem",
-          }}
-        >
-          {performances.map((perf) => {
-            const isUpcoming = perf.status === "upcoming";
-            const perfA11yColor = accessibleTextColor(perf.color);
-            const reverseNameFallback =
-              perf.name.trim().toLowerCase() === "reverse.exe"
-                ? HERO_IMAGES.performance["reverse-exe"]
-                : null;
-
-            const heroImg =
-              getPerformanceHeroImage(perf.slug) ??
-              reverseNameFallback ??
-              HERO_IMAGES.landing;
-            // "logo/poster" images render as contain-on-white (vs photos
-            // which render as cover with grayscale). Match by filename
-            // substring so adding new poster assets is one entry here.
-            const isLogoImage =
-              heroImg.src.endsWith(".svg") ||
-              heroImg.src.includes("currents-logo");
-            const cardContent = (
-              <div
-                key={perf.id}
-                data-testid="performance-card"
-                data-performance-name={perf.name}
-                style={{
-                  borderTop: `4px solid ${perf.color}`,
-                  cursor:
-                    isUpcoming &&
-                    perf.slug !== "ground-exe" &&
-                    perf.slug !== "frontiere-exe" &&
-                    perf.slug !== "tame-exe"
-                      ? "default"
-                      : `url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20'><circle cx='10' cy='10' r='8' fill='${encodeURIComponent(perf.color)}'/></svg>") 10 10, pointer`,
-                  transition: "opacity 0.3s ease",
-                }}
-              >
-                {/* Image above each performance - black & white, minimal */}
-                <div
-                  style={{
-                    width: "100%",
-                    aspectRatio: "16/9",
-                    marginBottom: "1rem",
-                    overflow: "hidden",
-                  }}
-                >
-                  <img
-                    className="perf-card-img"
-                    src={heroImgSrc(heroImg)}
-                    alt={heroImg.alt}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: isLogoImage ? "contain" : "cover",
-                      display: "block",
-                      background: isLogoImage ? "#fff" : undefined,
-                      filter: isLogoImage
-                        ? "grayscale(100%) contrast(140%)"
-                        : "grayscale(100%)",
-                    }}
-                  />
-                </div>
-                <h3
-                  style={{
-                    fontSize: "1.1rem",
-                    fontWeight: 500,
-                    color: perfA11yColor,
-                    marginBottom: "0.5rem",
-                    lineHeight: 1.2,
-                  }}
-                >
-                  {perf.name}
-                </h3>
-
-                {/* Status pill */}
-                {(() => {
-                  const pill = getStatusPillStyle(perf.status);
-                  return (
-                    <span
-                      style={{
-                        display: "inline-block",
-                        fontFamily: '"Diatype Mono Variable", monospace',
-                        fontSize: "0.7rem",
-                        letterSpacing: "0.05em",
-                        textTransform: "uppercase",
-                        padding: "0.25rem 0.7rem",
-                        borderRadius: "2px",
-                        border: `1px solid ${pill.border}`,
-                        backgroundColor: pill.background,
-                        color: pill.color,
-                        marginBottom: "0.75rem",
-                      }}
-                    >
-                      {perf.status}
-                    </span>
-                  );
-                })()}
-
-                {perf.location && (
-                  <p
-                    style={{
-                      fontSize: "0.9rem",
-                      color: "rgba(0,0,0,0.6)",
-                      marginBottom: "0.25rem",
-                    }}
-                  >
-                    {perf.location}
-                  </p>
-                )}
-
-                {perf.date && (
-                  <p
-                    style={{
-                      fontFamily: '"Diatype Mono Variable", monospace',
-                      fontSize: "0.85rem",
-                      color: "rgba(0,0,0,0.5)",
-                    }}
-                  >
-                    {formatDate(perf.date)}
-                  </p>
-                )}
-
-                {(() => {
-                  const desc = getCardDescription(perf.slug);
-                  return desc ? (
-                    <p
-                      style={{
-                        fontSize: "0.85rem",
-                        color: "rgba(0,0,0,0.55)",
-                        lineHeight: 1.5,
-                        marginTop: "0.5rem",
-                      }}
-                    >
-                      {desc}
-                    </p>
-                  ) : null;
-                })()}
-              </div>
-            );
-
-            if (isUpcoming) {
-              const externalUrl =
-                perf.slug === "ground-exe"
-                  ? "https://currentsnewmedia.org/"
-                  : perf.slug === "frontiere-exe"
-                    ? "https://www.instagram.com/bianjie.systems/"
-                    : perf.slug === "tame-exe"
-                      ? "https://www.mozillafoundation.org/en/festival/"
-                      : null;
-              if (externalUrl) {
-                return (
-                  <a
-                    key={perf.id}
-                    href={externalUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ textDecoration: "none", color: "inherit" }}
-                  >
-                    {cardContent}
-                  </a>
-                );
-              }
-              return <div key={perf.id}>{cardContent}</div>;
-            }
-
-            return (
-              <Link
-                key={perf.id}
-                href={`/${perf.slug}`}
-                style={{ textDecoration: "none", color: "inherit" }}
-              >
-                {cardContent}
-              </Link>
-            );
-          })}
-        </div>
-
-        {/* Responsive grid style. dangerouslySetInnerHTML bypasses the React
-            hydration text-comparison so the > selectors don't trigger a mismatch
-            (server escapes them as &gt; while the client renders raw). */}
-        <style
-          dangerouslySetInnerHTML={{
-            __html: `
-              @media (max-width: 900px) {
-                main > section > div[style*="grid-template-columns"] {
-                  grid-template-columns: repeat(2, 1fr) !important;
-                }
-              }
-              @media (max-width: 600px) {
-                main > section > div[style*="grid-template-columns"] {
-                  grid-template-columns: 1fr !important;
-                }
-                main > h1 {
-                  font-size: 4.5rem !important;
-                }
-              }
-            `,
-          }}
-        />
-
-        {/* Optional evolution thumbnail (US-118). Renders nothing unless
-           NEXT_PUBLIC_SHOW_EVOLUTION_ON_LANDING=true. */}
-        <EvolutionThumbnail />
-      </section>
+      {/* Participating poets - the humans who have dueled the machine. */}
+      <Poets />
 
       <hr
         style={{
@@ -471,8 +253,70 @@ export default async function SingularsPage() {
         }}
       />
 
-      {/* Poets - short profiles of the humans who have dueled the machine. */}
-      <Poets />
+      {/* Further reading - from the old About page, now folded in. */}
+      <section>
+        <h2
+          style={{
+            fontFamily: '"Diatype Variable", sans-serif',
+            fontSize: "2rem",
+            fontWeight: 700,
+            marginBottom: "2rem",
+            lineHeight: 1.2,
+          }}
+        >
+          Further Reading
+        </h2>
+        <div style={{ display: "flex", flexDirection: "column", gap: "0" }}>
+          {substackCards.map((card) => (
+            <a
+              key={card.url}
+              href={card.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: "block",
+                padding: "1.5rem 0",
+                borderTop: "1px solid rgba(0,0,0,0.75)",
+                color: "inherit",
+                transition: "opacity 0.3s ease",
+              }}
+            >
+              <h3
+                style={{
+                  fontSize: "1.1rem",
+                  fontWeight: 500,
+                  marginBottom: "0.25rem",
+                  lineHeight: 1.2,
+                }}
+              >
+                {card.title}
+              </h3>
+              <p
+                style={{
+                  fontSize: "0.9rem",
+                  color: "rgba(0,0,0,0.6)",
+                  margin: 0,
+                  lineHeight: 1.4,
+                }}
+              >
+                {card.subtitle}
+              </p>
+            </a>
+          ))}
+        </div>
+      </section>
+
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+            @media (max-width: 600px) {
+              main > h1 {
+                font-size: 4.5rem !important;
+              }
+            }
+          `,
+        }}
+      />
     </main>
   );
 }
