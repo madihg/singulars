@@ -74,7 +74,7 @@ export default function ControlView({
   useEffect(() => {
     const t = setInterval(async () => {
       try {
-        const res = await fetch(`/api/stage/${performance.slug}`, {
+        const res = await fetch(`/singulars/api/stage/${performance.slug}`, {
           cache: "no-store",
         });
         if (!res.ok) return;
@@ -93,7 +93,7 @@ export default function ControlView({
       setError(null);
       try {
         const res = await fetch(
-          `/api/stage/${performance.slug}/update?key=${encodeURIComponent(controlKey)}`,
+          `/singulars/api/stage/${performance.slug}/update?key=${encodeURIComponent(controlKey)}`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -684,7 +684,7 @@ function CameraPublisher({
     async (patch: Record<string, unknown>) => {
       try {
         await fetch(
-          `/api/stage/${slug}/update?key=${encodeURIComponent(controlKey)}`,
+          `/singulars/api/stage/${slug}/update?key=${encodeURIComponent(controlKey)}`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },

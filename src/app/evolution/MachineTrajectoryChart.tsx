@@ -69,7 +69,7 @@ export function MachineTrajectoryChart() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/evals/quality-trajectory")
+    fetch("/singulars/api/evals/quality-trajectory")
       .then((r) => r.json())
       .then(setData)
       .catch(() => setError("network error"));

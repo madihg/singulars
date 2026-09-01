@@ -146,7 +146,7 @@ export default function TimerPage() {
 
       {/* Back link - top center */}
       <a
-        href="/"
+        href="/singulars"
         className="timer-back-link"
         style={{
           position: "absolute",

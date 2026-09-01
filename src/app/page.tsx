@@ -25,7 +25,7 @@ import { heroImgSrc, HERO_IMAGES } from "@/lib/performance-descriptions";
 
 // Flip to the production form URL when the site moves under
 // halimmadi.com/singulars.
-const ENQUIRY_URL = "https://www.halimmadi.com/staging/#enquire";
+const ENQUIRY_URL = "https://www.halimmadi.com/#enquire";
 
 interface Performance extends PerformanceRow {
   num_poems: number;

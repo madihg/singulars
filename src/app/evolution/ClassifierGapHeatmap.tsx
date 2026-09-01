@@ -68,7 +68,7 @@ export function ClassifierGapHeatmap() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/evals/classifier-gap")
+    fetch("/singulars/api/evals/classifier-gap")
       .then((r) => r.json())
       .then(setData)
       .catch(() => setError("network error"));

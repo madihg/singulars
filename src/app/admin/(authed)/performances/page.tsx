@@ -54,7 +54,7 @@ export default function PerformancesPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/admin/performances", {
+      const res = await fetch("/singulars/api/admin/performances", {
         cache: "no-store",
       });
       const json = await res.json();
@@ -77,7 +77,7 @@ export default function PerformancesPage() {
   async function handleFlip(perf: PerfRow, next: PerfRow["status"]) {
     setBusy(perf.id);
     try {
-      const res = await fetch(`/api/admin/performances/${perf.slug}/status`, {
+      const res = await fetch(`/singulars/api/admin/performances/${perf.slug}/status`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: next }),
@@ -99,7 +99,7 @@ export default function PerformancesPage() {
     setBusy(perf.id);
     try {
       const res = await fetch(
-        `/api/admin/performances/${perf.slug}/sync-tallies`,
+        `/singulars/api/admin/performances/${perf.slug}/sync-tallies`,
         { method: "POST" },
       );
       const json = await res.json();

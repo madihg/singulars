@@ -35,8 +35,8 @@ export default function ModelsPage() {
   const load = useCallback(async () => {
     setLoading(true);
     const url = includeArchived
-      ? "/api/admin/candidate-models?include_archived=true"
-      : "/api/admin/candidate-models";
+      ? "/singulars/api/admin/candidate-models?include_archived=true"
+      : "/singulars/api/admin/candidate-models";
     const res = await fetch(url, { cache: "no-store" });
     const json = await res.json();
     setModels(json.models || []);
@@ -49,7 +49,7 @@ export default function ModelsPage() {
 
   async function togglePublic(m: Model) {
     const res = await fetch(
-      `/api/admin/candidate-models/${m.id}/toggle-public`,
+      `/singulars/api/admin/candidate-models/${m.id}/toggle-public`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -69,7 +69,7 @@ export default function ModelsPage() {
   }
 
   async function archive(m: Model) {
-    const res = await fetch(`/api/admin/candidate-models/${m.id}`, {
+    const res = await fetch(`/singulars/api/admin/candidate-models/${m.id}`, {
       method: "DELETE",
     });
     if (!res.ok) {

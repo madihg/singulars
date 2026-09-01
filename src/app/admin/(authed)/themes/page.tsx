@@ -45,7 +45,7 @@ export default function ThemesAdminPage() {
 
   const fetchThemes = useCallback(async () => {
     try {
-      const res = await fetch("/api/themes");
+      const res = await fetch("/singulars/api/themes");
       const json = await res.json();
       if (json.data) setThemes(json.data);
     } finally {
@@ -72,7 +72,7 @@ export default function ThemesAdminPage() {
     }
     setSubmitting(true);
     try {
-      const res = await fetch("/api/themes", {
+      const res = await fetch("/singulars/api/themes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content }),
@@ -97,7 +97,7 @@ export default function ThemesAdminPage() {
       prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t)),
     );
     try {
-      const res = await fetch(`/api/themes/admin/${id}/toggle-complete`, {
+      const res = await fetch(`/singulars/api/themes/admin/${id}/toggle-complete`, {
         method: "PATCH",
       });
       if (!res.ok) fetchThemes();
@@ -110,7 +110,7 @@ export default function ThemesAdminPage() {
     if (!confirm("Delete this theme permanently?")) return;
     setThemes((prev) => prev.filter((t) => t.id !== id));
     try {
-      const res = await fetch(`/api/themes/admin/${id}`, {
+      const res = await fetch(`/singulars/api/themes/admin/${id}`, {
         method: "DELETE",
       });
       if (!res.ok) fetchThemes();
@@ -126,7 +126,7 @@ export default function ThemesAdminPage() {
       return;
     }
     try {
-      const res = await fetch(`/api/themes/admin/${id}`, {
+      const res = await fetch(`/singulars/api/themes/admin/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content }),

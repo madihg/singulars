@@ -75,10 +75,10 @@ export default function NewEvalRunPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/admin/performances")
+    fetch("/singulars/api/admin/performances")
       .then((r) => r.json())
       .then((j) => setPerfs(j.performances || []));
-    fetch("/api/admin/candidate-models")
+    fetch("/singulars/api/admin/candidate-models")
       .then((r) => r.json())
       .then((j) => setModels(j.models || []));
   }, []);
@@ -115,7 +115,7 @@ export default function NewEvalRunPage() {
     setError(null);
     setSubmitting(true);
     try {
-      const res = await fetch("/api/admin/eval-runs/start", {
+      const res = await fetch("/singulars/api/admin/eval-runs/start", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

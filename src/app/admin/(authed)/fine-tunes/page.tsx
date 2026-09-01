@@ -41,7 +41,7 @@ export default function FinetunesPage() {
   const ref = useRef<() => void>();
 
   const load = useCallback(async () => {
-    const r = await fetch("/api/admin/fine-tunes", { cache: "no-store" });
+    const r = await fetch("/singulars/api/admin/fine-tunes", { cache: "no-store" });
     const j = await r.json();
     setJobs(j.jobs || []);
     setLoading(false);

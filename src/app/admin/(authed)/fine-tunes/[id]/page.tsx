@@ -58,7 +58,7 @@ export default function FinetuneDetailPage() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const r = await fetch(`/api/admin/fine-tunes/${id}`, { cache: "no-store" });
+    const r = await fetch(`/singulars/api/admin/fine-tunes/${id}`, { cache: "no-store" });
     const j = await r.json();
     if (r.ok) setJob(j.job);
     setLoading(false);
@@ -81,12 +81,12 @@ export default function FinetuneDetailPage() {
   }, [job, load]);
 
   async function retry() {
-    const r = await fetch(`/api/admin/fine-tunes/${id}/retry`, {
+    const r = await fetch(`/singulars/api/admin/fine-tunes/${id}/retry`, {
       method: "POST",
     });
     if (r.ok) {
       const j = await r.json();
-      window.location.href = `/admin/fine-tunes/${j.id}`;
+      window.location.href = `/singulars/admin/fine-tunes/${j.id}`;
     }
   }
 

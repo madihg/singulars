@@ -72,7 +72,7 @@ export default function VotingPoemPair({
         const fp = await getFingerprint();
         const poemIds = poems.map((p) => p.id).join(",");
         const res = await fetch(
-          `/api/check-votes?fingerprint=${fp}&poem_ids=${poemIds}`,
+          `/singulars/api/check-votes?fingerprint=${fp}&poem_ids=${poemIds}`,
         );
         if (res.ok) {
           const data = await res.json();
@@ -126,7 +126,7 @@ export default function VotingPoemPair({
 
       try {
         const fp = await getFingerprint();
-        const res = await fetch("/api/vote", {
+        const res = await fetch("/singulars/api/vote", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ poem_id: poemId, fingerprint: fp }),
@@ -165,7 +165,7 @@ export default function VotingPoemPair({
     setErrorMsg(null);
     try {
       const fp = await getFingerprint();
-      const res = await fetch("/api/vote/undo", {
+      const res = await fetch("/singulars/api/vote/undo", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ poem_id: votedPoemId, fingerprint: fp }),
