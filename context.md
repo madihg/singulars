@@ -183,3 +183,26 @@ All new pages use the Singulars design system:
 - [ ] Identify non-Halim poets in versus.exe and update author_name
 - [ ] Update performance metadata (locations, dates, model_link, huggingface_link) if placeholders
 - [ ] Replace `seed-data.json` with real data from `poems-from-pdf.json`
+
+## Design: the Desktop language (Sep 2026)
+
+Every page of this app wears the Desktop design language of halimmadi.com.
+See `DESIGN.md` at the repo root for where the CSS and JS come from, how
+`scripts/sync-desktop.mjs` keeps them from drifting, which route group carries
+chrome, and the copy rules `npm run verify` enforces. Read it before changing
+anything visual.
+
+Short version:
+
+- `src/app/desktop/{tokens,desktop}.css` and `public/desktop/desktop.js` are
+  copies of the halim-madi canon. Never edit them here.
+- `src/app/globals.css` is reset and fonts only. Page-scoped rules live in
+  `src/app/desktop/pages.css`, all prefixed `sg-`.
+- `(desk)` and `[slug]/(view)` carry the menu bar, footer and mascot.
+  `/[slug]/stage`, `/[slug]/control` and `/timer` are venue screens with no
+  chrome. `/admin` gets the chrome plus an "admin/" nav window.
+- Tailwind is gone (it was never used): no `tailwind.config.ts`, no
+  `postcss.config.mjs`.
+- Follow-up not done in the reskin: the stills under `public/images/` are
+  originals, some 5712px wide, and they are what the cards load. They want a
+  1600px variant.

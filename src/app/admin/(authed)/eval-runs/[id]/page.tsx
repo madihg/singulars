@@ -11,15 +11,9 @@
  */
 
 import { useEffect, useState, useCallback } from "react";
-import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import {
-  FONT_MONO,
-  btnSmallStyle,
-  statusPillStyle,
-  backLinkStyle,
-  formatDate,
-} from "@/lib/admin-styles";
+import { formatDate } from "@/lib/admin-format";
+import Win from "@/components/desktop/Win";
 import { ConfirmModal } from "../../_components/ConfirmModal";
 import { Toaster, useToasts } from "../../_components/Toaster";
 
@@ -132,9 +126,11 @@ export default function EvalRunDetailPage() {
 
   if (loading || !run) {
     return (
-      <p style={{ fontFamily: FONT_MONO, color: "var(--text-secondary)" }}>
-        loading...
-      </p>
+      <Win file="eval-run.txt" span="w--eight">
+        <p className="note" style={{ marginTop: 0 }}>
+          Loading.
+        </p>
+      </Win>
     );
   }
 
@@ -143,177 +139,118 @@ export default function EvalRunDetailPage() {
   ).length;
   const positionBias =
     scores.length > 0 && positionDisagreements / scores.length > 0.3;
+  const accent = run.candidate_model?.color || "var(--acc)";
 
   return (
-    <div>
-      <Link href="/admin/eval-runs" style={backLinkStyle}>
-        ← eval runs
-      </Link>
-
-      <div
-        style={{
-          display: "flex",
-          alignItems: "baseline",
-          justifyContent: "space-between",
-          flexWrap: "wrap",
-          gap: "1rem",
-          margin: "1rem 0 1.5rem 0",
-        }}
+    <>
+      <Win
+        file="eval-run.txt"
+        span="w--eight"
+        meta={run.published ? "published" : "draft"}
       >
-        <div>
-          <h1
-            style={{
-              fontFamily: '"Diatype Variable", sans-serif',
-              fontSize: "2rem",
-              fontWeight: 700,
-              margin: 0,
-            }}
-          >
-            {run.candidate_model?.name || "?"}
-          </h1>
-          <p
-            style={{
-              fontFamily: FONT_MONO,
-              fontSize: "1rem",
-              color: "var(--text-secondary)",
-              margin: "0.25rem 0 0 0",
-            }}
-          >
-            on {run.performance?.name || "?"}
-          </p>
-        </div>
-        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+        <p className="k">
+          <i className="cdot" style={{ ["--c" as string]: accent }} /> eval run
+        </p>
+        <h1 className="h2">
+          {run.candidate_model?.name || "?"} on {run.performance?.name || "?"}
+        </h1>
+        <div className="sg-row" style={{ marginTop: "0.8rem" }}>
           {run.status === "running" || run.status === "pending" ? (
             <button
+              type="button"
+              className="btn"
               onClick={() => setConfirmingCancel(true)}
-              style={btnSmallStyle}
             >
               cancel
             </button>
           ) : null}
-          <button onClick={rerun} style={btnSmallStyle}>
+          <button type="button" className="btn" onClick={rerun}>
             rerun
           </button>
           {run.status === "completed" ? (
             <button
+              type="button"
+              className={run.published ? "btn" : "btn btn--send"}
+              aria-pressed={run.published}
               onClick={() => setConfirmingPublish(true)}
-              style={{
-                ...btnSmallStyle,
-                background: run.published
-                  ? "transparent"
-                  : run.candidate_model?.color || "#171717",
-                color: run.published ? "var(--text-primary)" : "#fff",
-                borderColor: run.candidate_model?.color || "#171717",
-              }}
             >
               {run.published ? "unpublish" : "publish"}
             </button>
           ) : null}
         </div>
-      </div>
 
-      {/* Stat row */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))",
-          gap: "1rem",
-          marginBottom: "2rem",
-        }}
+        <div className="rule" />
+
+        <div className="sg-tiles">
+          <Stat
+            label="status"
+            value={
+              <span className="sg-pill" data-state={run.status}>
+                {run.status}
+              </span>
+            }
+          />
+          <Stat
+            label="win rate"
+            value={
+              run.win_rate !== null
+                ? `${(Number(run.win_rate) * 100).toFixed(0)}%`
+                : "-"
+            }
+          />
+          <Stat
+            label="themes"
+            value={`${run.n_themes_completed}/${run.n_themes}`}
+          />
+          <Stat label="judge" value={run.judge_model} />
+          <Stat
+            label="cost"
+            value={
+              run.cost_usd !== null
+                ? `$${Number(run.cost_usd).toFixed(2)}`
+                : "-"
+            }
+          />
+          <Stat
+            label="started"
+            value={run.started_at ? formatDate(run.started_at) : "-"}
+          />
+          <Stat
+            label="finished"
+            value={run.finished_at ? formatDate(run.finished_at) : "-"}
+          />
+        </div>
+
+        {run.status === "failed" && run.error_message ? (
+          <p className="sg-err">{run.error_message}</p>
+        ) : null}
+
+        {positionBias ? (
+          <p className="note">
+            The judge looks position-biased, so read the win rate carefully.{" "}
+            {positionDisagreements} of {scores.length} themes disagreed under
+            the A/B swap.
+          </p>
+        ) : null}
+      </Win>
+
+      <Win
+        file="themes/"
+        span="w--eight"
+        meta={`${scores.length} scored`}
       >
-        <Stat
-          label="status"
-          value={<span style={statusPillStyle(run.status)}>{run.status}</span>}
-        />
-        <Stat
-          label="win rate"
-          value={
-            run.win_rate !== null
-              ? `${(Number(run.win_rate) * 100).toFixed(0)}%`
-              : "-"
-          }
-        />
-        <Stat
-          label="themes"
-          value={`${run.n_themes_completed}/${run.n_themes}`}
-        />
-        <Stat label="judge" value={run.judge_model} small />
-        <Stat
-          label="cost"
-          value={
-            run.cost_usd !== null ? `$${Number(run.cost_usd).toFixed(2)}` : "-"
-          }
-        />
-        <Stat
-          label="started"
-          value={run.started_at ? formatDate(run.started_at) : "-"}
-        />
-        <Stat
-          label="finished"
-          value={run.finished_at ? formatDate(run.finished_at) : "-"}
-        />
-      </div>
-
-      {run.status === "failed" && run.error_message ? (
-        <div
-          style={{
-            border: "1px solid #dc2626",
-            padding: "1rem 1.25rem",
-            marginBottom: "1.5rem",
-            fontFamily: FONT_MONO,
-            fontSize: "0.85rem",
-            color: "#dc2626",
-          }}
-        >
-          {run.error_message}
-        </div>
-      ) : null}
-
-      {positionBias ? (
-        <div
-          style={{
-            background: "#fff3e0",
-            border: "1px solid #d97706",
-            padding: "0.75rem 1rem",
-            marginBottom: "1.5rem",
-            fontFamily: FONT_MONO,
-            fontSize: "0.85rem",
-            color: "#92400e",
-          }}
-        >
-          judge appears position-biased - interpret win rate cautiously.{" "}
-          {positionDisagreements} of {scores.length} themes disagreed under A/B
-          swap.
-        </div>
-      ) : null}
-
-      {/* Per-theme rows */}
-      {scores.length === 0 ? (
-        <p
-          style={{
-            fontFamily: FONT_MONO,
-            color: "var(--text-secondary)",
-          }}
-        >
-          {run.status === "pending"
-            ? "queued..."
-            : run.status === "running"
-              ? "running..."
-              : "no scores yet"}
-        </p>
-      ) : (
-        <div
-          style={{ display: "flex", flexDirection: "column", gap: "2.5rem" }}
-        >
-          {scores.map((s) => (
-            <ThemeRow
-              key={s.id}
-              score={s}
-              accent={run.candidate_model?.color || "#171717"}
-            />
-          ))}
-        </div>
-      )}
+        {scores.length === 0 ? (
+          <p className="note" style={{ marginTop: 0 }}>
+            {run.status === "pending"
+              ? "Queued."
+              : run.status === "running"
+                ? "Running."
+                : "No scores yet."}
+          </p>
+        ) : (
+          scores.map((s) => <ThemeRow key={s.id} score={s} accent={accent} />)
+        )}
+      </Win>
 
       {confirmingPublish ? (
         <ConfirmModal
@@ -340,156 +277,89 @@ export default function EvalRunDetailPage() {
         />
       ) : null}
       <Toaster toasts={toasts} dismiss={dismiss} />
-    </div>
+    </>
   );
 }
 
 function Stat({
   label,
   value,
-  small,
 }: {
   label: string;
   value: React.ReactNode;
-  small?: boolean;
 }) {
   return (
-    <div>
-      <div
-        style={{
-          fontFamily: FONT_MONO,
-          fontSize: "0.7rem",
-          textTransform: "uppercase",
-          letterSpacing: "0.05em",
-          color: "var(--text-tertiary)",
-          marginBottom: "0.25rem",
-        }}
-      >
-        {label}
-      </div>
-      <div
-        style={{
-          fontFamily: FONT_MONO,
-          fontSize: small ? "0.85rem" : "1.05rem",
-          fontWeight: 500,
-          wordBreak: "break-all",
-        }}
-      >
+    <div className="sg-tile">
+      <div className="sg-tile__v" style={{ fontSize: "1rem" }}>
         {value}
       </div>
+      <span className="k sg-tile__k">{label}</span>
     </div>
   );
 }
 
+/** One theme in the run: the three poems, the verdict, the rationale. */
 function ThemeRow({ score, accent }: { score: Score; accent: string }) {
   const [showRationale, setShowRationale] = useState(false);
   return (
-    <div
-      style={{
-        borderTop: "1px solid var(--border-light)",
-        paddingTop: "1.25rem",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "baseline",
-          gap: "0.75rem",
-          marginBottom: "0.75rem",
-          flexWrap: "wrap",
-        }}
-      >
-        <h3
-          style={{
-            fontFamily: '"Diatype Variable", sans-serif',
-            fontSize: "1.1rem",
-            fontWeight: 700,
-            margin: 0,
-          }}
-        >
+    <details className="file">
+      <summary>
+        <span className="fr__n">
+          <i className="tri" aria-hidden="true" />
           {score.theme_slug}
-        </h3>
-        {score.candidate_rank !== null ? (
-          <span
-            style={{
-              fontFamily: FONT_MONO,
-              fontSize: "0.75rem",
-              color:
-                score.position_swap_agreement === false
-                  ? "#92400e"
-                  : "var(--text-tertiary)",
-            }}
-          >
-            rank {score.candidate_rank}
-          </span>
-        ) : null}
-        {score.confidence ? (
-          <span style={{ ...statusPillStyle("draft") }}>
-            {score.confidence}
-          </span>
-        ) : null}
-        <span style={{ marginLeft: "auto" }}>
-          {score.candidate_won ? (
-            <span style={statusPillStyle("trained")}>candidate won</span>
-          ) : (
-            <span style={statusPillStyle("draft")}>candidate lost</span>
-          )}
         </span>
-      </div>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-          gap: "1.25rem",
-        }}
-      >
-        <PoemBlock
-          label={`audience winner${score.audience_winner_type ? ` (${score.audience_winner_type})` : ""}`}
-          text={score.audience_winner_text}
-        />
-        <PoemBlock
-          label={`audience loser${score.audience_loser_type ? ` (${score.audience_loser_type})` : ""}`}
-          text={score.audience_loser_text}
-        />
-        <PoemBlock
-          label="candidate"
-          text={score.candidate_text}
-          accent={score.candidate_won ? accent : undefined}
-        />
-      </div>
-      {score.judge_rationale ? (
-        <div style={{ marginTop: "0.75rem" }}>
-          <button
-            onClick={() => setShowRationale((v) => !v)}
-            style={{
-              fontFamily: FONT_MONO,
-              fontSize: "0.8rem",
-              background: "transparent",
-              border: "none",
-              padding: 0,
-              color: "var(--text-secondary)",
-              cursor: "pointer",
-            }}
+        <span className="fr__s">
+          <span
+            className="sg-pill"
+            data-state={score.candidate_won ? "trained" : "draft"}
           >
-            {showRationale ? "- rationale" : "+ rationale"}
-          </button>
-          {showRationale ? (
-            <p
-              style={{
-                fontFamily: '"Standard", sans-serif',
-                fontStyle: "italic",
-                fontSize: "0.95rem",
-                color: "var(--text-secondary)",
-                lineHeight: 1.7,
-                marginTop: "0.5rem",
-              }}
-            >
-              {score.judge_rationale}
-            </p>
-          ) : null}
+            {score.candidate_won ? "candidate won" : "candidate lost"}
+          </span>
+        </span>
+        <span className="fr__w">
+          {score.candidate_rank !== null ? `rank ${score.candidate_rank}` : ""}
+          {score.confidence ? ` · ${score.confidence}` : ""}
+          {score.position_swap_agreement === false
+            ? " · position swap disagreed"
+            : ""}
+        </span>
+        <span className="fr__d">open</span>
+      </summary>
+      <div className="fr__b">
+        <div className="sg-cards" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(14rem, 1fr))" }}>
+          <PoemBlock
+            label={`audience winner${score.audience_winner_type ? ` (${score.audience_winner_type})` : ""}`}
+            text={score.audience_winner_text}
+          />
+          <PoemBlock
+            label={`audience loser${score.audience_loser_type ? ` (${score.audience_loser_type})` : ""}`}
+            text={score.audience_loser_text}
+          />
+          <PoemBlock
+            label="candidate"
+            text={score.candidate_text}
+            accent={score.candidate_won ? accent : undefined}
+          />
         </div>
-      ) : null}
-    </div>
+        {score.judge_rationale ? (
+          <div style={{ marginTop: "0.75rem" }}>
+            <button
+              type="button"
+              className="btn"
+              aria-expanded={showRationale}
+              onClick={() => setShowRationale((v) => !v)}
+            >
+              {showRationale ? "hide rationale" : "show rationale"}
+            </button>
+            {showRationale ? (
+              <p className="note" style={{ fontStyle: "italic" }}>
+                {score.judge_rationale}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
+    </details>
   );
 }
 
@@ -505,33 +375,13 @@ function PoemBlock({
   return (
     <div
       style={{
-        borderLeft: accent
-          ? `2px solid ${accent}`
-          : "2px solid rgba(0,0,0,0.12)",
+        borderLeft: `2px solid ${accent || "var(--hair)"}`,
         paddingLeft: "0.75rem",
+        minWidth: 0,
       }}
     >
-      <div
-        style={{
-          fontFamily: FONT_MONO,
-          fontSize: "0.7rem",
-          textTransform: "uppercase",
-          letterSpacing: "0.05em",
-          color: "var(--text-tertiary)",
-          marginBottom: "0.5rem",
-        }}
-      >
-        {label}
-      </div>
-      <p
-        style={{
-          fontFamily: '"Standard", sans-serif',
-          fontSize: "0.95rem",
-          lineHeight: 1.7,
-          margin: 0,
-          whiteSpace: "pre-line",
-        }}
-      >
+      <span className="k">{label}</span>
+      <p className="sg-poem__t" style={{ marginTop: "0.4rem" }}>
         {text || "(missing)"}
       </p>
     </div>

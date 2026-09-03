@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import BodyClass from "@/components/desktop/BodyClass";
 
 export default function TimerPage() {
   const [timeLeft, setTimeLeft] = useState(1800); // 30 minutes
@@ -39,7 +40,7 @@ export default function TimerPage() {
             "Notification" in window &&
             Notification.permission === "granted"
           ) {
-            new Notification("Timer Complete!", {
+            new Notification("Timer complete", {
               body: "30 minutes have elapsed.",
             });
           }
@@ -75,7 +76,11 @@ export default function TimerPage() {
   const hasStarted = timeLeft < 1800 || isRunning;
 
   return (
-    <div
+    <>
+      {/* The timer is venue furniture: no menu bar, no footer, no dotted
+          ground. It paints its own light and dark ground. */}
+      <BodyClass className="bare" />
+      <div
       className="timer-page"
       style={{
         minHeight: "100vh",
@@ -192,7 +197,7 @@ export default function TimerPage() {
               TIME&apos;S
             </span>
             <span className="timer-digit" style={timerDigitStyle(fg, true)}>
-              UP!
+              UP
             </span>
           </>
         ) : (
@@ -404,6 +409,7 @@ export default function TimerPage() {
         }
       `}</style>
     </div>
+    </>
   );
 }
 

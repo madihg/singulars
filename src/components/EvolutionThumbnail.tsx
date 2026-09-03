@@ -89,85 +89,78 @@ export default async function EvolutionThumbnail() {
   });
 
   return (
-    <div style={{ marginTop: "3rem" }}>
-      <div
-        style={{
-          fontFamily: '"Diatype Mono Variable", monospace',
-          fontSize: "0.85rem",
-          color: "var(--text-secondary)",
-          marginBottom: "0.5rem",
-        }}
-      >
-        how the models are doing →
+    <section className="win w--four" id="evolution-thumb">
+      <div className="win__bar">
+        <span className="dots">
+          <i />
+          <i />
+          <i />
+        </span>
+        <h2 className="win__t">evolution.svg</h2>
       </div>
-      {/* next/link prepends basePath, so this must be root-relative. */}
-      <Link
-        href="/evolution"
-        style={{
-          display: "inline-block",
-          textDecoration: "none",
-          cursor: "pointer",
-        }}
-        aria-label="open evolution chart"
-      >
-        <svg
-          width={W}
-          height={H}
-          viewBox={`0 0 ${W} ${H}`}
-          xmlns="http://www.w3.org/2000/svg"
-          style={{ display: "block", background: "#fff" }}
-          role="img"
-          aria-label="model judge score evolution thumbnail"
-        >
-          {/* horizontal grid */}
-          {[0, 0.25, 0.5, 0.75, 1].map((q) => (
-            <line
-              key={q}
-              x1={padX}
-              x2={W - padX}
-              y1={padY + innerH * (1 - q)}
-              y2={padY + innerH * (1 - q)}
-              stroke="rgba(0,0,0,0.08)"
-              strokeWidth={0.5}
-            />
-          ))}
-          {/* lines */}
-          {lines.map((m) => {
-            const points = m.series
-              .filter((s) => xByPerf[s.perf] !== undefined)
-              .map((s) => {
-                const x = xByPerf[s.perf];
-                const y =
-                  padY + innerH * (1 - Math.min(1, Math.max(0, s.score)));
-                return `${x},${y}`;
-              });
-            if (points.length === 0) return null;
-            return (
-              <polyline
-                key={m.slug}
-                fill="none"
-                stroke={m.color}
-                strokeWidth={1.5}
-                points={points.join(" ")}
+      <div className="win__b">
+        <p className="k">how the models are doing</p>
+        {/* next/link prepends basePath, so this must be root-relative. */}
+        <Link href="/evolution" aria-label="open the evolution charts">
+          <svg
+            width={W}
+            height={H}
+            viewBox={`0 0 ${W} ${H}`}
+            xmlns="http://www.w3.org/2000/svg"
+            style={{ display: "block", width: "100%", height: "auto", marginTop: "0.6rem" }}
+            role="img"
+            aria-label="model judge score evolution thumbnail"
+          >
+            {/* horizontal grid */}
+            {[0, 0.25, 0.5, 0.75, 1].map((q) => (
+              <line
+                key={q}
+                x1={padX}
+                x2={W - padX}
+                y1={padY + innerH * (1 - q)}
+                y2={padY + innerH * (1 - q)}
+                stroke="var(--hair)"
+                strokeWidth={0.5}
               />
-            );
-          })}
-          {/* x labels */}
-          {perfs.map((p) => (
-            <text
-              key={p}
-              x={xByPerf[p]}
-              y={H - 6}
-              fontFamily="Diatype Mono Variable, monospace"
-              fontSize={9}
-              fill="rgba(0,0,0,0.5)"
-              textAnchor="middle"
-            >
-              {p.replace(".exe", "")}
-            </text>
-          ))}
-        </svg>
-      </Link>
-    </div>
+            ))}
+            {/* lines */}
+            {lines.map((m) => {
+              const points = m.series
+                .filter((s) => xByPerf[s.perf] !== undefined)
+                .map((s) => {
+                  const x = xByPerf[s.perf];
+                  const y =
+                    padY + innerH * (1 - Math.min(1, Math.max(0, s.score)));
+                  return `${x},${y}`;
+                });
+              if (points.length === 0) return null;
+              return (
+                <polyline
+                  key={m.slug}
+                  fill="none"
+                  stroke={m.color}
+                  strokeWidth={1.5}
+                  points={points.join(" ")}
+                />
+              );
+            })}
+            {/* x labels */}
+            {perfs.map((p) => (
+              <text
+                key={p}
+                x={xByPerf[p]}
+                y={H - 6}
+                fontFamily="Diatype Mono Variable, monospace"
+                fontSize={9}
+                fill="rgba(0,0,0,0.5)"
+                textAnchor="middle"
+              >
+                {p.replace(".exe", "")}
+              </text>
+            ))}
+          </svg>
+        </Link>
+      </div>
+    </section>
   );
 }

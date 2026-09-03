@@ -15,6 +15,7 @@
  */
 
 import { useState, useEffect, useCallback } from "react";
+import Win from "@/components/desktop/Win";
 
 interface Theme {
   id: string;
@@ -26,9 +27,6 @@ interface Theme {
   updated_at: string;
 }
 
-const MONO = '"Diatype Mono Variable", monospace';
-const DISPLAY = '"Terminal Grotesque", sans-serif';
-const STANDARD = '"Standard", sans-serif';
 
 export default function ThemesAdminPage() {
   const [themes, setThemes] = useState<Theme[]>([]);
@@ -67,7 +65,7 @@ export default function ThemesAdminPage() {
     const content = input.trim();
     if (!content || submitting) return;
     if (content.length > 50) {
-      showMsg("Theme must be 50 characters or less", "error");
+      showMsg("A theme is 50 characters or less.", "error");
       return;
     }
     setSubmitting(true);
@@ -79,14 +77,14 @@ export default function ThemesAdminPage() {
       });
       const json = await res.json();
       if (!res.ok) {
-        showMsg(json.error || "Failed to add theme", "error");
+        showMsg(json.error || "The theme did not save.", "error");
         return;
       }
       setInput("");
-      showMsg("Theme added", "success");
+      showMsg("Theme added.", "success");
       fetchThemes();
     } catch {
-      showMsg("Failed to add theme", "error");
+      showMsg("The theme did not save.", "error");
     } finally {
       setSubmitting(false);
     }
@@ -122,7 +120,7 @@ export default function ThemesAdminPage() {
   const handleSaveEdit = async (id: string) => {
     const content = editValue.trim();
     if (!content || content.length > 50) {
-      showMsg("Theme must be between 1 and 50 characters", "error");
+      showMsg("A theme is between 1 and 50 characters.", "error");
       return;
     }
     try {
@@ -133,166 +131,97 @@ export default function ThemesAdminPage() {
       });
       const json = await res.json();
       if (!res.ok) {
-        showMsg(json.error || "Failed to update", "error");
+        showMsg(json.error || "The change did not save.", "error");
         return;
       }
       setEditingId(null);
-      showMsg("Theme updated", "success");
+      showMsg("Theme updated.", "success");
       fetchThemes();
     } catch {
-      showMsg("Failed to update", "error");
+      showMsg("The change did not save.", "error");
     }
   };
-
-  if (loading) {
-    return (
-      <p style={{ fontFamily: MONO, color: "var(--text-tertiary)" }}>
-        loading themes…
-      </p>
-    );
-  }
 
   const activeThemes = themes.filter((t) => !t.completed);
   const completedThemes = themes.filter((t) => t.completed);
   const totalVotes = themes.reduce((s, t) => s + t.votes, 0);
 
+  if (loading) {
+    return (
+      <Win file="themes/" span="w--eight">
+        <p className="note" style={{ marginTop: 0 }}>
+          Loading themes.
+        </p>
+      </Win>
+    );
+  }
+
   return (
-    <div>
-      <h1
-        style={{
-          fontFamily: DISPLAY,
-          fontSize: "3.5rem",
-          lineHeight: 0.9,
-          fontWeight: 400,
-          margin: "0 0 0.5rem 0",
-        }}
-      >
-        themes
-      </h1>
-      <p
-        style={{
-          fontFamily: MONO,
-          fontSize: "0.85rem",
-          color: "var(--text-secondary)",
-          margin: "0 0 2rem 0",
-        }}
-      >
-        audience-suggested themes for upcoming performances. mark themes as
-        done after they&apos;ve been used at a show.
-      </p>
-
-      {/* Stats */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: "1rem",
-          marginBottom: "2rem",
-        }}
-      >
-        <div style={statCardStyle}>
-          <div style={statValueStyle}>{themes.length}</div>
-          <div style={statLabelStyle}>Total Themes</div>
-        </div>
-        <div style={statCardStyle}>
-          <div style={statValueStyle}>{totalVotes}</div>
-          <div style={statLabelStyle}>Total Votes</div>
-        </div>
-      </div>
-
-      {/* Add form */}
-      <form
-        onSubmit={handleAdd}
-        style={{ display: "flex", gap: "0.75rem", marginBottom: "0.5rem" }}
-      >
-        <div style={{ flex: 1 }}>
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Add a new theme..."
-            maxLength={50}
-            style={inputStyle}
-          />
-        </div>
-        <button
-          type="submit"
-          disabled={!input.trim() || submitting}
-          style={{
-            ...btnPrimaryStyle,
-            opacity: !input.trim() || submitting ? 0.4 : 1,
-            cursor: !input.trim() || submitting ? "not-allowed" : "pointer",
-          }}
-        >
-          {submitting ? "..." : "Add"}
-        </button>
-      </form>
-      <div
-        style={{
-          fontFamily: MONO,
-          fontSize: "0.75rem",
-          color: input.length > 45 ? "#dc2626" : "var(--text-hint)",
-          textAlign: "right",
-          marginBottom: "1rem",
-        }}
-      >
-        {input.length}/50
-      </div>
-
-      {message ? (
-        <p
-          style={{
-            fontFamily: MONO,
-            fontSize: "0.85rem",
-            color: message.type === "error" ? "#dc2626" : "#16a34a",
-            marginBottom: "1rem",
-          }}
-        >
-          {message.text}
+    <>
+      <Win file="themes.txt" span="w--eight">
+        <p className="k">singulars &middot; admin</p>
+        <h1 className="disp">themes</h1>
+        <p className="sub">
+          Audience-suggested themes for upcoming performances. Mark a theme
+          done after it has been used at a show.
         </p>
-      ) : null}
+        <div className="rule" />
+        <div className="sg-tiles">
+          <div className="sg-tile">
+            <div className="sg-tile__v">{themes.length}</div>
+            <span className="k sg-tile__k">themes</span>
+          </div>
+          <div className="sg-tile">
+            <div className="sg-tile__v">{totalVotes}</div>
+            <span className="k sg-tile__k">votes</span>
+          </div>
+        </div>
+        <div className="rule" />
+        <form onSubmit={handleAdd} className="sg-stack sg-stack--tight">
+          <label className="dk-input">
+            <span>add a theme</span>
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="a theme in a few words"
+              maxLength={50}
+            />
+          </label>
+          <div className="sg-row sg-row--between">
+            <span className="k">{input.length}/50</span>
+            <button
+              type="submit"
+              className="btn btn--send"
+              disabled={!input.trim() || submitting}
+            >
+              {submitting ? "adding" : "add theme"}
+            </button>
+          </div>
+        </form>
+        {message ? (
+          <p
+            className={message.type === "error" ? "sg-err" : "sg-ok"}
+            role="status"
+            aria-live="polite"
+          >
+            {message.text}
+          </p>
+        ) : null}
+      </Win>
 
-      {/* Active themes */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "1rem",
-          borderBottom: "1px solid var(--border-light)",
-          paddingBottom: "0.75rem",
-        }}
+      <Win
+        file="active/"
+        span="w--seven"
+        meta={`${activeThemes.length} ${activeThemes.length === 1 ? "theme" : "themes"}`}
       >
-        <h2 style={sectionHeadingStyle}>Active Themes</h2>
-        <span
-          style={{
-            fontFamily: MONO,
-            fontSize: "0.75rem",
-            color: "var(--text-hint)",
-          }}
-        >
-          {activeThemes.length} {activeThemes.length === 1 ? "theme" : "themes"}
-        </span>
-      </div>
-
-      {activeThemes.length === 0 ? (
-        <p
-          style={{
-            fontFamily: STANDARD,
-            fontSize: "1rem",
-            color: "var(--text-secondary)",
-            textAlign: "center",
-            padding: "2rem 0",
-          }}
-        >
-          No active themes.
-        </p>
-      ) : (
-        <div
-          style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}
-        >
-          {activeThemes.map((theme) => (
-            <ThemeCard
+        {activeThemes.length === 0 ? (
+          <p className="note" style={{ marginTop: 0 }}>
+            No active themes.
+          </p>
+        ) : (
+          activeThemes.map((theme) => (
+            <ThemeRow
               key={theme.id}
               theme={theme}
               editingId={editingId}
@@ -307,53 +236,29 @@ export default function ThemesAdminPage() {
               onToggleComplete={() => handleToggleComplete(theme.id)}
               onDelete={() => handleDelete(theme.id)}
             />
-          ))}
-        </div>
-      )}
+          ))
+        )}
+      </Win>
 
-      {/* Completed section */}
       {completedThemes.length > 0 ? (
-        <div style={{ marginTop: "2rem" }}>
+        <Win
+          file="completed/"
+          span="w--five"
+          meta={`${completedThemes.length} done`}
+        >
           <button
+            type="button"
+            className="btn"
+            aria-expanded={showCompleted}
             onClick={() => setShowCompleted(!showCompleted)}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "0.5rem",
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              ...sectionHeadingStyle,
-              color: "var(--text-secondary)",
-              padding: "0.5rem 0",
-              width: "100%",
-              textAlign: "left",
-            }}
           >
-            <span
-              style={{
-                fontSize: "0.7rem",
-                transition: "transform 0.2s ease",
-                transform: showCompleted ? "rotate(90deg)" : "rotate(0deg)",
-                display: "inline-block",
-              }}
-            >
-              ▶
-            </span>
-            Completed ({completedThemes.length})
+            {showCompleted ? "hide" : "show"} completed (
+            {completedThemes.length})
           </button>
-
           {showCompleted ? (
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "0.5rem",
-                marginTop: "0.5rem",
-              }}
-            >
+            <div style={{ marginTop: "0.6rem" }}>
               {completedThemes.map((theme) => (
-                <ThemeCard
+                <ThemeRow
                   key={theme.id}
                   theme={theme}
                   editingId={editingId}
@@ -372,15 +277,14 @@ export default function ThemesAdminPage() {
               ))}
             </div>
           ) : null}
-        </div>
+        </Win>
       ) : null}
-    </div>
+    </>
   );
 }
 
-/* ---- Theme Card ---- */
-
-function ThemeCard({
+/** One theme as a ledger row: name, votes, and the actions on the right. */
+function ThemeRow({
   theme,
   editingId,
   editValue,
@@ -407,237 +311,61 @@ function ThemeCard({
 
   return (
     <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: "0.75rem",
-        padding: "0.75rem 1rem",
-        border: "1px solid var(--border-light)",
-        borderRadius: "8px",
-        opacity: isCompleted ? 0.5 : 1,
-      }}
+      className="sg-line sg-line--2"
+      style={{ opacity: isCompleted ? 0.6 : 1 }}
     >
       {isEditing ? (
-        <div
-          style={{
-            flex: 1,
-            display: "flex",
-            gap: "0.5rem",
-            alignItems: "center",
-          }}
-        >
+        <label className="dk-input">
+          <span>theme</span>
           <input
             type="text"
             value={editValue}
-            onChange={(e) => onEditChange(e.target.value)}
             maxLength={50}
-            autoFocus
+            onChange={(e) => onEditChange(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") onSaveEdit();
               if (e.key === "Escape") onCancelEdit();
             }}
-            style={{ ...inputStyle, flex: 1 }}
+            autoFocus
           />
-          <button onClick={onSaveEdit} style={btnSmallStyle}>
-            Save
-          </button>
-          <button onClick={onCancelEdit} style={btnSmallStyle}>
-            Cancel
-          </button>
-        </div>
+        </label>
       ) : (
-        <>
-          <div style={{ flex: 1 }}>
-            <span
-              style={{
-                fontFamily: STANDARD,
-                fontSize: "1rem",
-                color: "var(--text-primary)",
-              }}
-            >
-              {theme.content}
-            </span>
-            {isCompleted ? <span style={doneBadgeStyle}>done</span> : null}
-            <div
-              style={{
-                fontFamily: MONO,
-                fontSize: "0.7rem",
-                color: "var(--text-hint)",
-                marginTop: "0.25rem",
-              }}
-            >
-              {formatDate(theme.created_at)}
-            </div>
-          </div>
-
-          {/* Vote count */}
-          <span
-            style={{
-              fontFamily: MONO,
-              fontSize: "0.8rem",
-              fontWeight: 600,
-              color: "var(--text-secondary)",
-              minWidth: 30,
-              textAlign: "center",
-            }}
-          >
-            {theme.votes}
-          </span>
-
-          {/* Admin actions */}
-          <div style={{ display: "flex", gap: "0.4rem", alignItems: "center" }}>
-            <label
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "0.25rem",
-                cursor: "pointer",
-                fontFamily: MONO,
-                fontSize: "0.75rem",
-                color: "var(--text-secondary)",
-              }}
-            >
-              <input
-                type="checkbox"
-                checked={theme.completed}
-                onChange={onToggleComplete}
-                style={{ cursor: "pointer" }}
-              />
-              Done
-            </label>
-            <button
-              onClick={onStartEdit}
-              style={actionBtnStyle}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = "var(--text-secondary)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = "var(--border-light)";
-              }}
-            >
-              Edit
-            </button>
-            <button
-              onClick={onDelete}
-              style={actionBtnStyle}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = "#dc2626";
-                e.currentTarget.style.color = "#dc2626";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = "var(--border-light)";
-                e.currentTarget.style.color = "var(--text-secondary)";
-              }}
-            >
-              Delete
-            </button>
-          </div>
-        </>
+        <span className="sg-line__n">{theme.content}</span>
       )}
+      <span className="sg-line__a">
+        <span className="k">{theme.votes} votes</span>
+        {isEditing ? (
+          <>
+            <button type="button" className="btn" onClick={onSaveEdit}>
+              save
+            </button>
+            <button type="button" className="btn" onClick={onCancelEdit}>
+              cancel
+            </button>
+          </>
+        ) : (
+          <>
+            <button type="button" className="btn" onClick={onStartEdit}>
+              edit
+            </button>
+            <button
+              type="button"
+              className="btn"
+              aria-pressed={!!isCompleted}
+              onClick={onToggleComplete}
+            >
+              {isCompleted ? "reopen" : "mark done"}
+            </button>
+            <button
+              type="button"
+              className="btn btn--danger"
+              onClick={onDelete}
+            >
+              delete
+            </button>
+          </>
+        )}
+      </span>
     </div>
   );
-}
-
-/* ---- Styles ---- */
-
-const inputStyle: React.CSSProperties = {
-  width: "100%",
-  fontFamily: MONO,
-  fontSize: "0.95rem",
-  padding: "0.75rem 1rem",
-  border: "1px solid var(--border-light)",
-  borderRadius: "8px",
-  background: "transparent",
-  color: "var(--text-primary)",
-  outline: "none",
-};
-
-const btnPrimaryStyle: React.CSSProperties = {
-  fontFamily: MONO,
-  fontSize: "0.85rem",
-  padding: "0.75rem 1.25rem",
-  border: "1px solid var(--text-primary)",
-  borderRadius: "8px",
-  background: "var(--text-primary)",
-  color: "#fff",
-  transition: "all 0.2s ease",
-  whiteSpace: "nowrap",
-};
-
-const btnSmallStyle: React.CSSProperties = {
-  fontFamily: MONO,
-  fontSize: "0.75rem",
-  padding: "0.4rem 0.75rem",
-  border: "1px solid var(--border-light)",
-  borderRadius: "6px",
-  background: "transparent",
-  color: "var(--text-secondary)",
-  cursor: "pointer",
-  transition: "border-color 0.15s ease",
-};
-
-const actionBtnStyle: React.CSSProperties = {
-  fontFamily: MONO,
-  fontSize: "0.75rem",
-  padding: "0.35rem 0.6rem",
-  border: "1px solid var(--border-light)",
-  borderRadius: "6px",
-  background: "transparent",
-  color: "var(--text-secondary)",
-  cursor: "pointer",
-  transition: "all 0.15s ease",
-};
-
-const sectionHeadingStyle: React.CSSProperties = {
-  fontFamily: '"Diatype Variable", sans-serif',
-  fontSize: "1.25rem",
-  fontWeight: 600,
-  margin: 0,
-};
-
-const statCardStyle: React.CSSProperties = {
-  border: "1px solid var(--border-light)",
-  borderRadius: "8px",
-  padding: "1rem 1.25rem",
-};
-
-const statValueStyle: React.CSSProperties = {
-  fontFamily: MONO,
-  fontSize: "2rem",
-  fontWeight: 600,
-  color: "var(--text-primary)",
-  marginBottom: "0.25rem",
-};
-
-const statLabelStyle: React.CSSProperties = {
-  fontFamily: MONO,
-  fontSize: "0.75rem",
-  color: "var(--text-hint)",
-  textTransform: "uppercase",
-  letterSpacing: "0.05em",
-};
-
-const doneBadgeStyle: React.CSSProperties = {
-  fontFamily: MONO,
-  fontSize: "0.65rem",
-  color: "var(--text-hint)",
-  marginLeft: "0.5rem",
-  textTransform: "uppercase",
-  letterSpacing: "0.05em",
-};
-
-function formatDate(dateString: string): string {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMs / 3600000);
-  const diffDays = Math.floor(diffMs / 86400000);
-
-  if (diffMins < 1) return "Just now";
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays < 7) return `${diffDays}d ago`;
-
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }

@@ -13,13 +13,7 @@
 
 import Link from "next/link";
 import { getServiceClient } from "@/lib/supabase";
-import {
-  FONT_MONO,
-  FONT_DISPLAY,
-  sectionHeadingStyle,
-  statCardStyle,
-  statusPillStyle,
-} from "@/lib/admin-styles";
+import Win from "@/components/desktop/Win";
 
 export const dynamic = "force-dynamic";
 
@@ -54,174 +48,95 @@ async function fetchData(): Promise<{ perfs: Perf[]; withStage: Set<string> }> {
   return { perfs: (perfs || []) as Perf[], withStage };
 }
 
-function ControlLinks({
-  slug,
-  accent,
-}: {
-  slug: string;
-  accent: string;
-}) {
+function ControlLinks({ slug }: { slug: string }) {
   return (
-    <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap" }}>
-      <Link
-        href={`/${slug}/control`}
-        style={{
-          fontFamily: FONT_MONO,
-          fontSize: "0.85rem",
-          textDecoration: "none",
-          color: "#fff",
-          background: accent,
-          border: `1px solid ${accent}`,
-          borderRadius: "6px",
-          padding: "0.4rem 0.8rem",
-        }}
-      >
-        open control →
+    <span className="sg-line__a">
+      <Link className="btn" href={`/${slug}/control`}>
+        open control &rarr;
       </Link>
+      {/* A plain <a>, so it carries the basePath prefix itself. */}
       <a
+        className="btn"
         href={`/singulars/${slug}/stage`}
         target="_blank"
         rel="noreferrer"
-        style={{
-          fontFamily: FONT_MONO,
-          fontSize: "0.85rem",
-          textDecoration: "none",
-          color: "var(--text-primary)",
-          border: "1px solid var(--border-light)",
-          borderRadius: "6px",
-          padding: "0.4rem 0.8rem",
-        }}
       >
-        open stage ↗
+        open stage &#x2197;
       </a>
-    </div>
+    </span>
   );
 }
 
 export default async function AdminControlPage() {
   const { perfs, withStage } = await fetchData();
   const live = perfs.filter((p) => p.status === "training");
-  const accentOf = (p: Perf) => p.color || "var(--text-primary)";
 
   return (
-    <div>
-      <h1
-        style={{
-          fontFamily: FONT_DISPLAY,
-          fontSize: "4rem",
-          lineHeight: 0.9,
-          fontWeight: 400,
-          margin: "0 0 0.5rem 0",
-        }}
-      >
-        control
-      </h1>
-      <p
-        style={{
-          fontFamily: FONT_MONO,
-          fontSize: "0.95rem",
-          color: "var(--text-secondary)",
-          margin: "0 0 2.5rem 0",
-        }}
-      >
-        drive a performance&rsquo;s live stage: lock themes, publish poems, run
-        the camera. open control on your laptop, open the stage on the venue
-        screen.
-      </p>
+    <>
+      <Win file="control.txt" span="w--eight">
+        <p className="k">singulars &middot; admin</p>
+        <h1 className="disp">control</h1>
+        <p className="sub">
+          Drive a performance&rsquo;s live stage: lock themes, publish poems,
+          run the camera. Open control on your laptop, open the stage on the
+          venue screen.
+        </p>
+      </Win>
 
-      <h2 style={{ ...sectionHeadingStyle, marginBottom: "1rem" }}>live now</h2>
-      {live.length > 0 ? (
-        <div style={{ display: "grid", gap: "1rem", marginBottom: "2.5rem" }}>
-          {live.map((p) => (
-            <div
-              key={p.id}
-              style={{
-                ...statCardStyle,
-                borderColor: accentOf(p),
-                display: "flex",
-                flexWrap: "wrap",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: "1rem",
-              }}
-            >
-              <div>
-                <div
-                  style={{
-                    fontFamily: FONT_DISPLAY,
-                    fontSize: "1.75rem",
-                    color: accentOf(p),
-                    marginBottom: "0.4rem",
-                  }}
-                >
-                  {p.name}
-                </div>
-                <span style={statusPillStyle("training")}>training</span>
-              </div>
-              <ControlLinks slug={p.slug} accent={accentOf(p)} />
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div
-          style={{
-            ...statCardStyle,
-            fontFamily: FONT_MONO,
-            fontSize: "0.85rem",
-            color: "var(--text-secondary)",
-            marginBottom: "2.5rem",
-          }}
-        >
-          no performance is in &lsquo;training&rsquo; right now. flip one to
-          training (on{" "}
-          <Link href="/admin/performances" style={{ color: "var(--text-primary)" }}>
-            performances
-          </Link>
-          ) to drive its stage.
-        </div>
-      )}
-
-      <h2 style={{ ...sectionHeadingStyle, marginBottom: "1rem" }}>
-        all performances
-      </h2>
-      <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-        {perfs.map((p) => (
-          <div
-            key={p.id}
-            style={{
-              ...statCardStyle,
-              display: "flex",
-              flexWrap: "wrap",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: "0.75rem 1rem",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" }}>
-              <span
-                style={{
-                  fontFamily: FONT_MONO,
-                  fontSize: "1rem",
-                  color: "var(--text-primary)",
-                }}
-              >
+      <Win file="live-now/" span="w--five" meta={`${live.length} live`}>
+        {live.length > 0 ? (
+          live.map((p) => (
+            <div className="sg-line sg-line--2" key={p.id}>
+              <span className="sg-line__n">
+                <i
+                  className="cdot"
+                  style={{ ["--c" as string]: p.color || "var(--acc)" }}
+                />
                 {p.name}
+                <span className="sg-pill" data-state="training">
+                  training
+                </span>
               </span>
-              <span style={statusPillStyle(p.status)}>{p.status}</span>
-              <span
-                style={{
-                  fontFamily: FONT_MONO,
-                  fontSize: "0.72rem",
-                  color: "var(--text-hint)",
-                }}
-              >
-                {withStage.has(p.id) ? "stage ready" : "no stage yet"}
-              </span>
+              <ControlLinks slug={p.slug} />
             </div>
-            <ControlLinks slug={p.slug} accent={accentOf(p)} />
+          ))
+        ) : (
+          <p className="note" style={{ marginTop: 0 }}>
+            No performance is in training right now. Flip one to training on{" "}
+            <Link href="/admin/performances">performances</Link> to drive its
+            stage.
+          </p>
+        )}
+      </Win>
+
+      <Win
+        file="performances/"
+        span="w--seven"
+        meta={`${perfs.length} in the series`}
+      >
+        <div className="hdr">
+          <span className="k">performance</span>
+          <span className="k">status</span>
+          <span className="k">stage</span>
+          <span className="k">open</span>
+        </div>
+        {perfs.map((p) => (
+          <div className="sg-line sg-line--4" key={p.id}>
+            <span className="sg-line__n">
+              <i
+                className="cdot"
+                style={{ ["--c" as string]: p.color || "var(--metal)" }}
+              />
+              {p.name}
+            </span>
+            <span className="fr__s">{p.status}</span>
+            <span className="fr__w">
+              {withStage.has(p.id) ? "stage ready" : "no stage yet"}
+            </span>
+            <ControlLinks slug={p.slug} />
           </div>
         ))}
-      </div>
-    </div>
+      </Win>
+    </>
   );
 }

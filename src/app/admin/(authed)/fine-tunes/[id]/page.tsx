@@ -11,13 +11,8 @@
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import {
-  FONT_MONO,
-  btnSmallStyle,
-  statusPillStyle,
-  backLinkStyle,
-  formatDate,
-} from "@/lib/admin-styles";
+import { formatDate } from "@/lib/admin-format";
+import Win from "@/components/desktop/Win";
 
 type Job = {
   id: string;
@@ -92,9 +87,11 @@ export default function FinetuneDetailPage() {
 
   if (loading || !job) {
     return (
-      <p style={{ fontFamily: FONT_MONO, color: "var(--text-secondary)" }}>
-        loading...
-      </p>
+      <Win file="fine-tune.txt" span="w--eight">
+        <p className="note" style={{ marginTop: 0 }}>
+          Loading.
+        </p>
+      </Win>
     );
   }
 
@@ -104,199 +101,108 @@ export default function FinetuneDetailPage() {
       : null;
 
   return (
-    <div>
-      <Link href="/admin/fine-tunes" style={backLinkStyle}>
-        ← fine-tunes
-      </Link>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "baseline",
-          justifyContent: "space-between",
-          flexWrap: "wrap",
-          gap: "1rem",
-          margin: "1rem 0 1.5rem 0",
-        }}
+    <>
+      <Win
+        file="fine-tune.txt"
+        span="w--eight"
+        meta={job.status === "succeeded" ? "ready" : job.status}
       >
-        <h1
-          style={{
-            fontFamily: '"Diatype Variable", sans-serif',
-            fontSize: "2rem",
-            fontWeight: 700,
-            margin: 0,
-          }}
-        >
-          {job.candidate?.name || "(no candidate)"}
-        </h1>
-        <span style={statusPillStyle(job.status)}>
-          {job.status === "succeeded" ? "ready" : job.status}
-        </span>
-      </div>
-
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
-          gap: "1rem",
-          marginBottom: "2rem",
-        }}
-      >
-        <Stat label="provider" value={job.provider} />
-        <Stat label="base model" value={job.base_model} small />
-        <Stat label="format" value={job.training_format.toUpperCase()} />
-        <Stat label="rows" value={job.n_training_rows ?? "-"} />
-        <Stat
-          label="cost"
-          value={
-            job.cost_usd !== null ? `$${Number(job.cost_usd).toFixed(2)}` : "-"
-          }
-        />
-        <Stat label="started" value={formatDate(job.created_at)} />
-        <Stat
-          label="finished"
-          value={job.finished_at ? formatDate(job.finished_at) : "-"}
-        />
-      </div>
-
-      {job.status === "succeeded" && job.candidate ? (
-        <div
-          style={{
-            border: "1px solid #171717",
-            padding: "1rem 1.25rem",
-            marginBottom: "1.5rem",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            flexWrap: "wrap",
-            gap: "0.75rem",
-          }}
-        >
-          <span style={{ fontFamily: FONT_MONO, fontSize: "0.9rem" }}>
-            {job.candidate.name} is ready.
-          </span>
-          <Link
-            href={`/admin/eval-runs/new?candidate=${job.candidate.slug}`}
-            style={{
-              ...btnSmallStyle,
-              textDecoration: "none",
-              background: job.candidate.color,
-              color: "#fff",
-              borderColor: job.candidate.color,
-            }}
-          >
-            run eval →
-          </Link>
-        </div>
-      ) : null}
-
-      {job.status === "failed" && job.error_message ? (
-        <div
-          style={{
-            border: "1px solid #dc2626",
-            padding: "1rem 1.25rem",
-            marginBottom: "1.5rem",
-            fontFamily: FONT_MONO,
-            fontSize: "0.85rem",
-            color: "#dc2626",
-          }}
-        >
-          {job.error_message}
-          <div style={{ marginTop: "0.75rem" }}>
-            <button onClick={retry} style={btnSmallStyle}>
-              retry
-            </button>
-          </div>
-        </div>
-      ) : null}
-
-      {/* Hyperparameters */}
-      {job.hyperparameters ? (
-        <section style={{ marginBottom: "2rem" }}>
-          <h2
-            style={{
-              fontFamily: '"Diatype Variable", sans-serif',
-              fontSize: "1.1rem",
-              fontWeight: 700,
-              margin: "0 0 0.75rem 0",
-            }}
-          >
-            hyperparameters
-          </h2>
-          <table
-            style={{
-              fontFamily: FONT_MONO,
-              fontSize: "0.85rem",
-              borderCollapse: "collapse",
-            }}
-          >
-            <tbody>
-              {Object.entries(job.hyperparameters).map(([k, v]) => (
-                <tr key={k}>
-                  <td
-                    style={{
-                      padding: "0.25rem 1rem 0.25rem 0",
-                      color: "var(--text-tertiary)",
-                    }}
-                  >
-                    {k}
-                  </td>
-                  <td>{String(v)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>
-      ) : null}
-
-      {providerUrl ? (
-        <p style={{ fontFamily: FONT_MONO, fontSize: "0.85rem" }}>
-          <a
-            href={providerUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ color: "var(--text-primary)" }}
-          >
-            view on {job.provider} ↗
-          </a>
+        <p className="k">
+          {job.candidate ? (
+            <i
+              className="cdot"
+              style={{ ["--c" as string]: job.candidate.color }}
+            />
+          ) : null}{" "}
+          fine-tune job
         </p>
+        <h1 className="h2">{job.candidate?.name || "(no candidate)"}</h1>
+        <div className="rule" />
+
+        <div className="sg-tiles">
+          <Stat label="provider" value={job.provider} />
+          <Stat label="base model" value={job.base_model} />
+          <Stat label="format" value={job.training_format.toUpperCase()} />
+          <Stat label="rows" value={job.n_training_rows ?? "-"} />
+          <Stat
+            label="cost"
+            value={
+              job.cost_usd !== null
+                ? `$${Number(job.cost_usd).toFixed(2)}`
+                : "-"
+            }
+          />
+          <Stat label="started" value={formatDate(job.created_at)} />
+          <Stat
+            label="finished"
+            value={job.finished_at ? formatDate(job.finished_at) : "-"}
+          />
+        </div>
+
+        {job.status === "succeeded" && job.candidate ? (
+          <div className="sg-row sg-row--between" style={{ marginTop: "1rem" }}>
+            <span className="k">{job.candidate.name} is ready</span>
+            <Link
+              className="btn btn--send"
+              href={`/admin/eval-runs/new?candidate=${job.candidate.slug}`}
+            >
+              run eval &rarr;
+            </Link>
+          </div>
+        ) : null}
+
+        {job.status === "failed" && job.error_message ? (
+          <>
+            <p className="sg-err">{job.error_message}</p>
+            <div className="sg-row" style={{ marginTop: "0.6rem" }}>
+              <button type="button" className="btn" onClick={retry}>
+                retry
+              </button>
+            </div>
+          </>
+        ) : null}
+
+        {providerUrl ? (
+          <div className="sg-row" style={{ marginTop: "1rem" }}>
+            <a
+              className="btn"
+              href={providerUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              view on {job.provider} &#x2197;
+            </a>
+          </div>
+        ) : null}
+      </Win>
+
+      {job.hyperparameters ? (
+        <Win file="hyperparameters/" span="w--five">
+          <div className="sg-tablewrap">
+            <table className="sg-table">
+              <tbody>
+                {Object.entries(job.hyperparameters).map(([k, v]) => (
+                  <tr key={k}>
+                    <td className="sg-num">{k}</td>
+                    <td className="sg-num">{String(v)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Win>
       ) : null}
-    </div>
+    </>
   );
 }
 
-function Stat({
-  label,
-  value,
-  small,
-}: {
-  label: string;
-  value: React.ReactNode;
-  small?: boolean;
-}) {
+function Stat({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div>
-      <div
-        style={{
-          fontFamily: FONT_MONO,
-          fontSize: "0.7rem",
-          textTransform: "uppercase",
-          letterSpacing: "0.05em",
-          color: "var(--text-tertiary)",
-          marginBottom: "0.25rem",
-        }}
-      >
-        {label}
-      </div>
-      <div
-        style={{
-          fontFamily: FONT_MONO,
-          fontSize: small ? "0.85rem" : "1.05rem",
-          fontWeight: 500,
-          wordBreak: "break-all",
-        }}
-      >
+    <div className="sg-tile">
+      <div className="sg-tile__v" style={{ fontSize: "1rem" }}>
         {value}
       </div>
+      <span className="k sg-tile__k">{label}</span>
     </div>
   );
 }

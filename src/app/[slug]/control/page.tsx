@@ -4,6 +4,7 @@ import { isStageControlKeyValid } from "@/lib/stage-auth";
 import { isValidAdminCookieFromStore } from "@/lib/admin-auth";
 import ControlView from "./ControlView";
 import KeyPrompt from "./KeyPrompt";
+import BodyClass from "@/components/desktop/BodyClass";
 
 export const dynamic = "force-dynamic";
 
@@ -28,31 +29,31 @@ export default async function ControlPage({
     const triedKey =
       typeof searchParams.key === "string" && searchParams.key.length > 0;
     return (
-      <main
-        style={{
-          minHeight: "100vh",
-          padding: "4rem 2rem",
-          fontFamily: '"Diatype Mono Variable", monospace',
-          color: "rgba(0,0,0,0.85)",
-        }}
-      >
-        <h1
-          style={{
-            fontFamily: '"Terminal Grotesque", sans-serif',
-            fontSize: "2rem",
-            fontWeight: 400,
-            margin: "0 0 1.5rem 0",
-          }}
-        >
-          {params.slug} · control
-        </h1>
-        {triedKey ? (
-          <p style={{ color: "#dc2626", fontSize: "0.85rem", marginBottom: "1.5rem" }}>
-            that key didn&apos;t match. try again.
-          </p>
-        ) : null}
-        <KeyPrompt />
-      </main>
+      <>
+        {/* The operator console is venue furniture: no menu bar, no footer,
+            no dotted ground. */}
+        <BodyClass className="bare" />
+        <main className="desk desk--tight">
+          <section className="win w--five">
+            <div className="win__bar">
+              <span className="dots">
+                <i />
+                <i />
+                <i />
+              </span>
+              <h1 className="win__t">{params.slug} · control</h1>
+            </div>
+            <div className="win__b">
+              {triedKey ? (
+                <p className="sg-err" style={{ marginTop: 0 }}>
+                  That key did not match. Try again.
+                </p>
+              ) : null}
+              <KeyPrompt />
+            </div>
+          </section>
+        </main>
+      </>
     );
   }
 
@@ -73,10 +74,13 @@ export default async function ControlPage({
     .maybeSingle();
 
   return (
-    <ControlView
-      performance={perf}
-      initialState={state}
-      controlKey={searchParams.key ?? ""}
-    />
+    <>
+      <BodyClass className="bare" />
+      <ControlView
+        performance={perf}
+        initialState={state}
+        controlKey={searchParams.key ?? ""}
+      />
+    </>
   );
 }

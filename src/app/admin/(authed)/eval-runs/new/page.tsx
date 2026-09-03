@@ -11,13 +11,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  FONT_MONO,
-  inputStyle,
-  btnPrimaryStyle,
-  btnSecondaryStyle,
-  backLinkStyle,
-} from "@/lib/admin-styles";
+import Win from "@/components/desktop/Win";
 import { estimateEvalCostUsd } from "@/lib/eval-cost";
 
 type Perf = {
@@ -138,47 +132,22 @@ export default function NewEvalRunPage() {
   }
 
   return (
-    <div style={{ maxWidth: 560 }}>
-      <Link href="/admin/eval-runs" style={backLinkStyle}>
-        ← eval runs
-      </Link>
-      <h1
-        style={{
-          fontFamily: '"Terminal Grotesque", sans-serif',
-          fontSize: "3.5rem",
-          lineHeight: 0.9,
-          margin: "1rem 0 2rem 0",
-        }}
-      >
-        new eval run
-      </h1>
+    <Win file="eval-runs/new.txt" span="w--eight">
+      <p className="k">eval pipeline</p>
+      <h1 className="h2">new eval run</h1>
+      <div className="rule" />
 
       {trained.length === 0 ? (
-        <p
-          style={{
-            fontFamily: FONT_MONO,
-            fontSize: "0.9rem",
-            color: "var(--text-secondary)",
-          }}
-        >
-          no trained performances yet.{" "}
-          <Link
-            href="/admin/performances"
-            style={{ color: "var(--text-primary)" }}
-          >
-            flip one to trained →
-          </Link>
+        <p className="note" style={{ marginTop: 0 }}>
+          No trained performances yet.{" "}
+          <Link href="/admin/performances">flip one to trained &rarr;</Link>
         </p>
       ) : (
-        <form
-          onSubmit={submit}
-          style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}
-        >
+        <form onSubmit={submit} className="sg-form sg-form--2">
           <Field label="performance">
             <select
               value={perfId}
               onChange={(e) => setPerfId(e.target.value)}
-              style={{ ...inputStyle, padding: "0.65rem 0.75rem" }}
               required
             >
               <option value="">pick a performance</option>
@@ -194,44 +163,8 @@ export default function NewEvalRunPage() {
             </select>
           </Field>
 
-          <Field
-            label="candidate models"
-            hint={`${candidateIds.length} selected`}
-          >
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
-              {models
-                .filter((m) => !m.archived)
-                .map((m) => (
-                  <button
-                    key={m.id}
-                    type="button"
-                    onClick={() => toggle(m.id)}
-                    style={{
-                      fontFamily: FONT_MONO,
-                      fontSize: "0.85rem",
-                      padding: "0.4rem 0.75rem",
-                      border: `1px solid ${candidateIds.includes(m.id) ? m.color : "var(--border-light)"}`,
-                      background: candidateIds.includes(m.id)
-                        ? m.color
-                        : "transparent",
-                      color: candidateIds.includes(m.id)
-                        ? "#fff"
-                        : "var(--text-primary)",
-                      cursor: "pointer",
-                    }}
-                  >
-                    {m.name}
-                  </button>
-                ))}
-            </div>
-          </Field>
-
           <Field label="judge model">
-            <select
-              value={judge}
-              onChange={(e) => setJudge(e.target.value)}
-              style={{ ...inputStyle, padding: "0.65rem 0.75rem" }}
-            >
+            <select value={judge} onChange={(e) => setJudge(e.target.value)}>
               {JUDGE_OPTIONS.map((j) => (
                 <option key={j} value={j}>
                   {j}
@@ -240,105 +173,89 @@ export default function NewEvalRunPage() {
             </select>
           </Field>
 
-          <div style={{ display: "flex", gap: "1rem" }}>
-            <Field label="cost cap (usd)">
-              <input
-                type="number"
-                min={0.1}
-                step={0.5}
-                value={costCap}
-                onChange={(e) => setCostCap(Number(e.target.value))}
-                style={inputStyle}
-              />
-            </Field>
-            <Field label="n per theme">
-              <input
-                type="number"
-                min={1}
-                max={10}
-                step={1}
-                value={nPerTheme}
-                onChange={(e) =>
-                  setNPerTheme(Math.max(1, Math.floor(Number(e.target.value))))
-                }
-                style={inputStyle}
-              />
-            </Field>
+          <div className="sg-span2">
+            <span className="k">
+              candidate models &middot; {candidateIds.length} selected
+            </span>
+            <div className="sg-row sg-row--tight" style={{ marginTop: "0.4rem" }}>
+              {models
+                .filter((m) => !m.archived)
+                .map((m) => (
+                  <button
+                    key={m.id}
+                    type="button"
+                    className="btn"
+                    aria-pressed={candidateIds.includes(m.id)}
+                    onClick={() => toggle(m.id)}
+                  >
+                    <i className="cdot" style={{ ["--c" as string]: m.color }} />{" "}
+                    {m.name}
+                  </button>
+                ))}
+            </div>
           </div>
 
-          {/* Cost estimator */}
-          <div
-            style={{
-              border: "1px solid var(--border-light)",
-              padding: "1rem 1.25rem",
-            }}
-          >
+          <Field label="cost cap (usd)">
+            <input
+              type="number"
+              min={0.1}
+              step={0.5}
+              value={costCap}
+              onChange={(e) => setCostCap(Number(e.target.value))}
+            />
+          </Field>
+          <Field label="n per theme">
+            <input
+              type="number"
+              min={1}
+              max={10}
+              step={1}
+              value={nPerTheme}
+              onChange={(e) =>
+                setNPerTheme(Math.max(1, Math.floor(Number(e.target.value))))
+              }
+            />
+          </Field>
+
+          <div className="sg-span2 sg-tile">
             <div
-              style={{
-                fontFamily: '"Diatype Variable", sans-serif',
-                fontSize: "1.6rem",
-                fontWeight: 700,
-                color: overCap ? "#dc2626" : "var(--text-primary)",
-              }}
+              className="sg-tile__v"
+              style={{ color: overCap ? "var(--error)" : undefined }}
             >
-              estimated ${estimate.toFixed(2)}
+              ${estimate.toFixed(2)}
             </div>
-            <div
-              style={{
-                fontFamily: FONT_MONO,
-                fontSize: "0.8rem",
-                color: "var(--text-tertiary)",
-                marginTop: "0.25rem",
-              }}
-            >
+            <span className="k sg-tile__k">estimated cost</span>
+            <span className="sg-tile__n">
               cap ${costCap.toFixed(2)}
               {overCap
-                ? " · estimate exceeds cap. raise the cap or remove a candidate."
+                ? ". the estimate exceeds the cap. raise the cap or remove a candidate."
                 : ""}
-            </div>
+            </span>
           </div>
 
-          {error ? (
-            <p
-              style={{
-                fontFamily: FONT_MONO,
-                fontSize: "0.85rem",
-                color: "#dc2626",
-                margin: 0,
-              }}
-            >
-              {error}
-            </p>
-          ) : null}
+          {error ? <p className="sg-err sg-span2">{error}</p> : null}
 
-          <div style={{ display: "flex", gap: "0.75rem" }}>
+          <div className="sg-row sg-row--end sg-span2">
+            <Link className="btn" href="/admin/eval-runs">
+              cancel
+            </Link>
             <button
               type="submit"
+              className="btn btn--send"
               disabled={
                 submitting || !perfId || candidateIds.length === 0 || overCap
               }
-              style={btnPrimaryStyle}
             >
-              {submitting ? "..." : "start eval"}
+              {submitting ? "starting" : "start eval"}
             </button>
-            <Link
-              href="/admin/eval-runs"
-              style={{
-                ...btnSecondaryStyle,
-                textDecoration: "none",
-                display: "inline-flex",
-                alignItems: "center",
-              }}
-            >
-              cancel
-            </Link>
           </div>
         </form>
       )}
-    </div>
+    </Win>
   );
 }
 
+/** A labelled field in the desk register. */
 function Field({
   label,
   hint,
@@ -349,34 +266,11 @@ function Field({
   children: React.ReactNode;
 }) {
   return (
-    <label
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "0.4rem",
-        flex: 1,
-      }}
-    >
-      <span
-        style={{
-          fontFamily: FONT_MONO,
-          fontSize: "0.75rem",
-          textTransform: "uppercase",
-          letterSpacing: "0.05em",
-          color: "var(--text-tertiary)",
-        }}
-      >
-        {label}
-      </span>
+    <label className="dk-input">
+      <span>{label}</span>
       {children}
       {hint ? (
-        <span
-          style={{
-            fontFamily: FONT_MONO,
-            fontSize: "0.75rem",
-            color: "var(--text-tertiary)",
-          }}
-        >
+        <span className="k" style={{ marginTop: "0.3rem" }}>
           {hint}
         </span>
       ) : null}

@@ -11,12 +11,8 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import {
-  FONT_MONO,
-  statusPillStyle,
-  btnSmallStyle,
-  formatDate,
-} from "@/lib/admin-styles";
+import { formatDate } from "@/lib/admin-format";
+import Win from "@/components/desktop/Win";
 import { ConfirmModal } from "../_components/ConfirmModal";
 import { Toaster, useToasts } from "../_components/Toaster";
 // Now resolves correctly: page is at (authed)/performances, _components is at (authed)/_components
@@ -116,122 +112,101 @@ export default function PerformancesPage() {
   }
 
   return (
-    <div>
-      <h1
-        style={{
-          fontFamily: '"Terminal Grotesque", sans-serif',
-          fontSize: "3.5rem",
-          lineHeight: 0.9,
-          margin: "0 0 2rem 0",
-        }}
+    <>
+      <Win
+        file="performances/"
+        span="w--eight"
+        meta={loading ? "loading" : `${rows.length} in the series`}
       >
-        performances
-      </h1>
-
-      {loading ? (
-        <p style={{ ...mono(0.85), color: "var(--text-secondary)" }}>
-          loading...
-        </p>
-      ) : error ? (
-        <p style={{ ...mono(0.85), color: "#dc2626" }}>{error}</p>
-      ) : rows.length === 0 ? (
-        <p style={{ ...mono(0.85), color: "var(--text-secondary)" }}>
-          no performances. seed via scripts/seed.mjs
-        </p>
-      ) : (
-        <ul
-          style={{
-            listStyle: "none",
-            padding: 0,
-            margin: 0,
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
-          {rows.map((p) => {
-            const nextSt = NEXT_STATUS[p.status];
-            const fading = busy === p.id;
-            return (
-              <li
-                key={p.id}
-                style={{
-                  borderTop: "1px solid var(--border-light)",
-                  padding: "1.25rem 0",
-                  opacity: fading ? 0.5 : 1,
-                  transition: "opacity 0.2s ease",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "0.75rem",
-                }}
-              >
+        {loading ? (
+          <p className="note" style={{ marginTop: 0 }}>
+            Loading.
+          </p>
+        ) : error ? (
+          <p className="sg-err" style={{ marginTop: 0 }}>
+            {error}
+          </p>
+        ) : rows.length === 0 ? (
+          <p className="note" style={{ marginTop: 0 }}>
+            No performances. Seed via scripts/seed.mjs.
+          </p>
+        ) : (
+          <>
+            <div className="hdr">
+              <span className="k">performance</span>
+              <span className="k">status</span>
+              <span className="k">votes</span>
+              <span className="k">actions</span>
+            </div>
+            {rows.map((p) => {
+              const nextSt = NEXT_STATUS[p.status];
+              const fading = busy === p.id;
+              return (
                 <div
-                  style={{
-                    display: "flex",
-                    flexWrap: "wrap",
-                    alignItems: "baseline",
-                    gap: "0.75rem",
-                  }}
+                  className="sg-line sg-line--4"
+                  key={p.id}
+                  style={{ opacity: fading ? 0.5 : 1 }}
                 >
-                  <span
-                    style={{
-                      fontFamily: '"Standard", sans-serif',
-                      fontSize: "1.15rem",
-                      fontWeight: 500,
-                    }}
-                  >
+                  <span className="sg-line__n">
+                    <i
+                      className="cdot"
+                      style={{ ["--c" as string]: p.color }}
+                    />
                     {p.name}
                   </span>
-                  <span style={statusPillStyle(p.status)}>{p.status}</span>
-                  <span
-                    style={{ ...mono(0.85), color: "var(--text-tertiary)" }}
-                  >
+                  <span className="fr__s">
+                    <span className="sg-pill" data-state={p.status}>
+                      {p.status}
+                    </span>
+                  </span>
+                  <span className="fr__w">
+                    {p.vote_pair_count} theme
+                    {p.vote_pair_count === 1 ? "" : "s"} with pairs ·{" "}
+                    {p.total_votes} votes ·{" "}
                     {p.date ? formatDate(p.date) : "no date"}
                     {p.location ? ` · ${p.location}` : ""}
                   </span>
-                </div>
-                <div style={{ ...mono(0.8), color: "var(--text-secondary)" }}>
-                  {p.vote_pair_count} theme{p.vote_pair_count === 1 ? "" : "s"}{" "}
-                  with vote pairs · {p.total_votes} total votes
-                </div>
-                <div
-                  style={{
-                    display: "flex",
-                    gap: "0.5rem",
-                    flexWrap: "wrap",
-                  }}
-                >
-                  <Link
-                    href={`/admin/performances/${p.slug}/votes`}
-                    style={{ ...btnSmallStyle, textDecoration: "none" }}
-                  >
-                    view votes
-                  </Link>
-                  {nextSt ? (
-                    <button
-                      style={btnSmallStyle}
-                      disabled={fading}
-                      onClick={() => setConfirming({ perf: p, next: nextSt })}
+                  <span className="sg-line__a">
+                    <Link
+                      className="btn"
+                      href={`/admin/performances/${p.slug}/votes`}
                     >
-                      flip to {nextSt}
+                      votes
+                    </Link>
+                    {nextSt ? (
+                      <button
+                        type="button"
+                        className="btn"
+                        disabled={fading}
+                        onClick={() => setConfirming({ perf: p, next: nextSt })}
+                      >
+                        flip to {nextSt}
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className="btn"
+                        disabled
+                        aria-label="trained"
+                      >
+                        finalised
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      className="btn"
+                      disabled={fading}
+                      onClick={() => handleSync(p)}
+                    >
+                      sync tallies
                     </button>
-                  ) : (
-                    <button style={btnSmallStyle} disabled aria-label="trained">
-                      finalised
-                    </button>
-                  )}
-                  <button
-                    style={btnSmallStyle}
-                    disabled={fading}
-                    onClick={() => handleSync(p)}
-                  >
-                    sync tallies
-                  </button>
+                  </span>
                 </div>
-              </li>
-            );
-          })}
-        </ul>
-      )}
+              );
+            })}
+          </>
+        )}
+      </Win>
 
       {confirming ? (
         <ConfirmModal
@@ -248,10 +223,6 @@ export default function PerformancesPage() {
         />
       ) : null}
       <Toaster toasts={toasts} dismiss={dismiss} />
-    </div>
+    </>
   );
-}
-
-function mono(rem: number): React.CSSProperties {
-  return { fontFamily: FONT_MONO, fontSize: `${rem}rem` };
 }

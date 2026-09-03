@@ -1,0 +1,644 @@
+/* ════════════════════════════════════════════════════════════════
+   pages.css - the Singulars surface on the Desktop ground.
+
+   Loaded AFTER tokens.css and desktop.css. Everything here is
+   page-scoped composition for this app only: window spans, the poem
+   duel, the chat ledger, the admin tables. The vocabulary itself
+   (.win, .file, .btn, .k, .dk-input, .mb, .fb, .mascot) comes from
+   the canon and is never redefined here, only composed.
+
+   Singulars wears acc-machine: the accent is vermilion. Cobalt stays
+   the one bold note, spent on the start-a-conversation CTA.
+
+   Class prefix: sg-. Never invent a parallel name for something the
+   canon already has.
+   ════════════════════════════════════════════════════════════════ */
+
+/* ── desk composition ───────────────────────────────────────── */
+/* Windows stack full width below 760px (desktop.css does that for
+   us). Above it, the desk is arranged rather than stacked. */
+@media (min-width: 760px) {
+  .w--half { grid-column: span 6; }
+  .w--third { grid-column: span 4; }
+  .w--twothirds { grid-column: span 8; }
+  .w--seven { grid-column: span 7; }
+  .w--five { grid-column: span 5; }
+  .w--eight { grid-column: span 8; }
+  .w--four { grid-column: span 4; }
+  .w--offset { margin-top: 1.9rem; }
+}
+
+/* A desk with no menu bar anchors still needs its top breathing. */
+.desk--tight { padding-top: 1.4rem; }
+
+/* ── small parts ────────────────────────────────────────────── */
+
+/* Row of controls / chips inside a window body. */
+.sg-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+.sg-row--tight { gap: 0.35rem; }
+.sg-row--between { justify-content: space-between; }
+.sg-row--end { justify-content: flex-end; }
+.sg-row--baseline { align-items: baseline; }
+
+/* A horizontally scrolling row (chips, view switchers) that never
+   makes the page itself scroll sideways. */
+.sg-scroll {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 0.15rem;
+  min-width: 0;
+}
+.sg-scroll::-webkit-scrollbar { display: none; }
+.sg-scroll > * { flex: none; }
+
+.sg-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  min-width: 0;
+}
+.sg-stack--tight { gap: 0.5rem; }
+.sg-stack--wide { gap: 1.5rem; }
+
+/* Pressed state for a .btn acting as a toggle or a chosen view. */
+.btn[aria-pressed="true"],
+.btn.is-on {
+  color: var(--ink);
+  border-color: var(--ink-40);
+  background: var(--paper);
+}
+.btn[aria-current="page"] {
+  color: var(--ink);
+  border-color: var(--ink-40);
+}
+.btn:disabled,
+.btn[aria-disabled="true"] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.btn--danger { color: var(--error); }
+.btn--danger:hover {
+  color: var(--paper);
+  background: var(--error);
+  border-color: var(--error);
+}
+.btn--acc[aria-pressed="true"] {
+  color: var(--acc);
+  border-color: var(--acc);
+}
+.btn--wide { width: 100%; text-align: center; }
+
+/* Mono status pill. One geometry, tone by data-state. */
+.sg-pill {
+  font-family: var(--font-mono);
+  font-variation-settings: "slnt" 0, "MONO" 1;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  font-size: 0.6rem;
+  line-height: 1;
+  padding: 0.3rem 0.5rem 0.26rem;
+  border: 1px solid var(--metal);
+  border-radius: 4px;
+  color: var(--ink-50);
+  background: var(--bar);
+  display: inline-block;
+  white-space: nowrap;
+}
+.sg-pill[data-state="training"],
+.sg-pill[data-state="running"],
+.sg-pill[data-state="validating"] {
+  color: var(--acc);
+  border-color: var(--acc);
+  background: var(--paper);
+}
+.sg-pill[data-state="trained"],
+.sg-pill[data-state="published"],
+.sg-pill[data-state="succeeded"],
+.sg-pill[data-state="completed"] {
+  color: var(--paper);
+  background: var(--ink);
+  border-color: var(--ink);
+}
+.sg-pill[data-state="failed"] {
+  color: var(--error);
+  border-color: var(--error);
+  background: var(--paper);
+}
+
+/* Value + label tile. Used for counts in window bodies. */
+.sg-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+  gap: 0.9rem;
+}
+.sg-tile {
+  border: 1px solid var(--hair);
+  border-radius: 4px;
+  padding: 0.8rem 0.9rem;
+  min-width: 0;
+}
+.sg-tile__v {
+  font-family: var(--font-mono);
+  font-variation-settings: "slnt" 0, "MONO" 1;
+  font-size: 1.6rem;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.sg-tile__k {
+  display: block;
+  margin-top: 0.4rem;
+}
+.sg-tile__n {
+  display: block;
+  margin-top: 0.25rem;
+  font-family: var(--font-mono);
+  font-variation-settings: "slnt" 0, "MONO" 1;
+  font-size: 0.6rem;
+  letter-spacing: 0.06em;
+  color: var(--ink-40);
+}
+
+/* Inline mono meta line under a heading. */
+.sg-meta {
+  font-family: var(--font-mono);
+  font-variation-settings: "slnt" 0, "MONO" 1;
+  font-size: 0.66rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink-50);
+  margin: 0.6rem 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.7rem;
+}
+
+/* Error / success / hint lines. */
+.sg-err {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: var(--error);
+  margin: 0.6rem 0 0;
+}
+.sg-ok {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: var(--success);
+  margin: 0.6rem 0 0;
+}
+
+/* ── landing ────────────────────────────────────────────────── */
+
+/* Performance cards, grid view. */
+.sg-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  gap: 1.1rem;
+}
+.sg-card { display: block; min-width: 0; }
+.sg-card__thumb {
+  display: block;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: var(--ground-2);
+  border: 1px solid var(--metal);
+  border-radius: 4px;
+}
+.sg-card__thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(100%);
+  transition: filter 0.5s ease;
+}
+.sg-card:hover .sg-card__thumb img { filter: grayscale(0%); }
+.sg-card__t {
+  display: block;
+  margin: 0.55rem 0 0.2rem;
+  font-family: var(--font-h2);
+  font-weight: 500;
+  font-variation-settings: "wght" 500;
+  font-size: 0.98rem;
+  line-height: 1.3;
+  color: var(--ink-85);
+  overflow-wrap: anywhere;
+  transition: color 0.2s ease;
+}
+.sg-card:hover .sg-card__t { color: var(--acc); }
+.sg-card__w {
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--ink-60);
+  margin: 0.3rem 0 0;
+}
+
+/* Carousel view: the same cards on one snapping rail. */
+.sg-rail {
+  display: flex;
+  gap: 1.1rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 0.6rem;
+  scrollbar-width: thin;
+  min-width: 0;
+}
+.sg-rail > * {
+  flex: 0 0 15rem;
+  scroll-snap-align: start;
+}
+
+/* Hero still. `height: auto` is load-bearing: the img carries width and
+   height attributes (they reserve space and stop the layout jumping), and
+   without this the attribute height beats the aspect ratio. */
+.sg-hero img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border: 1px solid var(--metal);
+  border-radius: 4px;
+  filter: grayscale(100%);
+  transition: filter 0.5s ease;
+}
+.sg-hero:hover img { filter: grayscale(0%); }
+.sg-hero img[data-lightbox] { cursor: zoom-in; }
+.sg-hero img:focus-visible {
+  outline: 3px solid var(--cobalt);
+  outline-offset: 2px;
+}
+
+/* ── poems ──────────────────────────────────────────────────── */
+
+/* Two poems side by side above 760px, stacked below. */
+.sg-duel {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+@media (min-width: 760px) {
+  .sg-duel { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* One poem card inside the duel. */
+.sg-poem {
+  border: 1px solid var(--hair);
+  border-radius: 4px;
+  padding: 1rem 1.05rem;
+  background: var(--paper);
+  min-width: 0;
+  text-align: left;
+  width: 100%;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+.sg-poem:hover { border-color: var(--ink-40); }
+.sg-poem[aria-pressed="true"],
+.sg-poem.is-chosen {
+  border-color: var(--acc);
+  box-shadow: inset 0 0 0 1px var(--acc);
+}
+.sg-poem[aria-disabled="true"] { cursor: default; }
+.sg-poem[aria-disabled="true"]:hover { border-color: var(--hair); }
+.sg-poem__t {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.62;
+  color: var(--ink-85);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  margin: 0;
+}
+.sg-poem__f {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--hair);
+}
+
+/* Result dots: one per vote, wrapping. */
+.sg-dots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  align-items: center;
+}
+.sg-dots i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--metal);
+  display: block;
+}
+.sg-dots i.is-on { background: var(--acc); }
+
+/* ── chat (machine.txt) ─────────────────────────────────────── */
+
+.sg-chat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  min-height: 18rem;
+  max-height: min(62vh, 34rem);
+  overflow-y: auto;
+  padding-right: 0.2rem;
+}
+.sg-turn {
+  border-top: 1px solid var(--hair);
+  padding: 0.8rem 0 0;
+  min-width: 0;
+}
+.sg-turn:first-child { border-top: 0; padding-top: 0; }
+.sg-turn__b {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.62;
+  color: var(--ink-85);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  margin: 0.4rem 0 0;
+}
+.sg-turn[data-who="you"] .sg-turn__b { color: var(--ink-60); }
+.sg-ask {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.6rem;
+  margin-top: 0.9rem;
+}
+.sg-ask .dk-input { flex: 1 1 auto; }
+.sg-ask textarea { min-height: 3rem; }
+
+/* Model list in the chat sidebar window. */
+.sg-models {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.sg-models .btn { text-align: left; width: 100%; }
+
+/* ── charts (evolution) ─────────────────────────────────────── */
+
+.sg-chart {
+  width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+}
+.sg-chart .recharts-cartesian-axis-tick-value,
+.sg-chart .recharts-legend-item-text,
+.sg-chart .recharts-label {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  fill: var(--ink-50);
+}
+
+/* ── ledgers and tables (admin) ─────────────────────────────── */
+
+/* A .file row is a details element in the canon. Admin rows are often
+   plain rows with actions; .sg-line gives them the same ruled feel. */
+.sg-line {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.3rem 0.9rem;
+  align-items: baseline;
+  padding: 0.7rem 0;
+  border-top: 1px solid var(--hair);
+  min-width: 0;
+}
+.sg-line__n {
+  font-family: var(--font-h2);
+  font-weight: 500;
+  font-variation-settings: "wght" 500;
+  font-size: 0.98rem;
+  color: var(--ink-85);
+  overflow-wrap: anywhere;
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  min-width: 0;
+}
+a.sg-line__n:hover,
+.sg-line__n a:hover { color: var(--acc); }
+.sg-line__a {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+}
+@media (min-width: 720px) {
+  .sg-line--4 { grid-template-columns: minmax(0, 1.35fr) 6.2rem minmax(0, 1.5fr) 7.6rem; }
+  .sg-line--3 { grid-template-columns: minmax(0, 1.6fr) 8rem minmax(0, 1fr); }
+  .sg-line--2 { grid-template-columns: minmax(0, 1fr) auto; }
+  .sg-line--actions { grid-template-columns: minmax(0, 1fr) auto; }
+}
+
+/* Wide data tables keep their own scroller so the body never scrolls. */
+.sg-tablewrap {
+  overflow-x: auto;
+  min-width: 0;
+  margin: 0 -0.3rem;
+  padding: 0 0.3rem;
+}
+.sg-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+}
+.sg-table th {
+  font-family: var(--font-mono);
+  font-variation-settings: "slnt" 0, "MONO" 1;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  font-size: 0.6rem;
+  color: var(--ink-40);
+  text-align: left;
+  padding: 0 0.7rem 0.55rem 0;
+  white-space: nowrap;
+}
+.sg-table td {
+  border-top: 1px solid var(--hair);
+  padding: 0.6rem 0.7rem 0.6rem 0;
+  color: var(--ink-85);
+  vertical-align: baseline;
+}
+.sg-table td:last-child,
+.sg-table th:last-child { padding-right: 0; }
+.sg-table .sg-num {
+  font-family: var(--font-mono);
+  font-variation-settings: "slnt" 0, "MONO" 1;
+  font-size: 0.85rem;
+}
+.sg-table input[type="number"],
+.sg-table input[type="text"] {
+  width: 100%;
+  min-width: 4.5rem;
+  background: var(--paper);
+  border: 1px solid var(--metal);
+  border-radius: 4px;
+  padding: 0.35rem 0.45rem;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--ink);
+}
+
+/* Mono code / prompt block. */
+.sg-pre {
+  font-family: var(--font-mono);
+  font-variation-settings: "slnt" 0, "MONO" 1;
+  font-size: 0.78rem;
+  line-height: 1.6;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink-85);
+  background: var(--ground-2);
+  border: 1px solid var(--hair);
+  border-radius: 4px;
+  padding: 0.8rem 0.9rem;
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 26rem;
+  overflow-y: auto;
+}
+
+/* Form grid inside a window. */
+.sg-form {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.9rem;
+}
+@media (min-width: 720px) {
+  .sg-form--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sg-form .sg-span2 { grid-column: 1 / -1; }
+}
+
+/* The admin nav window: one .file-style row per destination. */
+.sg-nav a {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  border-top: 1px solid var(--hair);
+  font-family: var(--font-mono);
+  font-variation-settings: "slnt" 0, "MONO" 1;
+  font-size: 0.66rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink-50);
+}
+.sg-nav a:first-child { border-top: 0; }
+.sg-nav a:hover { color: var(--ink); }
+.sg-nav a[aria-current="page"] { color: var(--ink); }
+.sg-nav a[aria-current="page"] .cdot { background: var(--acc); }
+.sg-nav > div > .k {
+  display: block;
+  padding: 0.9rem 0 0.35rem;
+}
+.sg-nav > div:first-child > .k { padding-top: 0; }
+
+/* Toast + modal keep the window look. */
+.sg-toast {
+  position: fixed;
+  right: 14px;
+  bottom: 64px;
+  z-index: 60;
+  max-width: min(88vw, 26rem);
+}
+.sg-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--pad, 1.15rem);
+}
+.sg-modal__w {
+  width: min(30rem, 100%);
+}
+
+/* ── venue screens ──────────────────────────────────────────── */
+/* /[slug]/stage, /[slug]/control and /timer are venue furniture, not
+   web pages: no chrome, no dotted ground, read from across a room or
+   driven from a laptop at the side of the stage. They sit outside the
+   chrome route groups and paint their own ground.
+     .venue - the stage screen: black.
+     .bare  - the control console and the timer: plain paper, since
+              those two manage their own light and dark themselves. */
+body.venue {
+  background-color: #000;
+  background-image: none;
+  color: #fff;
+}
+body.bare {
+  background-color: var(--paper);
+  background-image: none;
+}
+
+/* The canon's .cdot is sized as a flex item. Used inside a .btn or a
+   .k - both inline contexts - it needs to become a box to have a size. */
+.btn .cdot,
+.k .cdot,
+.sg-card__t .cdot,
+.sg-tile .cdot {
+  display: inline-block;
+}
+
+/* Short pages keep the footer at the bottom of the window rather than
+   floating it halfway up the ground. */
+body.desktop {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+body.desktop .desk {
+  flex: 1 0 auto;
+}
+body.desktop .fb {
+  flex: none;
+}
+
+/* ── legacy colour names ────────────────────────────────────── */
+/* The pre-Desktop skin named its colours this way and a few inline
+   styles on the venue screens still ask for them. Mapped onto the
+   tokens so there is exactly one palette. New code uses the tokens. */
+:root {
+  --background: var(--paper);
+  --text-primary: var(--ink-85);
+  --text-hover: var(--ink-70);
+  --text-secondary: var(--ink-60);
+  --text-tertiary: var(--ink-50);
+  --text-hint: var(--ink-40);
+  --border: var(--border-strong);
+  --border-light: var(--hair);
+}
+
+/* Cards laid out with .k labels need those labels to sit on their own
+   line; the canon .k is inline-block for use inside a sentence. */
+.sg-card .k,
+.sg-tile .k {
+  display: block;
+}
+a.sg-line:hover .sg-line__n {
+  color: var(--acc);
+}

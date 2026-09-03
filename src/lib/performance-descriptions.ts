@@ -100,7 +100,7 @@ export const CARD_DESCRIPTIONS: Record<string, string> = {
   "praxis-exe":
     "The duel goes to the UN General Assembly. Poems on the wall of a Foreign Policy and Mozilla Foundation simulation on AI and imagination, voted on by the room as it arrives. September 24, 2026.",
   "frontiere-exe":
-    "邊界 night in Brooklyn. The duel arrives at Index Space Greenpoint, hosted by bianjie.systems, supported by Gray Area and FWB. May 13, 2026, 10pm – 12am.",
+    "邊界 night in Brooklyn. The duel arrives at Index Space Greenpoint, hosted by bianjie.systems, supported by Gray Area and FWB. May 13, 2026, 10pm to 12am.",
   "recover-exe":
     "Performed at a distance. At Breaking the Code in Porto, the poet writes from another continent - the duel survives the latency, the dropouts, the recovery. June 19, 2026.",
   "reverse-exe":
@@ -145,11 +145,11 @@ const descriptions: Record<string, PerformanceDescription> = {
       {
         type: "image",
         src: "/singulars/images/recover-exe/conference-banner.jpg",
-        alt: "Breaking the Code: Hacktivating Non-Normative Algorithms - International Conference, 18-19 June 2026. Theme 2026: Error 403 – Critical Refusals.",
+        alt: "Breaking the Code: Hacktivating Non-Normative Algorithms - International Conference, 18-19 June 2026. Theme 2026: Error 403 - Critical Refusals.",
       },
       {
         type: "italic",
-        text: "The conference's 2026 theme: Error 403 – Critical Refusals. recover.exe answers it in kind - a performance built on a fragile remote rig that performs its own recovery.",
+        text: "The conference's 2026 theme: Error 403 - Critical Refusals. recover.exe answers it in kind - a performance built on a fragile remote rig that performs its own recovery.",
       },
       {
         type: "paragraph",

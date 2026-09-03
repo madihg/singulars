@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getServiceClient, getSupabase } from "@/lib/supabase";
 import StageView from "./StageView";
+import BodyClass from "@/components/desktop/BodyClass";
 
 export const dynamic = "force-dynamic";
 
@@ -70,10 +71,15 @@ export default async function StagePage({
     .maybeSingle();
 
   return (
-    <StageView
-      performance={perf as PerformanceRow}
-      initialState={state as StageStateRow | null}
-      staticMode={searchParams.static === "1"}
-    />
+    <>
+      {/* The venue screen keeps its own black shell: no menu bar, no footer,
+          no dotted ground. */}
+      <BodyClass className="venue" />
+      <StageView
+        performance={perf as PerformanceRow}
+        initialState={state as StageStateRow | null}
+        staticMode={searchParams.static === "1"}
+      />
+    </>
   );
 }

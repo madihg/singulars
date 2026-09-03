@@ -12,7 +12,7 @@
  */
 
 import { useEffect, useState, useCallback } from "react";
-import { FONT_MONO, btnSmallStyle, statusPillStyle } from "@/lib/admin-styles";
+import Win from "@/components/desktop/Win";
 import { Toaster, useToasts } from "../_components/Toaster";
 
 type LatestRun = {
@@ -175,164 +175,74 @@ export default function PublishPage() {
   }
 
   return (
-    <div>
-      <h1
-        style={{
-          fontFamily: '"Terminal Grotesque", sans-serif',
-          fontSize: "3.5rem",
-          lineHeight: 0.9,
-          margin: "0 0 0.5rem 0",
-        }}
-      >
-        publish
-      </h1>
-      <p
-        style={{
-          fontFamily: FONT_MONO,
-          fontSize: "0.85rem",
-          color: "var(--text-secondary)",
-          margin: "0 0 2rem 0",
-        }}
-      >
-        toggle individual cells to publish that data point. toggle the row chip
-        to remove the entire model from the public chart.
+    <Win
+      file="publish/"
+      span="w--eight"
+      meta={loading ? "loading" : `${models.length} models`}
+    >
+      <p className="note" style={{ marginTop: 0 }}>
+        Toggle a cell to publish that data point. Toggle the row chip to remove
+        the whole model from the public chart.
       </p>
 
       {loading ? (
-        <p style={{ fontFamily: FONT_MONO, color: "var(--text-secondary)" }}>
-          loading...
-        </p>
+        <p className="note">Loading.</p>
       ) : (
-        <div style={{ overflowX: "auto" }}>
-          <table
-            style={{
-              borderCollapse: "collapse",
-              fontFamily: FONT_MONO,
-              fontSize: "0.8rem",
-              minWidth: 600,
-            }}
-          >
+        <div className="sg-tablewrap" style={{ marginTop: "0.9rem" }}>
+          <table className="sg-table">
             <thead>
               <tr>
-                <th
-                  style={{
-                    textAlign: "left",
-                    padding: "0.5rem 0.75rem",
-                    borderBottom: "1px solid var(--border-light)",
-                    background: "#fff",
-                    position: "sticky",
-                    left: 0,
-                  }}
-                >
-                  model
-                </th>
+                <th>model</th>
                 {perfs.map((p) => (
-                  <th
-                    key={p.id}
-                    style={{
-                      textAlign: "left",
-                      padding: "0.5rem 0.75rem",
-                      borderBottom: "1px solid var(--border-light)",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {p.name}
-                  </th>
+                  <th key={p.id}>{p.name}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {models.map((m) => (
-                <tr key={m.id} style={{ opacity: m.is_public ? 1 : 0.4 }}>
-                  <td
-                    style={{
-                      padding: "0.5rem 0.75rem",
-                      borderBottom: "1px solid var(--border-light)",
-                      background: "#fff",
-                      position: "sticky",
-                      left: 0,
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        gap: "0.5rem",
-                        alignItems: "center",
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: 10,
-                          height: 10,
-                          background: m.color,
-                        }}
-                      />
+                <tr key={m.id} style={{ opacity: m.is_public ? 1 : 0.5 }}>
+                  <td>
+                    <span className="sg-row sg-row--tight">
+                      <i className="cdot" style={{ ["--c" as string]: m.color }} />
                       <span>{m.name}</span>
                       <button
+                        type="button"
+                        className="btn"
+                        aria-pressed={m.is_public}
                         onClick={() => toggleModelPublic(m)}
-                        style={{
-                          ...btnSmallStyle,
-                          padding: "0.2rem 0.5rem",
-                          fontSize: "0.7rem",
-                        }}
                       >
                         {m.is_public ? "public" : "private"}
                       </button>
-                    </div>
+                    </span>
                   </td>
                   {perfs.map((p) => {
                     const c = cellByPair[`${m.id}::${p.id}`];
                     return (
-                      <td
-                        key={p.id}
-                        style={{
-                          padding: "0.5rem 0.75rem",
-                          borderBottom: "1px solid var(--border-light)",
-                          minWidth: 90,
-                        }}
-                      >
+                      <td key={p.id}>
                         {!c?.latest ? (
-                          <span style={{ color: "var(--text-hint)" }}>·</span>
+                          <span className="k">-</span>
                         ) : (
-                          <div
-                            style={{
-                              display: "flex",
-                              flexDirection: "column",
-                              gap: "0.25rem",
-                            }}
-                          >
-                            <span style={{ fontWeight: 500 }}>
+                          <span className="sg-row sg-row--tight">
+                            <span className="sg-num">
                               {c.latest.win_rate !== null
                                 ? `${(Number(c.latest.win_rate) * 100).toFixed(0)}%`
                                 : "-"}
                             </span>
                             <button
+                              type="button"
+                              className="btn"
+                              aria-pressed={c.latest.published}
                               onClick={() => togglePublish(c, m)}
-                              style={{
-                                ...statusPillStyle(
-                                  c.latest.published ? "published" : "draft",
-                                ),
-                                cursor: "pointer",
-                                background: c.latest.published
-                                  ? m.color
-                                  : "transparent",
-                                color: c.latest.published
-                                  ? "#fff"
-                                  : "var(--text-secondary)",
-                                borderColor: c.latest.published
-                                  ? m.color
-                                  : "var(--border-light)",
-                              }}
                               disabled={c.latest.status !== "completed"}
                               title={
                                 c.latest.status !== "completed"
-                                  ? `cannot publish ${c.latest.status} run`
-                                  : ""
+                                  ? `cannot publish a ${c.latest.status} run`
+                                  : undefined
                               }
                             >
                               {c.latest.published ? "published" : "draft"}
                             </button>
-                          </div>
+                          </span>
                         )}
                       </td>
                     );
@@ -344,6 +254,6 @@ export default function PublishPage() {
         </div>
       )}
       <Toaster toasts={toasts} dismiss={dismiss} />
-    </div>
+    </Win>
   );
 }

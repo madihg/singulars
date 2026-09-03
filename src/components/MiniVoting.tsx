@@ -1,9 +1,18 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from "react";
+/**
+ * The duel window on the landing desk: one theme pulled from the performance
+ * currently in training (or the last finished one), its two poems side by side,
+ * and a vote. Choosing a poem and submitting sends the visitor to that theme's
+ * own page, where the result lives.
+ *
+ * The fetch paths, the fingerprint and the vote contract are untouched by the
+ * reskin: only the markup moved to the Desktop vocabulary.
+ */
+
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { getFingerprint } from "@/lib/fingerprint";
-import { accessibleTextColor, getStatusPillStyle } from "@/lib/color-utils";
 
 interface Poem {
   id: string;
@@ -29,6 +38,29 @@ interface ThemeData {
   poems: Poem[];
 }
 
+function Shell({
+  children,
+  meta,
+}: {
+  children: React.ReactNode;
+  meta?: React.ReactNode;
+}) {
+  return (
+    <section className="win w--seven" id="duel" data-testid="mini-voting">
+      <div className="win__bar">
+        <span className="dots">
+          <i />
+          <i />
+          <i />
+        </span>
+        <h2 className="win__t">duel.txt</h2>
+        {meta ? <span className="win__meta">{meta}</span> : null}
+      </div>
+      <div className="win__b">{children}</div>
+    </section>
+  );
+}
+
 export default function MiniVoting() {
   const router = useRouter();
   const [themeData, setThemeData] = useState<ThemeData | null>(null);
@@ -36,14 +68,6 @@ export default function MiniVoting() {
   const [voting, setVoting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedPoemId, setSelectedPoemId] = useState<string | null>(null);
-
-  const a11yColor = useMemo(
-    () =>
-      themeData
-        ? accessibleTextColor(themeData.performance.color)
-        : "rgba(0,0,0,0.85)",
-    [themeData],
-  );
 
   // Fetch a random theme from whichever performance is currently `training`.
   // Falls back to the most recent `trained` performance if no training perf
@@ -62,7 +86,7 @@ export default function MiniVoting() {
         }> = await listRes.json();
 
         // Candidate order: the live (training) perf first, then trained by
-        // date desc. We try each until we find one that actually HAS poems - 
+        // date desc. We try each until we find one that actually HAS poems -
         // a training perf with no poems yet (pre-show) must NOT crash the
         // widget; it should fall back to the latest finished duel.
         const candidates = [
@@ -72,7 +96,14 @@ export default function MiniVoting() {
             .sort((a, b) => (b.date || "").localeCompare(a.date || "")),
         ];
 
-        let data: { id: string; name: string; slug: string; color: string; status: Performance["status"]; poems: Poem[] } | null = null;
+        let data: {
+          id: string;
+          name: string;
+          slug: string;
+          color: string;
+          status: Performance["status"];
+          poems: Poem[];
+        } | null = null;
         for (const cand of candidates) {
           const res = await fetch(`/singulars/api/performances/${cand.slug}`);
           if (!res.ok) continue;
@@ -112,7 +143,7 @@ export default function MiniVoting() {
         });
       } catch (err) {
         console.error("MiniVoting fetch error:", err);
-        setError("Could not load voting experience");
+        setError("Could not load a duel.");
       } finally {
         setLoading(false);
       }
@@ -151,40 +182,28 @@ export default function MiniVoting() {
       router.push(`/${themeData.performance.slug}/${themeSlug}`);
     } catch (err) {
       console.error("Vote error:", err);
-      setError("Failed to register vote. Please try again.");
+      setError("The vote did not register. Try again.");
       setVoting(false);
     }
   }, [voting, themeData, selectedPoemId, router]);
 
   if (loading) {
     return (
-      <div
-        data-testid="mini-voting"
-        style={{
-          padding: "2rem 0",
-          textAlign: "center",
-          color: "rgba(0,0,0,0.5)",
-          fontSize: "0.9rem",
-        }}
-      >
-        Loading voting experience...
-      </div>
+      <Shell>
+        <p className="note" style={{ margin: 0 }}>
+          Loading a duel.
+        </p>
+      </Shell>
     );
   }
 
   if (error || !themeData) {
     return (
-      <div
-        data-testid="mini-voting"
-        style={{
-          padding: "2rem 0",
-          textAlign: "center",
-          color: "rgba(0,0,0,0.5)",
-          fontSize: "0.9rem",
-        }}
-      >
-        {error || "Could not load voting experience"}
-      </div>
+      <Shell>
+        <p className="note" style={{ margin: 0 }}>
+          {error || "Could not load a duel."}
+        </p>
+      </Shell>
     );
   }
 
@@ -192,180 +211,57 @@ export default function MiniVoting() {
   const themeName = poems[0]?.theme || "";
 
   return (
-    <section
-      data-testid="mini-voting"
-      style={{
-        marginBottom: "3rem",
-        padding: "2rem 0",
-        borderTop: "2px solid #171717",
-      }}
+    <Shell
+      meta={
+        <span data-testid="mini-voting-performance">{performance.name}</span>
+      }
     >
-      {/* Theme name */}
-      <h2
-        data-testid="mini-voting-theme"
-        style={{
-          fontFamily: '"Diatype Variable", sans-serif',
-          fontSize: "2rem",
-          textAlign: "center",
-          marginBottom: "0.5rem",
-          fontWeight: 700,
-          lineHeight: 1.2,
-        }}
-      >
-        {themeName}
-      </h2>
-
-      {/* Performance name and status */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          gap: "0.75rem",
-          marginBottom: "1.5rem",
-        }}
-      >
-        <span
-          data-testid="mini-voting-performance"
-          style={{
-            color: a11yColor,
-            fontWeight: 600,
-            fontSize: "0.9rem",
-          }}
-        >
-          {performance.name}
-        </span>
-        <span
-          data-testid="mini-voting-status"
-          style={{
-            display: "inline-block",
-            fontFamily: '"Diatype Mono Variable", monospace',
-            fontSize: "0.65rem",
-            letterSpacing: "0.05em",
-            textTransform: "uppercase",
-            padding: "0.2rem 0.5rem",
-            borderRadius: "2px",
-            border: `1px solid ${getStatusPillStyle(performance.status).border}`,
-            backgroundColor: getStatusPillStyle(performance.status).background,
-            color: getStatusPillStyle(performance.status).color,
-          }}
-        >
-          {performance.status}
-        </span>
-      </div>
-
-      {/* Instruction text */}
-      <p
-        style={{
-          textAlign: "center",
-          color: "rgba(0,0,0,0.5)",
-          fontSize: "0.85rem",
-          marginBottom: "1.5rem",
-        }}
-      >
-        Click on the poem you prefer to cast your vote
+      <p className="k" data-testid="mini-voting-status">
+        theme &middot; <span data-state={performance.status}>{performance.status}</span>
       </p>
+      <h3 className="h2" data-testid="mini-voting-theme">
+        {themeName}
+      </h3>
+      <p className="note">Pick the poem you prefer, then submit your vote.</p>
 
-      {/* Poems */}
-      <div
-        data-testid="mini-voting-poems"
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-          gap: "2rem",
-        }}
-      >
+      <div className="sg-duel" data-testid="mini-voting-poems">
         {poems.map((poem) => {
           const isSelected = selectedPoemId === poem.id;
           return (
-            <div
+            <button
               key={poem.id}
+              type="button"
+              className="sg-poem"
               data-testid={`mini-voting-poem-${poem.author_type}`}
               data-poem-id={poem.id}
               data-voteable="true"
               onClick={() => handleSelect(poem.id)}
-              role="button"
-              aria-label={`Vote for this poem`}
+              aria-label="vote for this poem"
               aria-pressed={isSelected}
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  handleSelect(poem.id);
-                }
-              }}
               style={{
-                padding: "1.5rem 0",
-                borderTop: isSelected
-                  ? `2px solid ${performance.color}`
-                  : "2px solid rgba(0,0,0,0.12)",
-                cursor: voting
-                  ? "wait"
-                  : `url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20'><circle cx='10' cy='10' r='8' fill='${encodeURIComponent(performance.color)}'/></svg>") 10 10, pointer`,
-                transition: "opacity 0.3s ease, border-color 0.3s ease",
-                opacity: voting ? 0.7 : selectedPoemId && !isSelected ? 0.5 : 1,
-                userSelect: "none",
+                opacity: voting ? 0.7 : selectedPoemId && !isSelected ? 0.55 : 1,
               }}
             >
-              {/* Poem text - no author labels to maintain blind voting */}
-              <div
-                style={{
-                  fontSize: "0.95rem",
-                  lineHeight: 1.7,
-                  whiteSpace: "pre-line",
-                  color: "rgba(0,0,0,0.85)",
-                  minHeight: "100px",
-                  textAlign: "left",
-                }}
-              >
-                {poem.text}
-              </div>
-            </div>
+              {/* No author labels: the vote stays blind. */}
+              <p className="sg-poem__t">{poem.text}</p>
+            </button>
           );
         })}
       </div>
 
-      {/* Submit button - only shown when a poem is selected */}
       {selectedPoemId && !voting && (
-        <div style={{ textAlign: "center", marginTop: "1.5rem" }}>
-          <button
-            onClick={handleSubmit}
-            style={{
-              padding: "0.75rem 2rem",
-              fontSize: "1rem",
-              fontWeight: 700,
-              fontFamily: '"Standard", sans-serif',
-              color: "#fff",
-              backgroundColor: performance.color,
-              border: "none",
-              cursor: "pointer",
-              transition: "opacity 0.3s ease",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.opacity = "0.7";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.opacity = "1";
-            }}
-          >
-            Submit my vote
+        <div className="sg-row sg-row--end" style={{ marginTop: "1rem" }}>
+          <button type="button" className="btn btn--send" onClick={handleSubmit}>
+            submit my vote
           </button>
         </div>
       )}
 
       {voting && (
-        <p
-          style={{
-            textAlign: "center",
-            marginTop: "1rem",
-            color: a11yColor,
-            fontSize: "0.85rem",
-            fontWeight: 500,
-          }}
-        >
-          Recording your vote...
+        <p className="k" style={{ marginTop: "1rem" }}>
+          recording your vote
         </p>
       )}
-    </section>
+    </Shell>
   );
 }

@@ -1,11 +1,11 @@
 "use client";
 
 /**
- * /admin/login (US-102).
+ * /admin/login.
  *
- * Mirrors /theme-voting/admin's centred login. Lives outside the (authed)
- * route group so the AdminNav does not render here. After successful auth,
- * navigates to ?from=<path> if provided, else /admin.
+ * One centred window with the password field. Lives outside the (authed)
+ * route group so the admin nav window does not render here. After a
+ * successful auth it navigates to ?from=<path> if provided, else /admin.
  *
  * useSearchParams() must be wrapped in <Suspense> for the build to succeed
  * (Next.js prerender bailout rule).
@@ -14,21 +14,30 @@
 import { Suspense, useState, FormEvent } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import {
-  loginPageStyle,
-  titleStyle,
-  inputStyle,
-  btnPrimaryStyle,
-  errorTextStyle,
-  backLinkStyle,
-  monoStyle,
-} from "@/lib/admin-styles";
 
 export const dynamic = "force-dynamic";
 
+function Shell({ children }: { children: React.ReactNode }) {
+  return (
+    <main className="desk">
+      <section className="win w--five">
+        <div className="win__bar">
+          <span className="dots">
+            <i />
+            <i />
+            <i />
+          </span>
+          <h2 className="win__t">login.txt</h2>
+        </div>
+        <div className="win__b">{children}</div>
+      </section>
+    </main>
+  );
+}
+
 export default function AdminLoginPage() {
   return (
-    <Suspense fallback={<div style={loginPageStyle} />}>
+    <Suspense fallback={<Shell>{null}</Shell>}>
       <LoginInner />
     </Suspense>
   );
@@ -54,7 +63,9 @@ function LoginInner() {
       });
       if (res.ok) {
         // Use a hard navigation so the middleware re-evaluates the cookie.
-        window.location.href = from.startsWith("/singulars") ? from : "/singulars" + from;
+        window.location.href = from.startsWith("/singulars")
+          ? from
+          : "/singulars" + from;
         return;
       }
       const json = await res.json().catch(() => ({}));
@@ -67,49 +78,37 @@ function LoginInner() {
   }
 
   return (
-    <div style={loginPageStyle}>
-      <h1 style={titleStyle}>admin</h1>
-      <p
-        style={{
-          ...monoStyle,
-          color: "var(--text-secondary)",
-          fontSize: "0.85rem",
-          margin: 0,
-        }}
-      >
-        password
-      </p>
-      <form
-        onSubmit={handleSubmit}
-        style={{
-          width: "100%",
-          display: "flex",
-          flexDirection: "column",
-          gap: "0.75rem",
-        }}
-      >
-        <input
-          type="password"
-          autoFocus
-          autoComplete="current-password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          style={inputStyle}
-          aria-label="admin password"
-        />
-        {error ? <p style={errorTextStyle}>{error}</p> : null}
-        <button
-          type="submit"
-          style={btnPrimaryStyle}
-          disabled={submitting || !password}
-        >
-          {submitting ? "..." : "enter"}
-        </button>
+    <Shell>
+      <p className="k">singulars</p>
+      <h1 className="disp">admin</h1>
+      <div className="rule" />
+      <form onSubmit={handleSubmit} className="sg-stack sg-stack--tight">
+        <label className="dk-input">
+          <span>password</span>
+          <input
+            type="password"
+            autoFocus
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            aria-label="admin password"
+          />
+        </label>
+        {error ? <p className="sg-err">{error}</p> : null}
+        <div className="sg-row sg-row--between">
+          {/* next/link prepends basePath, so this must be root-relative. */}
+          <Link className="btn" href="/">
+            back to singulars
+          </Link>
+          <button
+            type="submit"
+            className="btn btn--send"
+            disabled={submitting || !password}
+          >
+            {submitting ? "checking" : "enter"}
+          </button>
+        </div>
       </form>
-      {/* next/link prepends basePath, so this must be root-relative. */}
-      <Link href="/" style={backLinkStyle}>
-        ← back to singulars
-      </Link>
-    </div>
+    </Shell>
   );
 }

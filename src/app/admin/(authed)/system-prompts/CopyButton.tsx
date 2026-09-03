@@ -1,17 +1,14 @@
 "use client";
 
-/**
- * Copy-raw-text button for the system-prompts page. Mono accent.
- */
+/** Copy the raw prompt text to the clipboard. */
 
 import { useState } from "react";
-import { FONT_MONO } from "@/lib/admin-styles";
 
 export function CopyButton({
   text,
-  accentColor = "#171717",
 }: {
   text: string;
+  /** Kept for callers that pass a colour; the button uses the page accent. */
   accentColor?: string;
 }) {
   const [copied, setCopied] = useState(false);
@@ -27,20 +24,7 @@ export function CopyButton({
   }
 
   return (
-    <button
-      onClick={handleCopy}
-      style={{
-        fontFamily: FONT_MONO,
-        fontSize: "0.75rem",
-        padding: "0.3rem 0.7rem",
-        border: `1px solid ${accentColor}`,
-        background: copied ? accentColor : "transparent",
-        color: copied ? "#fff" : accentColor,
-        cursor: "pointer",
-        transition: "background 0.2s ease, color 0.2s ease",
-        whiteSpace: "nowrap",
-      }}
-    >
+    <button type="button" className="btn" onClick={handleCopy}>
       {copied ? "copied" : "copy raw"}
     </button>
   );

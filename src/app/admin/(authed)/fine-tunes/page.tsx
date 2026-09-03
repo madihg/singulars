@@ -8,12 +8,8 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
-import {
-  FONT_MONO,
-  btnSmallStyle,
-  statusPillStyle,
-  formatDate,
-} from "@/lib/admin-styles";
+import { formatDate } from "@/lib/admin-format";
+import Win from "@/components/desktop/Win";
 
 type Job = {
   id: string;
@@ -65,110 +61,59 @@ export default function FinetunesPage() {
   }, [jobs]);
 
   return (
-    <div>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "baseline",
-          justifyContent: "space-between",
-          marginBottom: "1.5rem",
-          gap: "1rem",
-          flexWrap: "wrap",
-        }}
-      >
-        <h1
-          style={{
-            fontFamily: '"Terminal Grotesque", sans-serif',
-            fontSize: "3.5rem",
-            lineHeight: 0.9,
-            margin: 0,
-          }}
-        >
-          fine-tunes
-        </h1>
-        <Link
-          href="/admin/fine-tunes/new"
-          style={{ ...btnSmallStyle, textDecoration: "none" }}
-        >
-          + start fine-tune
+    <Win
+      file="fine-tunes/"
+      span="w--eight"
+      meta={loading ? "loading" : `${jobs.length} jobs`}
+    >
+      <div className="sg-row sg-row--end" style={{ marginBottom: "0.9rem" }}>
+        <Link className="btn btn--send" href="/admin/fine-tunes/new">
+          start fine-tune
         </Link>
       </div>
 
       {loading ? (
-        <p style={{ fontFamily: FONT_MONO, color: "var(--text-secondary)" }}>
-          loading...
+        <p className="note" style={{ marginTop: 0 }}>
+          Loading.
         </p>
       ) : jobs.length === 0 ? (
-        <p style={{ fontFamily: FONT_MONO, color: "var(--text-secondary)" }}>
-          no fine-tune jobs yet.{" "}
-          <Link
-            href="/admin/fine-tunes/new"
-            style={{ color: "var(--text-primary)" }}
-          >
-            start one →
-          </Link>
+        <p className="note" style={{ marginTop: 0 }}>
+          No fine-tune jobs yet.{" "}
+          <Link href="/admin/fine-tunes/new">start one &rarr;</Link>
         </p>
       ) : (
-        <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+        <>
+          <div className="hdr">
+            <span className="k">candidate</span>
+            <span className="k">status</span>
+            <span className="k">recipe</span>
+            <span className="k">when</span>
+          </div>
           {jobs.map((j) => (
-            <li
+            <Link
+              className="sg-line sg-line--4"
               key={j.id}
-              style={{
-                borderTop: "1px solid var(--border-light)",
-                padding: "1rem 0",
-              }}
+              href={`/admin/fine-tunes/${j.id}`}
             >
-              <Link
-                href={`/admin/fine-tunes/${j.id}`}
-                style={{
-                  textDecoration: "none",
-                  color: "inherit",
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: "0.75rem",
-                  alignItems: "baseline",
-                }}
-              >
-                <span
-                  style={{
-                    fontFamily: '"Standard", sans-serif',
-                    fontSize: "1rem",
-                    fontWeight: 500,
-                    flex: "1 1 200px",
-                  }}
-                >
-                  {j.candidate?.name || "(no candidate)"}{" "}
-                  <span
-                    style={{
-                      fontFamily: FONT_MONO,
-                      fontSize: "0.85rem",
-                      color: "var(--text-tertiary)",
-                    }}
-                  >
-                    {j.provider} · {j.base_model} ·{" "}
-                    {j.training_format.toUpperCase()}
-                  </span>
-                </span>
-                <span style={statusPillStyle(j.status)}>
+              <span className="sg-line__n">
+                {j.candidate?.name || "(no candidate)"}
+              </span>
+              <span className="fr__s">
+                <span className="sg-pill" data-state={j.status}>
                   {j.status === "succeeded" ? "ready" : j.status}
                 </span>
-                <span
-                  style={{
-                    fontFamily: FONT_MONO,
-                    fontSize: "0.8rem",
-                    color: "var(--text-tertiary)",
-                  }}
-                >
-                  {j.cost_usd !== null
-                    ? `$${Number(j.cost_usd).toFixed(2)}`
-                    : "-"}{" "}
-                  · {formatDate(j.created_at)}
-                </span>
-              </Link>
-            </li>
+              </span>
+              <span className="fr__w">
+                {j.provider} · {j.base_model} · {j.training_format.toUpperCase()}
+                {j.cost_usd !== null
+                  ? ` · $${Number(j.cost_usd).toFixed(2)}`
+                  : ""}
+              </span>
+              <span className="fr__d">{formatDate(j.created_at)}</span>
+            </Link>
           ))}
-        </ul>
+        </>
       )}
-    </div>
+    </Win>
   );
 }
