@@ -14,12 +14,12 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 
-const PUBLIC_ADMIN_PATHS = ["/admin/login", "/api/admin/auth"];
+const PUBLIC_ADMIN_PATHS = ["/admin/login", "/singulars/api/admin/auth"];
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const guarded =
-    pathname.startsWith("/admin") || pathname.startsWith("/api/admin");
+    pathname.startsWith("/admin") || pathname.startsWith("/singulars/api/admin");
   if (!guarded) return NextResponse.next();
   if (PUBLIC_ADMIN_PATHS.some((p) => pathname.startsWith(p))) {
     return NextResponse.next();
@@ -32,7 +32,7 @@ export function middleware(req: NextRequest) {
   }
 
   // For API routes, return 401 JSON instead of redirecting.
-  if (pathname.startsWith("/api/admin")) {
+  if (pathname.startsWith("/singulars/api/admin")) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
@@ -44,5 +44,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/api/admin/:path*"],
+  matcher: ["/admin/:path*", "/singulars/api/admin/:path*"],
 };

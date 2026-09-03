@@ -31,7 +31,7 @@ export default function ChatPage() {
   //     reach openrouter.ai). useChat re-binds `api` when this changes
   //     because triggerRequest lists `api` in its deps.
   const chatApi =
-    activeModel.provider === "openrouter" ? "/api/chat-edge" : "/api/chat";
+    activeModel.provider === "openrouter" ? "/singulars/api/chat-edge" : "/singulars/api/chat";
 
   const {
     messages,
@@ -119,7 +119,7 @@ export default function ChatPage() {
           }}
         >
           <a
-            href="/"
+            href="/singulars"
             style={{
               fontFamily: '"Diatype Mono Variable", monospace',
               fontSize: "0.85rem",

@@ -1,8 +1,27 @@
 {
   "crons": [
     {
-      "path": "/api/admin/cron/check-trained",
+      "path": "/singulars/api/admin/cron/check-trained",
       "schedule": "0 3 * * *"
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/singulars/api/:path*"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/:path((?!api/|singulars).*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "singulars.oulipo.xyz"
+        }
+      ],
+      "destination": "https://www.halimmadi.com/singulars/:path",
+      "permanent": true
     }
   ]
 }

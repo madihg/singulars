@@ -53,7 +53,7 @@ export function AudienceTruthChart() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/evals/audience")
+    fetch("/singulars/api/evals/audience")
       .then((r) => r.json())
       .then(setData)
       .catch(() => setError("network error"));

@@ -75,7 +75,7 @@ export default function EvalRunsPage() {
     if (perf) params.set("perf", perf);
     if (model) params.set("model", model);
     try {
-      const res = await fetch(`/api/admin/eval-runs?${params.toString()}`, {
+      const res = await fetch(`/singulars/api/admin/eval-runs?${params.toString()}`, {
         cache: "no-store",
       });
       const j = await res.json();

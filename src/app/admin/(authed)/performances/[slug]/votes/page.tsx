@@ -62,7 +62,7 @@ export default function VoteEntryPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/admin/performances/${slug}/vote-pairs`, {
+      const res = await fetch(`/singulars/api/admin/performances/${slug}/vote-pairs`, {
         cache: "no-store",
       });
       const json = await res.json();
@@ -135,7 +135,7 @@ export default function VoteEntryPage() {
     }
     if (targets.length === 0) return;
     for (const tgt of targets) {
-      const res = await fetch(`/api/admin/poems/${tgt.id}`, {
+      const res = await fetch(`/singulars/api/admin/poems/${tgt.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ vote_count: tgt.count, reason }),
@@ -172,7 +172,7 @@ export default function VoteEntryPage() {
     setCsvErrors([]);
     const form = new FormData();
     form.append("file", csvFile);
-    const res = await fetch(`/api/admin/performances/${slug}/import-csv`, {
+    const res = await fetch(`/singulars/api/admin/performances/${slug}/import-csv`, {
       method: "POST",
       body: form,
     });
@@ -496,7 +496,7 @@ function HistoryDisclosure({
     if (!open && rows === null) {
       setLoading(true);
       try {
-        const r = await fetch(`/api/admin/poems/${poemId}/overrides`);
+        const r = await fetch(`/singulars/api/admin/poems/${poemId}/overrides`);
         const j = await r.json();
         setRows(j.overrides || []);
       } catch {

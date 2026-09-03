@@ -123,7 +123,7 @@ export default function StageView({
         const viewerQ = viewerIdRef.current
           ? `?viewer=${encodeURIComponent(viewerIdRef.current)}`
           : "";
-        const res = await fetch(`/api/stage/${performance.slug}${viewerQ}`, {
+        const res = await fetch(`/singulars/api/stage/${performance.slug}${viewerQ}`, {
           cache: "no-store",
         });
         if (!res.ok) throw new Error("non-ok");
@@ -494,7 +494,7 @@ function CameraTile({
         await pc.setLocalDescription(ans);
         await waitForIceGathering(pc);
         if (cancelled) return;
-        await fetch(`/api/stage/${slug}/answer`, {
+        await fetch(`/singulars/api/stage/${slug}/answer`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

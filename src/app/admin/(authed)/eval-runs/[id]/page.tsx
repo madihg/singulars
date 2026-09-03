@@ -70,7 +70,7 @@ export default function EvalRunDetailPage() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const r = await fetch(`/api/admin/eval-runs/${id}`, { cache: "no-store" });
+    const r = await fetch(`/singulars/api/admin/eval-runs/${id}`, { cache: "no-store" });
     const j = await r.json();
     if (r.ok) {
       setRun(j.run);
@@ -91,7 +91,7 @@ export default function EvalRunDetailPage() {
   }, [run, load]);
 
   async function publish(next: boolean) {
-    const r = await fetch(`/api/admin/eval-runs/${id}/publish`, {
+    const r = await fetch(`/singulars/api/admin/eval-runs/${id}/publish`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ published: next }),
@@ -106,7 +106,7 @@ export default function EvalRunDetailPage() {
   }
 
   async function cancel() {
-    const r = await fetch(`/api/admin/eval-runs/${id}/cancel`, {
+    const r = await fetch(`/singulars/api/admin/eval-runs/${id}/cancel`, {
       method: "POST",
     });
     if (r.ok) {
@@ -119,7 +119,7 @@ export default function EvalRunDetailPage() {
   }
 
   async function rerun() {
-    const r = await fetch(`/api/admin/eval-runs/${id}/rerun`, {
+    const r = await fetch(`/singulars/api/admin/eval-runs/${id}/rerun`, {
       method: "POST",
     });
     const j = await r.json();

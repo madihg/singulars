@@ -85,14 +85,14 @@ export default function ModelEditPage() {
   // Load model + sibling list (for fine_tune_source select)
   const load = useCallback(async () => {
     if (!isNew) {
-      const r = await fetch(`/api/admin/candidate-models/${id}`, {
+      const r = await fetch(`/singulars/api/admin/candidate-models/${id}`, {
         cache: "no-store",
       });
       const j = await r.json();
       if (r.ok) setModel(j.model);
     }
     const r2 = await fetch(
-      "/api/admin/candidate-models?include_archived=true",
+      "/singulars/api/admin/candidate-models?include_archived=true",
       { cache: "no-store" },
     );
     const j2 = await r2.json();
@@ -117,7 +117,7 @@ export default function ModelEditPage() {
     }
     const t = setTimeout(async () => {
       const r = await fetch(
-        `/api/admin/candidate-models?slug=${encodeURIComponent(model.slug)}`,
+        `/singulars/api/admin/candidate-models?slug=${encodeURIComponent(model.slug)}`,
       );
       const j = await r.json();
       const hit = (j.models || []).find(
@@ -142,12 +142,12 @@ export default function ModelEditPage() {
     setError(null);
     try {
       const res = isNew
-        ? await fetch("/api/admin/candidate-models", {
+        ? await fetch("/singulars/api/admin/candidate-models", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(model),
           })
-        : await fetch(`/api/admin/candidate-models/${id}`, {
+        : await fetch(`/singulars/api/admin/candidate-models/${id}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(model),

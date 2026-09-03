@@ -55,9 +55,9 @@ export default function PublishPage() {
   const load = useCallback(async () => {
     setLoading(true);
     const [mRes, pRes, rRes] = await Promise.all([
-      fetch("/api/admin/candidate-models", { cache: "no-store" }),
-      fetch("/api/admin/performances", { cache: "no-store" }),
-      fetch("/api/admin/eval-runs?limit=200", { cache: "no-store" }),
+      fetch("/singulars/api/admin/candidate-models", { cache: "no-store" }),
+      fetch("/singulars/api/admin/performances", { cache: "no-store" }),
+      fetch("/singulars/api/admin/eval-runs?limit=200", { cache: "no-store" }),
     ]);
     const m = await mRes.json();
     const p = await pRes.json();
@@ -132,7 +132,7 @@ export default function PublishPage() {
           : p,
       ),
     );
-    const res = await fetch(`/api/admin/eval-runs/${c.latest.id}/publish`, {
+    const res = await fetch(`/singulars/api/admin/eval-runs/${c.latest.id}/publish`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ published: next }),
@@ -151,7 +151,7 @@ export default function PublishPage() {
 
   async function toggleModelPublic(m: Model) {
     const res = await fetch(
-      `/api/admin/candidate-models/${m.id}/toggle-public`,
+      `/singulars/api/admin/candidate-models/${m.id}/toggle-public`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },

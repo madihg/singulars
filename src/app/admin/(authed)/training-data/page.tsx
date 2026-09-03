@@ -39,7 +39,7 @@ export default function TrainingDataPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetch("/api/admin/performances")
+    fetch("/singulars/api/admin/performances")
       .then((r) => r.json())
       .then((j) => {
         const all = j.performances || [];
@@ -68,7 +68,7 @@ export default function TrainingDataPage() {
     params.set("preview", "true");
     try {
       const r = await fetch(
-        `/api/admin/training-data/export?${params.toString()}`,
+        `/singulars/api/admin/training-data/export?${params.toString()}`,
       );
       const j = await r.json();
       setPreview(j);
@@ -97,7 +97,7 @@ export default function TrainingDataPage() {
       "system_prompt",
       Buffer.from(systemPrompt, "utf8").toString("base64"),
     );
-    return `/api/admin/training-data/export?${params.toString()}`;
+    return `/singulars/api/admin/training-data/export?${params.toString()}`;
   }
 
   return (

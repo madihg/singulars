@@ -75,7 +75,7 @@ export default function NewFinetunePage() {
 
   // Load performances
   useEffect(() => {
-    fetch("/api/admin/performances")
+    fetch("/singulars/api/admin/performances")
       .then((r) => r.json())
       .then((j) => {
         const all = j.performances || [];
@@ -121,7 +121,7 @@ export default function NewFinetunePage() {
       preview: "true",
     });
     if (holdoutSlug) params.set("holdout", holdoutSlug);
-    fetch(`/api/admin/training-data/export?${params.toString()}`)
+    fetch(`/singulars/api/admin/training-data/export?${params.toString()}`)
       .then((r) => r.json())
       .then((j) => {
         setPreviewRows(j.rows || 0);
@@ -150,7 +150,7 @@ export default function NewFinetunePage() {
     setError(null);
     setSubmitting(true);
     try {
-      const res = await fetch("/api/admin/fine-tunes/start", {
+      const res = await fetch("/singulars/api/admin/fine-tunes/start", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

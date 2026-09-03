@@ -63,7 +63,7 @@ export function AdminNav() {
 
   const handleLogout = async () => {
     setLoggingOut(true);
-    await fetch("/api/admin/auth", { method: "DELETE" });
+    await fetch("/singulars/api/admin/auth", { method: "DELETE" });
     router.push("/admin/login");
   };
 

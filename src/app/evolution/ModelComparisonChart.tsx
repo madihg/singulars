@@ -40,7 +40,7 @@ export function ModelComparisonChart() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/evals/model-comparison")
+    fetch("/singulars/api/evals/model-comparison")
       .then((r) => r.json())
       .then(setData)
       .catch(() => setError("network error"));

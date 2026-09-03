@@ -27,21 +27,21 @@ const POETS: Poet[] = [
   {
     name: "Theory",
     role: "co-founder, Decentered Arts",
-    img: "/images/poets/theory.webp",
+    img: "/singulars/images/poets/theory.webp",
     link: { href: "https://decentered.org", label: "decentered.org" },
     bio: "Theory leads the writing program and film of Decentered Arts. A former resident and volunteer at The Center SF and a recent MFA graduate from the University of San Francisco, he is publishing his first novel. Professionally he is a freelance video editor; in his free time he studies improv and comedy.",
   },
   {
     name: "Elise Liu",
     role: "poet, immersive artist, technologist",
-    img: "/images/poets/elise-liu.jpg",
+    img: "/singulars/images/poets/elise-liu.jpg",
     link: { href: "https://eliseliu.com", label: "eliseliu.com" },
     bio: "Elise Liu is an immigrant third-culture kid poet, immersive artist, and technologist. Her work has appeared in Rattle, The Found Poetry Review, Thought Catalog, The Millions, and corporate digital trashcans around the world. She is the recipient of the 2023 Paper Moon Prize for fiction. She lives in San Francisco with two cats and is working on her first novel.",
   },
   {
     name: "Halim Madi",
     role: "poet, performer",
-    img: "/images/poets/halim.png",
+    img: "/singulars/images/poets/halim.png",
     link: { href: "https://www.halimmadi.com", label: "halimmadi.com" },
     bio: "Halim Madi is a poet and performer who works where language meets software. He created Singulars and is the human in each duel, writing against a machine trained on the poems the audience keeps choosing.",
   },
@@ -165,7 +165,7 @@ export default function Poets() {
           lineHeight: 1.2,
         }}
       >
-        Poets
+        Participating Poets
       </h2>
       <p
         style={{

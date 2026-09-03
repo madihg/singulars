@@ -44,48 +44,48 @@ export const HERO_IMAGES: {
   performance: Record<string, HeroImage>;
 } = {
   landing: {
-    src: "/images/reinforcement-exe/IGAC-exhibition-photography-049.jpg",
+    src: "/singulars/images/reinforcement-exe/IGAC-exhibition-photography-049.jpg",
     alt: "Reinforcement.exe performance with poet writing inside the cube and audience voting on the wall",
   },
   performance: {
     "reinforcement-exe": {
-      src: "/images/reinforcement-exe/_MG_5036.jpg",
+      src: "/singulars/images/reinforcement-exe/_MG_5036.jpg",
       alt: "Printed poems with red and blue voting stickers from audience",
     },
     "versus-exe": {
-      src: "/images/versus-exe/IMG_9920.JPG",
+      src: "/singulars/images/versus-exe/IMG_9920.JPG",
       alt: "Versus.exe performance at Mozilla AI Residency, San Francisco",
     },
     "carnation-exe": {
-      src: "/images/carnation-exe/featured.JPG",
+      src: "/singulars/images/carnation-exe/featured.JPG",
       alt: "Carnation.exe performance installation with printed poems displayed side by side",
     },
     "hard-exe": {
-      src: "/images/hard-exe/IMG_0463.JPG",
+      src: "/singulars/images/hard-exe/IMG_0463.JPG",
       alt: "Audience examining printed poems with blue voting stickers at TIAT San Francisco",
     },
     "reverse-exe": {
-      src: "/images/reverse-exe/IMG_2110.JPG",
+      src: "/singulars/images/reverse-exe/IMG_2110.JPG",
       alt: "Printed poems with purple voting stickers at the Media Archaeology Lab",
     },
     "ground-exe": {
-      src: "/images/ground-exe/currents-logo.png",
+      src: "/singulars/images/ground-exe/currents-logo.png",
       alt: "Currents New Media Festival logo",
     },
     "frontiere-exe": {
-      src: "/images/frontiere-exe/featured.JPG",
+      src: "/singulars/images/frontiere-exe/featured.JPG",
       alt: "Frontière.exe at Index Space Greenpoint, May 2026",
     },
     "recover-exe": {
-      src: "/images/recover-exe/screen.jpg",
+      src: "/singulars/images/recover-exe/screen.jpg",
       alt: "The room at the Instituto de Literatura Comparada during recover.exe - the audience watches the venue screen, Halim streamed in on camera beside the anonymized poems",
     },
     "praxis-exe": {
-      src: "/images/reinforcement-exe/L1002255.jpg",
+      src: "/singulars/images/reinforcement-exe/L1002255.jpg",
       alt: "Halim explaining the piece beside a wall of printed poems covered in green voting dots",
     },
     "tame-exe": {
-      src: "/images/reinforcement-exe/L1001674.jpg",
+      src: "/singulars/images/reinforcement-exe/L1001674.jpg",
       alt: "The wall of poems in a festival hall, visitors moving past behind the poet",
     },
   },
@@ -144,7 +144,7 @@ const descriptions: Record<string, PerformanceDescription> = {
       },
       {
         type: "image",
-        src: "/images/recover-exe/conference-banner.jpg",
+        src: "/singulars/images/recover-exe/conference-banner.jpg",
         alt: "Breaking the Code: Hacktivating Non-Normative Algorithms - International Conference, 18-19 June 2026. Theme 2026: Error 403 – Critical Refusals.",
       },
       {
@@ -157,7 +157,7 @@ const descriptions: Record<string, PerformanceDescription> = {
       },
       {
         type: "image",
-        src: "/images/recover-exe/library.jpg",
+        src: "/singulars/images/recover-exe/library.jpg",
         alt: "Inside Casa dos Livros - shelves of Portuguese literature",
       },
       {
@@ -170,7 +170,7 @@ const descriptions: Record<string, PerformanceDescription> = {
       },
       {
         type: "image",
-        src: "/images/recover-exe/screen.jpg",
+        src: "/singulars/images/recover-exe/screen.jpg",
         alt: "The room at the Instituto de Literatura Comparada - the audience watches the venue screen, Halim streamed in on camera beside the anonymized poems",
       },
       {
@@ -181,15 +181,15 @@ const descriptions: Record<string, PerformanceDescription> = {
         type: "gallery",
         items: [
           {
-            src: "/images/recover-exe/rewiring-poster.jpg",
+            src: "/singulars/images/recover-exe/rewiring-poster.jpg",
             alt: "Rewiring Realities: Decoding, Disrupting and Dreaming - the exhibition text at the Instituto de Literatura Comparada",
           },
           {
-            src: "/images/recover-exe/visitors.jpg",
+            src: "/singulars/images/recover-exe/visitors.jpg",
             alt: "Two visitors at the Singulars station, reading the screen together",
           },
           {
-            src: "/images/recover-exe/listening.jpg",
+            src: "/singulars/images/recover-exe/listening.jpg",
             alt: "A visitor with headphones on, playing the duel at the exhibition",
           },
         ],
@@ -211,7 +211,7 @@ const descriptions: Record<string, PerformanceDescription> = {
       },
       {
         type: "image",
-        src: "/images/frontiere-exe/bianjie-night-poster.jpg",
+        src: "/singulars/images/frontiere-exe/bianjie-night-poster.jpg",
         alt: "邊界 NYC night flyer - Frontière.exe at Index Space Greenpoint Brooklyn, May 13 2026, 10pm-12am, hosted by bianjie.systems",
       },
       {
@@ -239,15 +239,15 @@ const descriptions: Record<string, PerformanceDescription> = {
         type: "gallery",
         items: [
           {
-            src: "/images/frontiere-exe/IMG_2612.JPG",
+            src: "/singulars/images/frontiere-exe/IMG_2612.JPG",
             alt: "Frontière.exe performance documentation",
           },
           {
-            src: "/images/frontiere-exe/IMG_2614.JPG",
+            src: "/singulars/images/frontiere-exe/IMG_2614.JPG",
             alt: "Frontière.exe performance documentation",
           },
           {
-            src: "/images/frontiere-exe/IMG_2619.JPG",
+            src: "/singulars/images/frontiere-exe/IMG_2619.JPG",
             alt: "Frontière.exe performance documentation",
           },
         ],
@@ -266,15 +266,15 @@ const descriptions: Record<string, PerformanceDescription> = {
         type: "gallery",
         items: [
           {
-            src: "/images/frontiere-exe/IMG_2623.JPG",
+            src: "/singulars/images/frontiere-exe/IMG_2623.JPG",
             alt: "Frontière.exe performance documentation",
           },
           {
-            src: "/images/frontiere-exe/IMG_2629.JPG",
+            src: "/singulars/images/frontiere-exe/IMG_2629.JPG",
             alt: "Frontière.exe performance documentation",
           },
           {
-            src: "/images/frontiere-exe/IMG_2636.JPG",
+            src: "/singulars/images/frontiere-exe/IMG_2636.JPG",
             alt: "Frontière.exe performance documentation",
           },
         ],
@@ -296,15 +296,15 @@ const descriptions: Record<string, PerformanceDescription> = {
         type: "gallery",
         items: [
           {
-            src: "/images/frontiere-exe/IMG_2637.JPG",
+            src: "/singulars/images/frontiere-exe/IMG_2637.JPG",
             alt: "Frontière.exe performance documentation",
           },
           {
-            src: "/images/frontiere-exe/IMG_2645.JPG",
+            src: "/singulars/images/frontiere-exe/IMG_2645.JPG",
             alt: "Frontière.exe performance documentation",
           },
           {
-            src: "/images/frontiere-exe/IMG_2646.JPG",
+            src: "/singulars/images/frontiere-exe/IMG_2646.JPG",
             alt: "Frontière.exe performance documentation",
           },
         ],
@@ -327,15 +327,15 @@ const descriptions: Record<string, PerformanceDescription> = {
         type: "gallery",
         items: [
           {
-            src: "/images/frontiere-exe/IMG_2647.JPG",
+            src: "/singulars/images/frontiere-exe/IMG_2647.JPG",
             alt: "Frontière.exe performance documentation",
           },
           {
-            src: "/images/frontiere-exe/IMG_2648.JPG",
+            src: "/singulars/images/frontiere-exe/IMG_2648.JPG",
             alt: "Frontière.exe performance documentation",
           },
           {
-            src: "/images/frontiere-exe/IMG_2651.JPG",
+            src: "/singulars/images/frontiere-exe/IMG_2651.JPG",
             alt: "Frontière.exe performance documentation",
           },
         ],
@@ -363,11 +363,11 @@ const descriptions: Record<string, PerformanceDescription> = {
         type: "gallery",
         items: [
           {
-            src: "/images/hard-exe/IMG_0464.JPG",
+            src: "/singulars/images/hard-exe/IMG_0464.JPG",
             alt: "Audience member placing blue voting stickers on printed poems",
           },
           {
-            src: "/images/hard-exe/IMG_0465.JPG",
+            src: "/singulars/images/hard-exe/IMG_0465.JPG",
             alt: "Two printed poems side by side with blue voting stickers",
           },
         ],
@@ -384,11 +384,11 @@ const descriptions: Record<string, PerformanceDescription> = {
         type: "gallery",
         items: [
           {
-            src: "/images/hard-exe/IMG_0466.JPG",
+            src: "/singulars/images/hard-exe/IMG_0466.JPG",
             alt: "Printed poems covered in blue voting stickers",
           },
           {
-            src: "/images/hard-exe/IMG_0476.JPG",
+            src: "/singulars/images/hard-exe/IMG_0476.JPG",
             alt: "Poems lined up along a wooden ledge with blue stickers accumulating",
           },
         ],
@@ -432,11 +432,11 @@ const descriptions: Record<string, PerformanceDescription> = {
         type: "gallery",
         items: [
           {
-            src: "/images/reverse-exe/IMG_2125.JPG",
+            src: "/singulars/images/reverse-exe/IMG_2125.JPG",
             alt: "The poet writing among vintage machines at the Media Archaeology Lab",
           },
           {
-            src: "/images/reverse-exe/IMG_2131.JPG",
+            src: "/singulars/images/reverse-exe/IMG_2131.JPG",
             alt: "The poet writing with a rainbow flag and lab equipment in the background",
           },
         ],
@@ -449,11 +449,11 @@ const descriptions: Record<string, PerformanceDescription> = {
         type: "gallery",
         items: [
           {
-            src: "/images/reverse-exe/IMG_2132.JPG",
+            src: "/singulars/images/reverse-exe/IMG_2132.JPG",
             alt: "A hand placing a purple voting sticker on printed poems",
           },
           {
-            src: "/images/reverse-exe/IMG_2133.JPG",
+            src: "/singulars/images/reverse-exe/IMG_2133.JPG",
             alt: "Printed poems accumulating with purple voting stickers at the lab",
           },
         ],
@@ -464,7 +464,7 @@ const descriptions: Record<string, PerformanceDescription> = {
       },
       {
         type: "image",
-        src: "/images/reverse-exe/IMG_2124.JPG",
+        src: "/singulars/images/reverse-exe/IMG_2124.JPG",
         alt: "The poet smiling at the Media Archaeology Lab with poems and stickers on the wall behind",
       },
       {
@@ -494,15 +494,15 @@ const descriptions: Record<string, PerformanceDescription> = {
         type: "gallery",
         items: [
           {
-            src: "/images/carnation-exe/IMG_8498.JPG",
+            src: "/singulars/images/carnation-exe/IMG_8498.JPG",
             alt: "Close-up of printed poems with pink voting dots",
           },
           {
-            src: "/images/carnation-exe/IMG_8497.JPG",
+            src: "/singulars/images/carnation-exe/IMG_8497.JPG",
             alt: "Audience reading printed poems during the performance",
           },
           {
-            src: "/images/carnation-exe/IMG_8478.JPG",
+            src: "/singulars/images/carnation-exe/IMG_8478.JPG",
             alt: "Poems displayed on the wall with visitor votes",
           },
         ],
@@ -515,15 +515,15 @@ const descriptions: Record<string, PerformanceDescription> = {
         type: "gallery",
         items: [
           {
-            src: "/images/carnation-exe/IMG_8470.JPG",
+            src: "/singulars/images/carnation-exe/IMG_8470.JPG",
             alt: "Performance documentation showing the poet writing",
           },
           {
-            src: "/images/carnation-exe/IMG_8474.JPG",
+            src: "/singulars/images/carnation-exe/IMG_8474.JPG",
             alt: "Printed poems being placed for audience viewing",
           },
           {
-            src: "/images/carnation-exe/IMG_8490.JPG",
+            src: "/singulars/images/carnation-exe/IMG_8490.JPG",
             alt: "Audience interacting with the installation",
           },
         ],
@@ -536,15 +536,15 @@ const descriptions: Record<string, PerformanceDescription> = {
         type: "gallery",
         items: [
           {
-            src: "/images/carnation-exe/IMG_8481.JPG",
+            src: "/singulars/images/carnation-exe/IMG_8481.JPG",
             alt: "Detail of pink voting stickers on printed poems",
           },
           {
-            src: "/images/carnation-exe/IMG_8488.JPG",
+            src: "/singulars/images/carnation-exe/IMG_8488.JPG",
             alt: "Overview of the Carnation.exe installation space",
           },
           {
-            src: "/images/carnation-exe/IMG_8494.JPG",
+            src: "/singulars/images/carnation-exe/IMG_8494.JPG",
             alt: "Close-up of handwritten and machine-generated poems",
           },
         ],
@@ -584,15 +584,15 @@ const descriptions: Record<string, PerformanceDescription> = {
         type: "gallery",
         items: [
           {
-            src: "/images/versus-exe/2831d8c8-b769-4e0d-ba6c-c1c838b4d131.JPG",
+            src: "/singulars/images/versus-exe/2831d8c8-b769-4e0d-ba6c-c1c838b4d131.JPG",
             alt: "Audience voting during the Versus.exe performance",
           },
           {
-            src: "/images/versus-exe/IMG_1738.JPG",
+            src: "/singulars/images/versus-exe/IMG_1738.JPG",
             alt: "Printed poems displayed for audience reading",
           },
           {
-            src: "/images/versus-exe/IMG_1718.JPG",
+            src: "/singulars/images/versus-exe/IMG_1718.JPG",
             alt: "Close-up of voting stickers on poems",
           },
         ],
@@ -605,23 +605,23 @@ const descriptions: Record<string, PerformanceDescription> = {
         type: "gallery",
         items: [
           {
-            src: "/images/versus-exe/IMG_1714.JPG",
+            src: "/singulars/images/versus-exe/IMG_1714.JPG",
             alt: "Performance documentation",
           },
           {
-            src: "/images/versus-exe/IMG_1700.JPG",
+            src: "/singulars/images/versus-exe/IMG_1700.JPG",
             alt: "Poet writing during the performance",
           },
           {
-            src: "/images/versus-exe/IMG_1694.JPG",
+            src: "/singulars/images/versus-exe/IMG_1694.JPG",
             alt: "Audience engaging with printed poems",
           },
           {
-            src: "/images/versus-exe/IMG_1685.JPG",
+            src: "/singulars/images/versus-exe/IMG_1685.JPG",
             alt: "Installation overview",
           },
           {
-            src: "/images/versus-exe/IMG_9911.JPG",
+            src: "/singulars/images/versus-exe/IMG_9911.JPG",
             alt: "Detail of poems on display",
           },
         ],
@@ -634,23 +634,23 @@ const descriptions: Record<string, PerformanceDescription> = {
         type: "gallery",
         items: [
           {
-            src: "/images/versus-exe/IMG_9912.JPG",
+            src: "/singulars/images/versus-exe/IMG_9912.JPG",
             alt: "Printed poem sheets with audience votes",
           },
           {
-            src: "/images/versus-exe/IMG_9913.JPG",
+            src: "/singulars/images/versus-exe/IMG_9913.JPG",
             alt: "Voting stickers close-up",
           },
           {
-            src: "/images/versus-exe/IMG_9915.JPG",
+            src: "/singulars/images/versus-exe/IMG_9915.JPG",
             alt: "Poems displayed on the wall",
           },
           {
-            src: "/images/versus-exe/IMG_9916.JPG",
+            src: "/singulars/images/versus-exe/IMG_9916.JPG",
             alt: "Performance space overview",
           },
           {
-            src: "/images/versus-exe/IMG_9917.JPG",
+            src: "/singulars/images/versus-exe/IMG_9917.JPG",
             alt: "Audience reading poems",
           },
         ],
@@ -663,15 +663,15 @@ const descriptions: Record<string, PerformanceDescription> = {
         type: "gallery",
         items: [
           {
-            src: "/images/versus-exe/IMG_9921.jpg",
+            src: "/singulars/images/versus-exe/IMG_9921.jpg",
             alt: "Final installation view",
           },
           {
-            src: "/images/versus-exe/IMG_9940.jpg",
+            src: "/singulars/images/versus-exe/IMG_9940.jpg",
             alt: "Documentation of the performance series",
           },
           {
-            src: "/images/versus-exe/IMG_9925.jpg",
+            src: "/singulars/images/versus-exe/IMG_9925.jpg",
             alt: "Close-up of the performance materials",
           },
         ],
@@ -694,7 +694,7 @@ const descriptions: Record<string, PerformanceDescription> = {
       },
       {
         type: "image",
-        src: "/images/reinforcement-exe/_MG_5037.jpg",
+        src: "/singulars/images/reinforcement-exe/_MG_5037.jpg",
         alt: "The open cube installation where the poet writes during Reinforcement.exe",
       },
       {
@@ -703,7 +703,7 @@ const descriptions: Record<string, PerformanceDescription> = {
       },
       {
         type: "image",
-        src: "/images/reinforcement-exe/_MG_5036.jpg",
+        src: "/singulars/images/reinforcement-exe/_MG_5036.jpg",
         alt: "Printed poems with red and blue voting stickers from audience",
       },
       {
@@ -712,7 +712,7 @@ const descriptions: Record<string, PerformanceDescription> = {
       },
       {
         type: "image",
-        src: "/images/reinforcement-exe/DSC01755.jpg",
+        src: "/singulars/images/reinforcement-exe/DSC01755.jpg",
         alt: "Audience voting with colored stickers during the performance",
       },
       {
@@ -721,7 +721,7 @@ const descriptions: Record<string, PerformanceDescription> = {
       },
       {
         type: "image",
-        src: "/images/landing/IGAC-exhibition-photography-048.jpg",
+        src: "/singulars/images/landing/IGAC-exhibition-photography-048.jpg",
         alt: "The performance cube at DevConnect Buenos Aires",
       },
       {
@@ -732,35 +732,35 @@ const descriptions: Record<string, PerformanceDescription> = {
         type: "gallery",
         items: [
           {
-            src: "/images/reinforcement-exe/Untitled-2-01.jpg",
+            src: "/singulars/images/reinforcement-exe/Untitled-2-01.jpg",
             alt: "Performance detail",
           },
           {
-            src: "/images/reinforcement-exe/Untitled-2-02.jpg",
+            src: "/singulars/images/reinforcement-exe/Untitled-2-02.jpg",
             alt: "Performance detail",
           },
           {
-            src: "/images/reinforcement-exe/Untitled-2-03.jpg",
+            src: "/singulars/images/reinforcement-exe/Untitled-2-03.jpg",
             alt: "Performance detail",
           },
           {
-            src: "/images/reinforcement-exe/Untitled-2-04.jpg",
+            src: "/singulars/images/reinforcement-exe/Untitled-2-04.jpg",
             alt: "Performance detail",
           },
           {
-            src: "/images/reinforcement-exe/Untitled-2-05.jpg",
+            src: "/singulars/images/reinforcement-exe/Untitled-2-05.jpg",
             alt: "Performance detail",
           },
           {
-            src: "/images/reinforcement-exe/Untitled-2-06.jpg",
+            src: "/singulars/images/reinforcement-exe/Untitled-2-06.jpg",
             alt: "Performance detail",
           },
           {
-            src: "/images/reinforcement-exe/Untitled-2-07.jpg",
+            src: "/singulars/images/reinforcement-exe/Untitled-2-07.jpg",
             alt: "Performance detail",
           },
           {
-            src: "/images/reinforcement-exe/Untitled-2-08.jpg",
+            src: "/singulars/images/reinforcement-exe/Untitled-2-08.jpg",
             alt: "Performance detail",
           },
         ],
@@ -775,7 +775,7 @@ const descriptions: Record<string, PerformanceDescription> = {
       },
       {
         type: "image",
-        src: "/images/reinforcement-exe/IGAC-exhibition-photography-049.jpg",
+        src: "/singulars/images/reinforcement-exe/IGAC-exhibition-photography-049.jpg",
         alt: "Close-up of printed poems accumulating during the performance",
       },
       {
@@ -794,15 +794,15 @@ const descriptions: Record<string, PerformanceDescription> = {
         type: "gallery",
         items: [
           {
-            src: "/images/reinforcement-exe/L1002255.jpg",
+            src: "/singulars/images/reinforcement-exe/L1002255.jpg",
             alt: "Final installation view at DevConnect Buenos Aires",
           },
           {
-            src: "/images/reinforcement-exe/L1001674.jpg",
+            src: "/singulars/images/reinforcement-exe/L1001674.jpg",
             alt: "Documentation of the Reinforcement.exe performance",
           },
           {
-            src: "/images/reinforcement-exe/L1002259.jpg",
+            src: "/singulars/images/reinforcement-exe/L1002259.jpg",
             alt: "Overview of the performance space",
           },
         ],

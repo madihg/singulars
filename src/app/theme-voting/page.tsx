@@ -25,7 +25,7 @@ export default function ThemeVotingPage() {
 
   const fetchThemes = useCallback(async () => {
     try {
-      const res = await fetch("/api/themes");
+      const res = await fetch("/singulars/api/themes");
       const json = await res.json();
       if (json.data) setThemes(json.data);
     } catch {
@@ -56,7 +56,7 @@ export default function ThemeVotingPage() {
 
     setSubmitting(true);
     try {
-      const res = await fetch("/api/themes", {
+      const res = await fetch("/singulars/api/themes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content }),
@@ -87,7 +87,7 @@ export default function ThemeVotingPage() {
     );
 
     try {
-      const res = await fetch(`/api/themes/${id}/upvote`, { method: "POST" });
+      const res = await fetch(`/singulars/api/themes/${id}/upvote`, { method: "POST" });
       if (!res.ok) {
         // Revert on failure
         fetchThemes();
@@ -111,7 +111,7 @@ export default function ThemeVotingPage() {
     >
       {/* Back link */}
       <a
-        href="/"
+        href="/singulars"
         style={{
           fontFamily: '"Diatype Mono Variable", monospace',
           fontSize: "0.85rem",

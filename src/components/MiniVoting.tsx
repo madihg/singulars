@@ -51,7 +51,7 @@ export default function MiniVoting() {
   useEffect(() => {
     async function fetchRandomTheme() {
       try {
-        const listRes = await fetch("/api/performances");
+        const listRes = await fetch("/singulars/api/performances");
         if (!listRes.ok) {
           throw new Error("Failed to fetch performances list");
         }
@@ -74,7 +74,7 @@ export default function MiniVoting() {
 
         let data: { id: string; name: string; slug: string; color: string; status: Performance["status"]; poems: Poem[] } | null = null;
         for (const cand of candidates) {
-          const res = await fetch(`/api/performances/${cand.slug}`);
+          const res = await fetch(`/singulars/api/performances/${cand.slug}`);
           if (!res.ok) continue;
           const d = await res.json();
           if (Array.isArray(d.poems) && d.poems.length > 0) {
@@ -136,7 +136,7 @@ export default function MiniVoting() {
     try {
       const fingerprint = await getFingerprint();
 
-      const res = await fetch("/api/vote", {
+      const res = await fetch("/singulars/api/vote", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ poem_id: selectedPoemId, fingerprint }),
