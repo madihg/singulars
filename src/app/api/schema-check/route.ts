@@ -1,7 +1,20 @@
+/**
+ * GET /api/schema-check - constraint smoke test.
+ *
+ * This route WRITES to the production tables (it inserts throwaway
+ * performances, poems and votes to prove the FK / unique constraints fire,
+ * then deletes them). It must never be reachable without the admin cookie,
+ * so it requires auth like any /api/admin route.
+ */
+
 import { NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase";
+import { requireAuth } from "@/lib/admin-auth";
 
-export async function GET() {
+export async function GET(req: Request) {
+  const denied = requireAuth(req);
+  if (denied) return denied;
+
   const client = getServiceClient();
   if (!client) {
     return NextResponse.json({ error: "Not configured" }, { status: 503 });

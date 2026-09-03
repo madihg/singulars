@@ -173,7 +173,7 @@ export default function AdminPage() {
   if (!authenticated) {
     return (
       <main style={pageStyle}>
-        <a href="/theme-voting" style={backLinkStyle}>
+        <a href="/singulars/theme-voting" style={backLinkStyle}>
           &larr; Theme Voting
         </a>
         <h1 style={titleStyle}>Admin</h1>
@@ -235,7 +235,7 @@ export default function AdminPage() {
           marginBottom: "2rem",
         }}
       >
-        <a href="/theme-voting" style={backLinkStyle}>
+        <a href="/singulars/theme-voting" style={backLinkStyle}>
           &larr; Theme Voting
         </a>
         <button onClick={handleLogout} style={btnSmallStyle}>

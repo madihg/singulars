@@ -440,7 +440,7 @@ export default async function PerformancePage({
             </a>
             {chatModel && (
               <a
-                href={`/chat?model=${chatModel.slug}`}
+                href={`/singulars/chat?model=${chatModel.slug}`}
                 style={{
                   fontFamily: '"Diatype Mono Variable", monospace',
                   fontSize: "0.85rem",

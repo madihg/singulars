@@ -75,7 +75,7 @@ export async function GET(req: Request) {
               process.env.ADMIN_NIGHTLY_FROM || "watcher@singulars.oulipo.xyz",
             to: email,
             subject: `[singulars] ${p.name} is ready to evaluate`,
-            text: `open https://singulars.oulipo.xyz/admin/eval-runs/new?performance=${p.slug} to run it.\n\n- the watcher`,
+            text: `open https://www.halimmadi.com/singulars/admin/eval-runs/new?performance=${p.slug} to run it.\n\n- the watcher`,
           }),
         });
         sent += 1;
