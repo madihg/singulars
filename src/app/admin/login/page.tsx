@@ -106,7 +106,8 @@ function LoginInner() {
           {submitting ? "..." : "enter"}
         </button>
       </form>
-      <Link href="/singulars" style={backLinkStyle}>
+      {/* next/link prepends basePath, so this must be root-relative. */}
+      <Link href="/" style={backLinkStyle}>
         ← back to singulars
       </Link>
     </div>

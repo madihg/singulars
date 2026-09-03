@@ -9,9 +9,9 @@ Reference file for Claude Code sessions. This captures decisions, setup details,
 - **Project URL:** `https://smytgqkgomsfyurskpcl.supabase.co`
 - **Credentials location:** `.env.local` (not committed to git)
 - **Required env vars:**
-  - `NEXT_PUBLIC_SUPABASE_URL` — Project URL
-  - `NEXT_PUBLIC_SUPABASE_ANON_KEY` — publishable key
-  - `SUPABASE_SERVICE_ROLE_KEY` — secret key (for seed scripts, bypasses RLS)
+  - `NEXT_PUBLIC_SUPABASE_URL` - Project URL
+  - `NEXT_PUBLIC_SUPABASE_ANON_KEY` - publishable key
+  - `SUPABASE_SERVICE_ROLE_KEY` - secret key (for seed scripts, bypasses RLS)
 - **Vercel env vars:** All 3 set for production, preview, and development (Feb 2026)
 - **Status:** Connected and seeded with 66 real poems (Feb 2026)
 
@@ -41,20 +41,27 @@ Total: 33 themes, 66 poems
 
 1. Poems were extracted from `Carnation Poems.pdf` (Google Sheets export of all performances)
 2. Human/machine labeling was done via content analysis + PDF markers
-3. All human poems initially attributed to "Halim Madi" — some need correction (other poets contributed to versus.exe)
+3. All human poems initially attributed to "Halim Madi" - some need correction (other poets contributed to versus.exe)
 4. `scripts/poems-from-pdf.json` is the authoritative data file with real poems
-5. `scripts/seed-data.json` still has placeholder/fake poems — should be replaced
+5. `scripts/seed-data.json` still has placeholder/fake poems - should be replaced
 
 ## Deployment
 
+Updated September 2026. Full detail in `docs/DEPLOYMENT.md`.
+
+- **Git repo:** madihg/singulars (public), production branch `main`, root directory = repo root
 - **Vercel project:** singulars (prj_wAF6Dx0ddTLn2WhNlIMAWapI0cp3)
-- **Team:** team_9h3UVrcMfPTPWYdvGpnKezrd
-- **Domains:** singulars.vercel.app, also accessible via oulipo.xyz/singulars (rewrite from parent project)
-- **Framework:** Next.js 14 (App Router)
-- **Node:** 22.x
-- **Git repo:** madihg/oulipo (Root Directory: singulars)
-- **Auto-deploy:** GitHub Action `.github/workflows/deploy-singulars.yml` on push to main when singulars/ changes
-- **Fix guide:** See `singulars/docs/DEPLOYMENT.md` if pushes don't trigger deploys
+- **Team:** halims-projects (team_9h3UVrcMfPTPWYdvGpnKezrd)
+- **Framework:** Next.js 14 (App Router), Node 24.x
+- **basePath:** `/singulars` (next.config.mjs)
+- **Public URL:** https://www.halimmadi.com/singulars - the halim-madi project rewrites `/singulars/:path*` to `https://singulars.oulipo.xyz/singulars/:path*`
+- **Origin domain:** singulars.oulipo.xyz. Its `vercel.json` rewrites `/api/:path*` to `/singulars/api/:path*`, which keeps the registered OpenAI and Together webhook URLs alive and makes the server-side self-fetches resolve. Everything else on that host 301s to www.halimmadi.com/singulars.
+- **Auto-deploy:** Vercel Git integration on push to `main`. The old GitHub Action and the oulipo monorepo root directory are gone.
+- **Cron:** `/singulars/api/admin/cron/check-trained` daily at 03:00 UTC (a no-op until ADMIN_NIGHTLY_EMAIL and RESEND_API_KEY are set)
+- **Env vars:** names and per-environment coverage are listed in `docs/DEPLOYMENT.md`
+- **basePath rule:** `next/link` hrefs and middleware paths are written WITHOUT `/singulars`; `fetch()` strings, `window.location.href` and plain `<a href>` keep it
+- **Before pushing:** `npm run verify` (next build, tsc --noEmit, scripts/verify-copy.mjs)
+- **Open, dashboard-only:** set `OPENAI_WEBHOOK_SECRET` and `TOGETHER_WEBHOOK_SECRET` in Vercel (signature checks are skipped while they are empty) and confirm the callback URLs registered at OpenAI and Together
 
 ## Key Decisions Made
 
@@ -62,8 +69,8 @@ Total: 33 themes, 66 poems
 - Poems displayed as pairs: 1 human + 1 machine per theme
 - Only "training" performances accept votes
 - Vote counts start at 0 on the website (live performance counts stored in `_live_votes` metadata in JSON)
-- Touch Grass theme (reinforcement.exe): order swapped from PDF — first poem is machine based on content analysis
-- Enfance (carnation.exe): PDF label contradicts content — attributed to Halim based on Arabic reference in poem
+- Touch Grass theme (reinforcement.exe): order swapped from PDF - first poem is machine based on content analysis
+- Enfance (carnation.exe): PDF label contradicts content - attributed to Halim based on Arabic reference in poem
 
 ## Unified Platform Consolidation (March 2026)
 
@@ -85,7 +92,7 @@ All 7 standalone folders deleted from `/Users/halim/Documents/` on 2026-03-27.
 
 - `/chat` - Unified chat with 5 fine-tuned GPT-4.1-nano models (persistent sidebar on desktop, dropdown on mobile)
 - `/theme-voting` - Public theme suggestion + upvoting (Supabase-backed, optimistic UI)
-- `/theme-voting/admin` - Password-protected admin panel (password: singularpoetics)
+- `/theme-voting/admin` - Password-protected admin panel (password: the `ADMIN_PASSWORD` env var)
 - `/timer` - 30-min performance countdown with break mode, light/dark toggle, browser notifications
 
 ### Files added
@@ -153,7 +160,7 @@ All new pages use the Singulars design system:
 
 - `openai@4.x` + `ai@2.x` type mismatch on `OpenAIStream` - fixed with `as any` cast in `api/chat/route.ts`
 - Chat API runs on edge runtime for streaming
-- Admin auth uses env var `THEME_ADMIN_PASSWORD` (fallback: "singularpoetics") and `COOKIE_SECRET` (fallback: built-in default)
+- Admin auth reads `ADMIN_PASSWORD`, falling back to `THEME_ADMIN_PASSWORD`. There is no default password: with neither set, `src/lib/admin-auth.ts` fails closed and logs. The cookie is HMAC-SHA256(SUPABASE_SERVICE_ROLE_KEY, password).
 - themes.theme_slug matches poems.theme_slug by convention (no FK) for future linking
 - Supabase env vars are only in Vercel Production environment (not Development) - use `vercel env pull .env.production.local --environment production` for local scripts
 - The themes unique index is functional (`lower(content)`) so Supabase upsert with `onConflict: "content"` won't work - use individual inserts with error handling instead
@@ -168,7 +175,7 @@ All new pages use the Singulars design system:
 - [x] Port timer to /timer (done March 2026)
 - [x] Run migration-themes.sql in Supabase (done March 2026)
 - [x] Add OPENAI_API_KEY to Vercel (done March 2026)
-- [x] Deploy and verify all routes (done March 2026 - all working on singulars.vercel.app)
+- [x] Deploy and verify all routes (done March 2026; re-verified September 2026 under www.halimmadi.com/singulars)
 - [x] Build admin panel at /theme-voting/admin (done March 2026)
 - [x] Import 27 themes from old production app (done March 2026)
 - [x] Delete absorbed standalone folders (done March 2026 - 7 folders removed)

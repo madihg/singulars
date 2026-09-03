@@ -15,17 +15,16 @@ import { heroImgSrc, HERO_IMAGES } from "@/lib/performance-descriptions";
  * - About folded in: the blurb lives in the first paragraphs, /about
  *   now redirects here. No "Learn more about it" click-out.
  * - Halim's bio near the top, with a "Start a conversation" CTA that
- *   points at the enquiry form (staging URL for now - flip to the
- *   production form at promotion).
+ *   points at the enquiry form on halimmadi.com/connect/#start.
  * - Tool chips on one line. Performances browsable as grid, carousel,
  *   or list. MiniVoting and Further Reading move to the bottom.
  * - "A project by Halim Madi" link removed: this page is moving under
  *   halimmadi.com, so it no longer needs to link back out.
  */
 
-// Flip to the production form URL when the site moves under
-// halimmadi.com/singulars.
-const ENQUIRY_URL = "https://www.halimmadi.com/#enquire";
+// The enquiry form lives on halimmadi.com. Keep this pointed at
+// /connect/#start; that anchor is the live form.
+const ENQUIRY_URL = "https://www.halimmadi.com/connect/#start";
 
 interface Performance extends PerformanceRow {
   num_poems: number;

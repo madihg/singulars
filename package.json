@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "verify": "next build && tsc --noEmit && node scripts/verify-copy.mjs",
     "eval": "tsx scripts/run-eval.ts",
     "finetune": "tsx scripts/run-finetune.ts"
   },

@@ -222,7 +222,7 @@ export default function ControlView({
           {performance.name} · control
         </h1>
         <a
-          href={`/${performance.slug}/stage`}
+          href={`/singulars/${performance.slug}/stage`}
           target="_blank"
           rel="noreferrer"
           style={{ fontFamily: monoFont, fontSize: "0.85rem", color: accent }}

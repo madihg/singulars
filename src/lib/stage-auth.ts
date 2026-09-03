@@ -15,5 +15,7 @@ export function isStageControlKeyValid(
   if (!key) return false;
   const dedicated = process.env.STAGE_CONTROL_KEY;
   if (dedicated && key === dedicated) return true;
-  return key === getAdminPassword();
+  const adminPassword = getAdminPassword();
+  if (!adminPassword) return false; // no admin password configured - deny
+  return key === adminPassword;
 }

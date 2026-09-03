@@ -100,8 +100,9 @@ export default async function EvolutionThumbnail() {
       >
         how the models are doing →
       </div>
+      {/* next/link prepends basePath, so this must be root-relative. */}
       <Link
-        href="/singulars/evolution"
+        href="/evolution"
         style={{
           display: "inline-block",
           textDecoration: "none",

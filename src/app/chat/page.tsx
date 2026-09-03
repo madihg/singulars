@@ -530,7 +530,7 @@ function WelcomeScreen({
 
       {/* Link to this model's performance page */}
       <a
-        href={`/${performanceSlugForModel(model)}`}
+        href={`/singulars/${performanceSlugForModel(model)}`}
         style={{
           fontFamily: '"Diatype Mono Variable", monospace',
           fontSize: "0.8rem",

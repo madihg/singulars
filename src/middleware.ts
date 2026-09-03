@@ -1,9 +1,16 @@
 /**
  * Admin auth middleware (US-102).
  *
- * Guards every /admin/* route except /admin/login and /api/admin/auth. Unauthed
- * visitors are redirected to /admin/login?from=<original-path> so they land
- * back where they came from after login.
+ * Guards every /admin/* page and every /api/admin/* route except the public
+ * paths listed below. Unauthed visitors are redirected to
+ * /admin/login?from=<original-path> so they land back where they came from
+ * after login.
+ *
+ * basePath note: next.config.mjs sets basePath "/singulars", and both the
+ * middleware matcher and req.nextUrl.pathname are basePath-relative - Next
+ * strips "/singulars" before either is evaluated. So every path here is
+ * written WITHOUT the basePath. (Client-side fetch() strings elsewhere in the
+ * app do keep the "/singulars" prefix; those are real browser URLs.)
  *
  * The middleware runs on the edge by default; it does ONLY a cookie-presence
  * check (no HMAC validation here - that needs Node crypto). Route handlers
@@ -14,14 +21,34 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 
-const PUBLIC_ADMIN_PATHS = ["/admin/login", "/singulars/api/admin/auth"];
+/**
+ * Paths under the guarded prefixes that must stay reachable without the admin
+ * cookie. Each one carries its own auth:
+ *   /admin/login, /api/admin/auth      - the login surface itself
+ *   /api/admin/cron/*                  - Vercel cron; checks x-vercel-cron
+ *   /api/admin/fine-tunes/webhooks/*   - provider callbacks; check HMAC
+ */
+const PUBLIC_ADMIN_PATHS = [
+  "/admin/login",
+  "/api/admin/auth",
+  "/api/admin/cron",
+  "/api/admin/fine-tunes/webhooks",
+];
+
+function isApiAdmin(pathname: string): boolean {
+  return pathname === "/api/admin" || pathname.startsWith("/api/admin/");
+}
+
+function isPageAdmin(pathname: string): boolean {
+  return pathname === "/admin" || pathname.startsWith("/admin/");
+}
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  const guarded =
-    pathname.startsWith("/admin") || pathname.startsWith("/singulars/api/admin");
-  if (!guarded) return NextResponse.next();
-  if (PUBLIC_ADMIN_PATHS.some((p) => pathname.startsWith(p))) {
+  if (!isPageAdmin(pathname) && !isApiAdmin(pathname)) {
+    return NextResponse.next();
+  }
+  if (PUBLIC_ADMIN_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
     return NextResponse.next();
   }
 
@@ -32,7 +59,7 @@ export function middleware(req: NextRequest) {
   }
 
   // For API routes, return 401 JSON instead of redirecting.
-  if (pathname.startsWith("/singulars/api/admin")) {
+  if (isApiAdmin(pathname)) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
@@ -44,5 +71,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/singulars/api/admin/:path*"],
+  matcher: ["/admin/:path*", "/api/admin/:path*"],
 };

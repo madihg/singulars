@@ -7,8 +7,12 @@
  * Algorithm (lifted from src/app/api/themes/admin/auth/route.ts):
  *   token = HMAC-SHA256(SUPABASE_SERVICE_ROLE_KEY, ADMIN_PASSWORD)
  *
- * Password precedence: ADMIN_PASSWORD > THEME_ADMIN_PASSWORD > "singularpoetics".
- * The service-role key is the HMAC key; it is never sent to the client.
+ * Password precedence: ADMIN_PASSWORD > THEME_ADMIN_PASSWORD. There is no
+ * default: this repo is public, so a hard-coded fallback password would be a
+ * published credential. With neither env var set the module fails closed -
+ * getAdminPassword() returns null, hashToken() returns null, and every check
+ * below denies. The service-role key is the HMAC key; it is never sent to
+ * the client.
  */
 
 import { NextResponse } from "next/server";
@@ -18,23 +22,47 @@ import crypto from "crypto";
 export const COOKIE_NAME = "theme-admin-token";
 export const COOKIE_MAX_AGE_SECONDS = 86_400; // 24h
 
-export function getAdminPassword(): string {
-  return (
-    process.env.ADMIN_PASSWORD ||
-    process.env.THEME_ADMIN_PASSWORD ||
-    "singularpoetics"
-  );
+let warnedNoPassword = false;
+
+/**
+ * The configured admin password, or null when none is set.
+ *
+ * Null is the fail-closed signal: callers must treat it as "nobody can
+ * authenticate" rather than substituting a default.
+ */
+export function getAdminPassword(): string | null {
+  const password =
+    process.env.ADMIN_PASSWORD || process.env.THEME_ADMIN_PASSWORD || "";
+  if (!password) {
+    if (!warnedNoPassword) {
+      warnedNoPassword = true;
+      // eslint-disable-next-line no-console
+      console.error(
+        "[admin-auth] ADMIN_PASSWORD (or THEME_ADMIN_PASSWORD) is not set. " +
+          "Admin login, the admin API and stage control are disabled until " +
+          "one of them is configured.",
+      );
+    }
+    return null;
+  }
+  return password;
 }
 
 function getCookieSecret(): string {
   return process.env.SUPABASE_SERVICE_ROLE_KEY || "singulars-admin-secret";
 }
 
-/** Compute the HMAC token that valid cookies must match. */
-export function hashToken(): string {
+/**
+ * Compute the HMAC token that valid cookies must match, or null when no admin
+ * password is configured. The HMAC scheme itself is unchanged, so cookies
+ * issued before this fail-closed change keep working.
+ */
+export function hashToken(): string | null {
+  const password = getAdminPassword();
+  if (!password) return null;
   return crypto
     .createHmac("sha256", getCookieSecret())
-    .update(getAdminPassword())
+    .update(password)
     .digest("hex");
 }
 
@@ -47,15 +75,17 @@ export function isValidAdminCookie(
   input: string | undefined | Request,
 ): boolean {
   if (!input) return false;
+  const expected = hashToken();
+  if (!expected) return false; // no password configured - deny everyone
   if (typeof input === "string") {
-    return input === hashToken();
+    return input === expected;
   }
   // Request object - read cookie via headers
   const cookieHeader = input.headers.get("cookie") || "";
   const match = cookieHeader.match(
     new RegExp(`(?:^|;\\s*)${COOKIE_NAME}=([^;]+)`),
   );
-  return !!match && match[1] === hashToken();
+  return !!match && match[1] === expected;
 }
 
 /**
@@ -102,7 +132,9 @@ export function requireAuthOrThrow(req: Request): void {
 
 /** Mutate the response to set the auth cookie. */
 export function setAuthCookie(res: NextResponse): NextResponse {
-  res.cookies.set(COOKIE_NAME, hashToken(), {
+  const token = hashToken();
+  if (!token) return res; // no password configured - issue nothing
+  res.cookies.set(COOKIE_NAME, token, {
     httpOnly: true,
     sameSite: "lax",
     path: "/",
@@ -126,6 +158,7 @@ export function clearAuthCookie(res: NextResponse): NextResponse {
 /** Compare a submitted password against the configured one (constant-time). */
 export function verifyPassword(submitted: string): boolean {
   const expected = getAdminPassword();
+  if (!expected) return false; // fail closed when unconfigured
   if (submitted.length !== expected.length) return false;
   return crypto.timingSafeEqual(Buffer.from(submitted), Buffer.from(expected));
 }

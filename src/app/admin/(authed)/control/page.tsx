@@ -79,7 +79,7 @@ function ControlLinks({
         open control →
       </Link>
       <a
-        href={`/${slug}/stage`}
+        href={`/singulars/${slug}/stage`}
         target="_blank"
         rel="noreferrer"
         style={{
