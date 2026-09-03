@@ -23,12 +23,17 @@
  *    Under basePath "/singulars":
  *      - a next/link href must be root-relative, because Next prepends the
  *        basePath itself. <Link href="/singulars/x"> renders /singulars/singulars/x.
- *      - a plain <a href> is a real browser URL and must keep the prefix.
- *        <a href="/x"> lands on www.halimmadi.com/x and 404s.
- *    Both lists are printed on every verify run. They are reports, not
- *    failures, because either form can be legitimate depending on the tag.
+ *      - a plain <a href> or a plain <iframe/img/script/video/source src> is
+ *        a real browser URL and must keep the prefix. <a href="/x"> and
+ *        <iframe src="/x"> both land on www.halimmadi.com/x and 404.
+ *    The first list is a report. The second is a FAILURE: a root-relative
+ *    href/src on a plain HTML tag is always wrong under this basePath, and
+ *    an <iframe src> missing the prefix is how the control page's stage
+ *    preview 404'd unnoticed.
  *    (fetch() strings to '/singulars/api/...' are browser URLs too and are
- *    correct as written - they are not counted here.)
+ *    correct as written - they are not counted here. next/link and
+ *    next/image DO get the basePath prepended for you, so their props must
+ *    stay root-relative and are not flagged.)
  */
 
 import fs from "node:fs";
@@ -89,21 +94,24 @@ for (const file of files) {
   if (/\.(tsx|jsx)$/.test(rel)) {
     lines.forEach((line, i) => {
       const where = `${path.join("src", rel)}:${i + 1}: ${line.trim()}`;
-      if (/href=\{?["'`]\/singulars(["'`/?#]|$)/.test(line)) {
+      if (/(?:href|src)=\{?["'`]\/singulars(["'`/?#]|$)/.test(line)) {
         hrefHits.push(where);
       }
     });
-    // Plain <a> tags (not next/link) whose href is root-relative but has no
+    // Plain HTML tags (NOT next/link or next/image, which prepend the
+    // basePath themselves) whose href/src is root-relative but has no
     // basePath. Matched across the whole file because a JSX tag wraps lines.
-    const anchorTag = /<a\b(?:[^<>]|\{[^{}]*\})*?>/gs;
-    for (const m of source.matchAll(anchorTag)) {
-      const href = /href=\{?[`"']([^`"']*)/.exec(m[0]);
-      if (!href) continue;
-      const value = href[1];
+    // Nested braces are allowed one level deep so template literals with
+    // ${...} inside a prop still match.
+    const plainTag = /<(a|iframe|img|script|video|audio|source|embed|object)\b(?:[^<>]|\{(?:[^{}]|\{[^{}]*\})*\})*?>/gs;
+    for (const m of source.matchAll(plainTag)) {
+      const attr = /(href|src|data)=\{?[`"']([^`"']*)/.exec(m[0]);
+      if (!attr) continue;
+      const [, name, value] = attr;
       if (value.startsWith("/") && !value.startsWith("/singulars")) {
         const line = source.slice(0, m.index).split("\n").length;
         bareAnchorHits.push(
-          `${path.join("src", rel)}:${line}: <a href=${value}>`,
+          `${path.join("src", rel)}:${line}: <${m[1]} ${name}=${value}>`,
         );
       }
     }
@@ -112,20 +120,29 @@ for (const file of files) {
 
 console.log(`verify-copy: scanned ${files.length} files under ${ROOT}`);
 console.log(
-  `verify-copy: ${hrefHits.length} literal '/singulars' href(s) in JSX (review, not an error):`,
+  `verify-copy: ${hrefHits.length} literal '/singulars' href/src(s) in JSX (review, not an error):`,
 );
 for (const hit of hrefHits) console.log(`  ${hit}`);
-console.log(
-  `verify-copy: ${bareAnchorHits.length} plain <a> href(s) missing the basePath (review, not an error):`,
-);
-for (const hit of bareAnchorHits) console.log(`  ${hit}`);
+if (bareAnchorHits.length > 0) {
+  console.error(
+    `\nverify-copy: FAIL - ${bareAnchorHits.length} plain HTML href/src missing the basePath "/singulars". These 404 in production.`,
+  );
+  for (const hit of bareAnchorHits) console.error(`  ${hit}`);
+} else {
+  console.log(
+    "verify-copy: 0 plain HTML href/src missing the basePath.",
+  );
+}
 
 if (emDashHits.length > 0) {
   console.error(
     `\nverify-copy: FAIL - ${emDashHits.length} em dash(es) (U+2014) found. Use a spaced hyphen ( - ).`,
   );
   for (const hit of emDashHits) console.error(`  ${hit}`);
-  process.exit(1);
 }
 
-console.log("verify-copy: OK - no em dashes outside the prompt exemption.");
+if (emDashHits.length > 0 || bareAnchorHits.length > 0) process.exit(1);
+
+console.log(
+  "verify-copy: OK - no em dashes outside the prompt exemption, no unprefixed href/src.",
+);

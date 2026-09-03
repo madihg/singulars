@@ -626,8 +626,10 @@ export default function ControlView({
         >
           stage preview (static)
         </div>
+        {/* Plain <iframe src> is a real browser URL, so it must carry the
+            basePath. Without it this 404s on www.halimmadi.com. */}
         <iframe
-          src={`/${performance.slug}/stage?static=1`}
+          src={`/singulars/${performance.slug}/stage?static=1`}
           style={{ width: "100%", height: 480, border: `1px solid ${accent}`, background: "#000" }}
           title="stage preview"
         />

@@ -155,10 +155,19 @@ export function clearAuthCookie(res: NextResponse): NextResponse {
   return res;
 }
 
-/** Compare a submitted password against the configured one (constant-time). */
+/**
+ * Compare a submitted password against the configured one (constant-time).
+ *
+ * The length guard compares BYTE lengths, not string lengths: a submitted
+ * password with the same number of characters but more UTF-8 bytes (an
+ * accented letter, an emoji) used to reach timingSafeEqual with mismatched
+ * buffers, which throws and turned a wrong-password POST into a 500.
+ */
 export function verifyPassword(submitted: string): boolean {
   const expected = getAdminPassword();
   if (!expected) return false; // fail closed when unconfigured
-  if (submitted.length !== expected.length) return false;
-  return crypto.timingSafeEqual(Buffer.from(submitted), Buffer.from(expected));
+  const a = Buffer.from(submitted, "utf8");
+  const b = Buffer.from(expected, "utf8");
+  if (a.length !== b.length) return false;
+  return crypto.timingSafeEqual(a, b);
 }

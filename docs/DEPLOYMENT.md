@@ -56,13 +56,18 @@ two kinds:
 - **Framework-relative** - `next/link` `href`, `router.push`, `middleware.ts`
   matcher and `req.nextUrl.pathname`. Write these WITHOUT `/singulars`; Next
   adds it. `<Link href="/singulars">` renders `/singulars/singulars` and 404s.
-- **Real browser URLs** - `fetch()` strings, `window.location.href`, plain
-  `<a href>`. These keep the `/singulars` prefix, because they are not passed
-  through Next's basePath handling.
+- **Real browser URLs** - `fetch()` strings, `window.location.href`, and plain
+  HTML tags: `<a href>`, `<iframe src>`, `<img src>`, `<script src>`. These
+  keep the `/singulars` prefix, because they are not passed through Next's
+  basePath handling. (`next/image` is framework-relative like `next/link`.)
 
-`npm run verify` prints both lists on every run - literal `/singulars` hrefs in
-JSX, and plain `<a>` hrefs that are root-relative but missing the basePath - so
-the two kinds do not drift.
+`npm run verify` guards both directions:
+
+- it **fails** on a plain HTML `href`/`src` that is root-relative and missing
+  the basePath. That is always a 404 in production - it is how the control
+  page's stage-preview `<iframe src="/<slug>/stage?static=1">` 404'd unnoticed.
+- it **prints** every literal `/singulars` `href`/`src` in JSX for review, so a
+  `next/link` never picks one up by copy-paste.
 
 ## Cron
 
@@ -150,8 +155,9 @@ npm run verify
 ```
 
 That runs `next build`, then `tsc --noEmit`, then `scripts/verify-copy.mjs`
-(fails on an em dash outside the model prompts, and prints the basePath href
-reports for review).
+(fails on an em dash outside the model prompts, fails on a plain HTML
+`href`/`src` missing the basePath, and prints the literal `/singulars`
+href/src list for review).
 
 ## Verification checklist after a deploy
 
@@ -160,7 +166,10 @@ reports for review).
 - [ ] https://www.halimmadi.com/singulars/chat loads
 - [ ] https://www.halimmadi.com/singulars/admin redirects to
       `/singulars/admin/login?from=%2Fadmin`
-- [ ] https://singulars.oulipo.xyz/api/health returns 200
+- [ ] https://singulars.oulipo.xyz/api/health returns 200 (proves the `/api`
+      rewrite the webhooks depend on is still live)
+- [ ] Open a performance's `/singulars/<slug>/control?key=...` and confirm the
+      stage-preview iframe renders rather than showing a 404
 - [ ] Hard refresh (Cmd+Shift+R) if you still see old content
 
 ## Manual deploy (emergency)

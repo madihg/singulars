@@ -26,7 +26,13 @@ import { NextResponse, type NextRequest } from "next/server";
  * cookie. Each one carries its own auth:
  *   /admin/login, /api/admin/auth      - the login surface itself
  *   /api/admin/cron/*                  - Vercel cron; checks x-vercel-cron
- *   /api/admin/fine-tunes/webhooks/*   - provider callbacks; check HMAC
+ *   /api/admin/fine-tunes/webhooks/*   - provider callbacks; verify the
+ *                                        provider signature, but ONLY when
+ *                                        OPENAI_WEBHOOK_SECRET /
+ *                                        TOGETHER_WEBHOOK_SECRET is set. Set
+ *                                        both in Vercel: unset, these are
+ *                                        open write endpoints. See
+ *                                        docs/DEPLOYMENT.md.
  */
 const PUBLIC_ADMIN_PATHS = [
   "/admin/login",
