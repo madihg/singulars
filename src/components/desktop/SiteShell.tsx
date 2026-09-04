@@ -19,9 +19,12 @@
  * change per page; MenuBar portals those into the slot below.
  *
  * The venue screens (/[slug]/stage, /[slug]/control, /timer) are furniture for
- * a room, not pages of the site, and carry no chrome. The only links out of
- * them are plain anchors (a full load), so nothing navigates from a venue
- * screen back into the desk without re-running desktop.js.
+ * a room, not pages of the site, and show no chrome. They only HIDE it: the
+ * tools window links to /timer with next/link, so a visitor reaches a venue
+ * screen without a reload and comes back with the browser's back button. If
+ * the chrome were dropped from the tree there, that trip would remount an
+ * unbound copy and the bottom menu would die again, one path over from the
+ * bug this file exists to fix.
  */
 
 import { usePathname } from "next/navigation";
@@ -37,14 +40,10 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
   const venue = isVenue(usePathname());
   return (
     <>
-      {venue ? null : <MenuBarShell />}
+      <MenuBarShell hidden={venue} />
       {children}
-      {venue ? null : (
-        <>
-          <Footer />
-          <Mascot />
-        </>
-      )}
+      <Footer hidden={venue} />
+      <Mascot hidden={venue} />
     </>
   );
 }

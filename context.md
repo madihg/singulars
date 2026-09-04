@@ -202,8 +202,9 @@ Short version:
   `src/app/desktop/pages.css`, all prefixed `sg-`.
 - The menu bar, footer and mascot are rendered once by the root layout
   (`SiteShell`), because desktop.js binds them once. `/[slug]/stage`,
-  `/[slug]/control` and `/timer` are venue screens with no chrome. `/admin` gets
-  the chrome plus an "admin/" nav window.
+  `/[slug]/control` and `/timer` are venue screens that hide the chrome rather
+  than dropping it, so a next/link trip into one and back leaves it bound.
+  `/admin` gets the chrome plus an "admin/" nav window.
 - Tailwind is gone (it was never used): no `tailwind.config.ts`, no
   `postcss.config.mjs`.
 - Follow-up not done in the reskin: the stills under `public/images/` are
@@ -219,7 +220,10 @@ Seven changes, all on the desk surface.
 - The bottom menu died after a vote. Cause: the chrome was rendered per route
   group, desktop.js binds once, and voting router.push()es out of `(desk)` into
   `[slug]/(view)`, which replaced the mascot with an unbound copy. The chrome
-  now lives in the root layout. `npm run check:desk` is the regression test.
+  now lives in the root layout, and the venue screens hide it instead of
+  dropping it, because the tools window reaches `/timer` with next/link and the
+  visitor comes back with the back button. `npm run check:desk` is the
+  regression test; without playwright it now fails rather than passing quietly.
 - No photograph is greyscale any more. The filter is gone from `.sg-hero img`
   and `.sg-card__thumb img`. Elise Liu's portrait is a monochrome photograph in
   the file itself, so only a new file changes that one.

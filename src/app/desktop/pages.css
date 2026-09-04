@@ -673,3 +673,12 @@ body.desktop .fb {
 a.sg-line:hover .sg-line__n {
   color: var(--acc);
 }
+
+/* The chrome stays mounted on the venue screens so that the single pass of
+   desktop.js keeps its bindings; those screens only hide it. The attribute
+   alone is not enough for .mascot, which sets its own display. */
+.mb[hidden],
+.fb[hidden],
+.mascot[hidden] {
+  display: none !important;
+}

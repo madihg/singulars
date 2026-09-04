@@ -23,9 +23,13 @@
  *   6. Participating Poets opens as a carousel, Elise Liu first, small
  *      portraits, every bio word for word
  *   7. machine.txt opens from MACHINE and closes from HUMAN
+ *   8. a venue screen (the timer) hides the chrome rather than dropping it,
+ *      so coming back from one with the browser's back button leaves the
+ *      bottom menu alive
  *
  * Playwright is not a dependency of this app. Install it where you run this
- * (npm i -D playwright) or the script says so and exits 0.
+ * (npm i -D playwright); without it the script fails rather than passing
+ * quietly, so a missing runner can never read as a green check.
  */
 
 import assert from "node:assert";
@@ -48,8 +52,10 @@ let chromium;
 try {
   ({ chromium } = await import("playwright"));
 } catch {
-  console.log("check-desk: playwright is not installed here; skipping browser checks.");
-  process.exit(0);
+  console.error(
+    "check-desk: playwright is not installed here, so nothing was checked. Run npm i -D playwright and try again.",
+  );
+  process.exit(1);
 }
 
 const passed = [];
@@ -225,6 +231,55 @@ for (const [width, height, tag] of WIDTHS) {
   check(`[${tag}] the site map still opens after voting`, () =>
     assert.ok(map, "the site map is dead"),
   );
+
+  /* 8. the same defect, one path over: the tools window links to the timer
+     with next/link, so a visitor reaches a venue screen and comes back with
+     the browser's back button, without ever reloading. The chrome has to be
+     hidden there, not unmounted, or it comes back unbound. */
+  await page.goto(`${BASE}`, { waitUntil: "networkidle" });
+  await page.waitForTimeout(400);
+  await page.locator('.sg-scroll a[href$="/timer"]').click();
+  await page.waitForURL(/\/timer$/, { timeout: 30000 });
+  await page.waitForTimeout(600);
+  const venue = await page.evaluate(() => {
+    const bar = document.querySelector(".mb");
+    const pill = document.querySelector("[data-mascot-root]");
+    return {
+      mounted: !!bar && !!pill,
+      barShown: bar ? bar.getBoundingClientRect().height > 0 : null,
+      pillShown: pill ? pill.getBoundingClientRect().height > 0 : null,
+    };
+  });
+  check(`[${tag}] the venue screen shows no chrome but keeps it mounted`, () => {
+    assert.ok(venue.mounted, "the chrome was dropped from the tree");
+    assert.equal(venue.barShown, false, "the menu bar is visible on the timer");
+    assert.equal(venue.pillShown, false, "the mascot is visible on the timer");
+  });
+
+  await page.goBack();
+  await page.waitForURL(/\/singulars$/, { timeout: 30000 });
+  await page.waitForTimeout(700);
+  await page.locator("[data-menu-toggle]").click();
+  await page.waitForTimeout(250);
+  /* read the site map before anything else is clicked: desktop.js closes the
+     drop on an outside click, so the mascot press below would hide it again */
+  const mapBack = await page.evaluate(() => ({
+    map: !document.querySelector("[data-menu-drop]").hidden,
+    barShown: document.querySelector(".mb").getBoundingClientRect().height > 0,
+  }));
+  await page.locator("[data-menu-toggle]").click();
+  await page.waitForTimeout(250);
+  await page.locator("[data-mascot-machine]").click();
+  await page.waitForTimeout(600);
+  const afterBack = await page.evaluate(() => ({
+    on: document.querySelector("[data-mascot-root]").classList.contains("is-machine"),
+    barShown: document.querySelector(".mb").getBoundingClientRect().height > 0,
+  }));
+  check(`[${tag}] the bottom menu still responds after a trip to a venue screen`, () => {
+    assert.ok(mapBack.barShown && afterBack.barShown, "the menu bar did not come back");
+    assert.ok(mapBack.map, "the site map is dead after coming back");
+    assert.ok(afterBack.on, "the pill is dead after coming back");
+  });
 
   await page.close();
 }

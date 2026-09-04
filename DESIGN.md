@@ -92,7 +92,12 @@ nodes with unbound copies and the pill and the site map went dead: voting in
 vote.exe does exactly that navigation, which is how the bug reached a visitor.
 
 So `SiteShell` renders the bar, the footer and the mascot from the root layout,
-and drops them on the venue screens by pathname. Each page still renders its own
+and the venue screens only hide them, by pathname, with the `hidden` attribute
+(`.mb[hidden]`, `.fb[hidden]`, `.mascot[hidden]` in `pages.css`, because
+`.mascot` sets its own display). Hiding rather than dropping matters for the
+same reason: the tools window links to `/timer` with next/link, so a visitor
+walks into a venue screen and comes back with the browser's back button, and a
+dropped chrome would come back unbound. Each page still renders its own
 `<MenuBar menu={...}>`; those links are written into the persistent bar with a
 portal, so the element desktop.js bound is never the element that changes. The
 venue screens also opt out of the ground with `<BodyClass>`, which is the only

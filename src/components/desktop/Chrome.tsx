@@ -41,9 +41,9 @@ export interface MenuLink {
  * The sticky menu bar itself: the wordmark, the site map behind it, the empty
  * slot each page fills, and the CTA. Rendered once by SiteShell.
  */
-export function MenuBarShell() {
+export function MenuBarShell({ hidden = false }: { hidden?: boolean }) {
   return (
-    <nav className="mb">
+    <nav className="mb" hidden={hidden}>
       <div className="mb__in">
         <div className="mb__appwrap">
           <a className="mb__app" href={`${SITE}/`}>
@@ -137,9 +137,9 @@ export function MenuBar({ menu = [] }: { menu?: MenuLink[] }) {
 }
 
 /** The one-line footer, identical on every surface. */
-export function Footer() {
+export function Footer({ hidden = false }: { hidden?: boolean }) {
   return (
-    <footer className="fb">
+    <footer className="fb" hidden={hidden}>
       <div className="fb__in">
         <span>halim madi</span>
         <a href={`${SITE}/computer-theater/`}>computer theater</a>
@@ -169,9 +169,9 @@ export function Footer() {
 }
 
 /** The human / machine pill. Lines and toggling live in desktop.js. */
-export function Mascot() {
+export function Mascot({ hidden = false }: { hidden?: boolean }) {
   return (
-    <div className="mascot" data-mascot-root>
+    <div className="mascot" data-mascot-root hidden={hidden}>
       <button type="button" data-mascot-human aria-pressed="true">
         <i />
         human
