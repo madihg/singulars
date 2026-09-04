@@ -1,0 +1,142 @@
+/* ================================================================
+   machine.css - the machine.txt window.
+
+   Loaded only when someone presses MACHINE, injected by
+   Assets/js/machine.js. It is a small extension of desktop.css and
+   invents nothing: the shell is .win / .win__bar / .dots / .win__t /
+   .win__meta / .win__b, the labels are .k, the answers are .prose,
+   the visitor's own line is .fr__w, the separators are .rule, the
+   controls are .btn and .dk-input, the live caret is .cdot. What is
+   new here is only the arrangement: a ledger of turns, a row of
+   chips, an ask row.
+
+   Cobalt stays on the CTA. The send button is a plain .btn, and the
+   page accent (--acc) is spent on one small live mark: the status
+   word in the titlebar and the blinking caret.
+   ================================================================ */
+
+/* ---- placement ------------------------------------------------ */
+/* on a desk page the window takes the right band, the way the
+   landing's stage window does; on a legacy page machine.js makes a
+   bare .desk for it and it runs full width. */
+@media (min-width: 760px) {
+  .mx--side { grid-column: 8 / 13; }
+}
+.mx__desk {
+  padding-top: 0;
+  padding-bottom: 3rem;
+}
+/* the window arrives after desktop.js has bound the draggable bars,
+   so it is not draggable and must not pretend to be */
+.mx > .win__bar { cursor: default; }
+
+.mx .win__meta.is-live { color: var(--acc); }
+.mx.is-offline .win__meta { color: var(--ink-40); }
+
+/* ---- the transcript ------------------------------------------- */
+.mx__log {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  max-height: 50vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  min-width: 0;
+}
+.mx__log .rule { margin: 0.35rem 0; }
+
+.mx__turn {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+@media (min-width: 720px) {
+  .mx__turn {
+    grid-template-columns: 4.4rem minmax(0, 1fr);
+    gap: 0.9rem;
+    align-items: baseline;
+  }
+}
+.mx__turn .k { line-height: 1.6; }
+.mx__turn--machine .k { color: var(--ink); }
+.mx__body { min-width: 0; }
+.mx__body .prose {
+  font-size: 0.95rem;
+  margin-bottom: 0.6em;
+}
+.mx__body .prose:last-child { margin-bottom: 0; }
+.mx__body .fr__w { display: block; }
+/* a reverse.exe poem keeps its line breaks */
+.mx__body--poem .prose { white-space: pre-wrap; }
+
+/* answers link out, so links have to read as links here */
+.mx__body a {
+  color: var(--ink);
+  border-bottom: 1px solid var(--metal);
+}
+.mx__body a:hover {
+  color: var(--acc);
+  border-color: var(--acc);
+}
+
+/* the caret: the same .cdot the ledger uses, blinking while a
+   sentence is still arriving */
+.mx__cdot--live {
+  display: inline-block;
+  margin-left: 0.18rem;
+  animation: mx-blink 0.95s steps(1) infinite;
+}
+@keyframes mx-blink {
+  50% { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mx__cdot--live { animation: none; }
+}
+
+/* ---- chips + ask row ------------------------------------------ */
+.mx__hints {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.9rem;
+}
+.mx__hints .btn {
+  text-transform: none;
+  letter-spacing: 0.04em;
+  font-size: 0.68rem;
+}
+
+.mx__ask {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.9rem;
+}
+.mx__ask label {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.mx__ask .btn {
+  flex: none;
+  padding: 0.55rem 0.9rem;
+}
+.mx__ask input[disabled],
+.mx__ask .btn[disabled] {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.mx__foot {
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+}
+.mx__foot a { border-bottom: 1px solid var(--metal); }
+.mx__foot a:hover { color: var(--acc); border-color: var(--acc); }
+
+/* ---- phones ---------------------------------------------------- */
+@media (max-width: 759px) {
+  .mx__log { max-height: 46vh; }
+  /* the mascot is a fixed bottom strip below 760px: keep the ask row
+     clear of it when the window is the last thing on the desk */
+  .mx__desk { padding-bottom: 3.6rem; }
+}

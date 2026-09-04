@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Script from "next/script";
+import SiteShell from "@/components/desktop/SiteShell";
 import "./globals.css";
 import "./desktop/tokens.css";
 import "./desktop/desktop.css";
@@ -33,7 +34,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="desktop acc-machine">
-        {children}
+        <SiteShell>{children}</SiteShell>
         {/* basePath is applied by hand: next/script does not prefix src. */}
         <Script src="/singulars/desktop/desktop.js" strategy="afterInteractive" />
       </body>

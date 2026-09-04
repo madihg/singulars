@@ -1,10 +1,14 @@
 "use client";
 
 /**
- * The duel window on the landing desk: one theme pulled from the performance
+ * vote.exe on the landing desk: one theme pulled from the performance
  * currently in training (or the last finished one), its two poems side by side,
  * and a vote. Choosing a poem and submitting sends the visitor to that theme's
  * own page, where the result lives.
+ *
+ * The window is named for what a visitor can do in it, and each poem carries a
+ * pick line, so the two blocks of text read as the two things you choose
+ * between rather than as something to read past.
  *
  * The fetch paths, the fingerprint and the vote contract are untouched by the
  * reskin: only the markup moved to the Desktop vocabulary.
@@ -53,7 +57,7 @@ function Shell({
           <i />
           <i />
         </span>
-        <h2 className="win__t">duel.txt</h2>
+        <h2 className="win__t">vote.exe</h2>
         {meta ? <span className="win__meta">{meta}</span> : null}
       </div>
       <div className="win__b">{children}</div>
@@ -222,7 +226,10 @@ export default function MiniVoting() {
       <h3 className="h2" data-testid="mini-voting-theme">
         {themeName}
       </h3>
-      <p className="note">Pick the poem you prefer, then submit your vote.</p>
+      <p className="note">
+        You can vote here. One poem is by a human, one is by a machine, and you
+        are not told which. Pick the one you prefer, then submit your vote.
+      </p>
 
       <div className="sg-duel" data-testid="mini-voting-poems">
         {poems.map((poem) => {
@@ -244,6 +251,9 @@ export default function MiniVoting() {
             >
               {/* No author labels: the vote stays blind. */}
               <p className="sg-poem__t">{poem.text}</p>
+              <span className="sg-poem__pick">
+                {isSelected ? "chosen" : "vote for this one"}
+              </span>
             </button>
           );
         })}

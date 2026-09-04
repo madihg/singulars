@@ -194,15 +194,50 @@ anything visual.
 
 Short version:
 
-- `src/app/desktop/{tokens,desktop}.css` and `public/desktop/desktop.js` are
-  copies of the halim-madi canon. Never edit them here.
+- `src/app/desktop/{tokens,desktop}.css` and `public/desktop/{desktop,machine}.js`
+  plus `public/desktop/machine.css` are copies of the halim-madi canon. Never
+  edit them here; `scripts/sync-desktop.mjs --write` brings them over and
+  applies the declared URL swaps.
 - `src/app/globals.css` is reset and fonts only. Page-scoped rules live in
   `src/app/desktop/pages.css`, all prefixed `sg-`.
-- `(desk)` and `[slug]/(view)` carry the menu bar, footer and mascot.
-  `/[slug]/stage`, `/[slug]/control` and `/timer` are venue screens with no
-  chrome. `/admin` gets the chrome plus an "admin/" nav window.
+- The menu bar, footer and mascot are rendered once by the root layout
+  (`SiteShell`), because desktop.js binds them once. `/[slug]/stage`,
+  `/[slug]/control` and `/timer` are venue screens that hide the chrome rather
+  than dropping it, so a next/link trip into one and back leaves it bound.
+  `/admin` gets the chrome plus an "admin/" nav window.
 - Tailwind is gone (it was never used): no `tailwind.config.ts`, no
   `postcss.config.mjs`.
 - Follow-up not done in the reskin: the stills under `public/images/` are
   originals, some 5712px wide, and they are what the cards load. They want a
   1600px variant.
+
+## Round 4 (Sep 2026)
+
+Seven changes, all on the desk surface.
+
+- The favicon is the halimmadi.com mark: a cobalt (#1C39E8) disc,
+  `src/app/icon.svg`. A tab here matches a tab anywhere else on the site.
+- The bottom menu died after a vote. Cause: the chrome was rendered per route
+  group, desktop.js binds once, and voting router.push()es out of `(desk)` into
+  `[slug]/(view)`, which replaced the mascot with an unbound copy. The chrome
+  now lives in the root layout, and the venue screens hide it instead of
+  dropping it, because the tools window reaches `/timer` with next/link and the
+  visitor comes back with the back button. `npm run check:desk` is the
+  regression test; without playwright it now fails rather than passing quietly.
+- No photograph is greyscale any more. The filter is gone from `.sg-hero img`
+  and `.sg-card__thumb img`. Elise Liu's portrait is a monochrome photograph in
+  the file itself, so only a new file changes that one.
+- The tools chips wrap instead of scrolling sideways, so all four are visible
+  on a phone.
+- `duel.txt` is `vote.exe`, says a visitor can vote, and every poem carries its
+  own pick line.
+- The poets window is "Participating Poets", opens as a carousel with Elise Liu
+  first, and the portraits are small squares. Every bio is untouched.
+- `machine.txt` is ported: MACHINE on the pill opens it. It answers from
+  `www.halimmadi.com/api/machine`, which is same-origin at
+  `halimmadi.com/singulars` and cross-origin at `singulars.oulipo.xyz`, where it
+  falls back to the poem lines until that origin is allowed CORS.
+
+Browser checks live in `scripts/check-desk.mjs` (`npm run check:desk`), run
+against a started server. Playwright is not a dependency; the script says so and
+exits 0 where it is missing.

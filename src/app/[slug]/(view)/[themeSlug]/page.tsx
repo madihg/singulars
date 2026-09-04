@@ -142,7 +142,7 @@ export default async function ThemeVotingPage({
               <i />
               <i />
             </span>
-            <h2 className="win__t">duel.txt</h2>
+            <h2 className="win__t">vote.exe</h2>
             <span className="win__meta">{poems.length} poems</span>
           </div>
           <div className="win__b">

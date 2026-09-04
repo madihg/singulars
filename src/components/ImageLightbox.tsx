@@ -15,8 +15,8 @@
  *
  * Design system: near-black backdrop, hairline controls, no rounded corners,
  * Diatype Mono for the counter/caption, the performance color as the only
- * accent (on hover/focus). Images render in full colour here - the page shows
- * some of them grayscale, so the lightbox is the reveal.
+ * accent (on hover/focus). Pictures are in colour on the page and in colour
+ * here; the lightbox is for size, not for a reveal.
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";

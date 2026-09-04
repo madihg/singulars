@@ -44,7 +44,7 @@ const TOOLS = [
 const MENU = [
   { href: "#about", label: "about" },
   { href: "#performances", label: "performances" },
-  { href: "#duel", label: "duel" },
+  { href: "#duel", label: "vote" },
   { href: "#poets", label: "poets" },
   { href: "#reading", label: "reading" },
 ];

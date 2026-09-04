@@ -45,18 +45,16 @@
 .sg-row--end { justify-content: flex-end; }
 .sg-row--baseline { align-items: baseline; }
 
-/* A horizontally scrolling row (chips, view switchers) that never
-   makes the page itself scroll sideways. */
+/* A row of chips that shows all of them at once. It used to scroll
+   sideways, which on a phone hid every tool past the second one behind
+   a swipe nobody could see. It wraps instead: same order, more rows. */
 .sg-scroll {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
-  overflow-x: auto;
-  scrollbar-width: none;
-  padding-bottom: 0.15rem;
   min-width: 0;
 }
-.sg-scroll::-webkit-scrollbar { display: none; }
-.sg-scroll > * { flex: none; }
+.sg-scroll > * { flex: none; max-width: 100%; }
 
 .sg-stack {
   display: flex;
@@ -219,10 +217,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  filter: grayscale(100%);
-  transition: filter 0.5s ease;
 }
-.sg-card:hover .sg-card__thumb img { filter: grayscale(0%); }
 .sg-card__t {
   display: block;
   margin: 0.55rem 0 0.2rem;
@@ -242,6 +237,28 @@
   line-height: 1.45;
   color: var(--ink-60);
   margin: 0.3rem 0 0;
+}
+
+/* Participating Poets: a small square portrait, so the bio leads. */
+.sg-card__thumb--poet {
+  width: 5.5rem;
+  aspect-ratio: 1 / 1;
+  margin-bottom: 0.15rem;
+}
+.sg-card__mono {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 2rem;
+  color: var(--ink-40);
+}
+.sg-card--poet .sg-card__t { margin-top: 0.5rem; }
+.sg-rail--poets > * { flex: 0 0 17rem; }
+@media (max-width: 520px) {
+  .sg-rail--poets > * { flex: 0 0 80%; }
 }
 
 /* Carousel view: the same cards on one snapping rail. */
@@ -270,10 +287,7 @@
   object-fit: cover;
   border: 1px solid var(--metal);
   border-radius: 4px;
-  filter: grayscale(100%);
-  transition: filter 0.5s ease;
 }
-.sg-hero:hover img { filter: grayscale(0%); }
 .sg-hero img[data-lightbox] { cursor: zoom-in; }
 .sg-hero img:focus-visible {
   outline: 3px solid var(--cobalt);
@@ -325,6 +339,23 @@
   overflow-wrap: anywhere;
   margin: 0;
 }
+/* The pick line inside a poem card: the affordance, spelled out, so a
+   poem reads as a button and not as a paragraph. */
+.sg-poem__pick {
+  display: block;
+  margin-top: 0.8rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--hair);
+  font-family: var(--font-mono);
+  font-variation-settings: "slnt" 0, "MONO" 1;
+  font-size: 0.62rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink-50);
+}
+.sg-poem:hover .sg-poem__pick { color: var(--acc); }
+.sg-poem.is-chosen .sg-poem__pick { color: var(--acc); }
+
 .sg-poem__f {
   display: flex;
   align-items: center;
@@ -641,4 +672,13 @@ body.desktop .fb {
 }
 a.sg-line:hover .sg-line__n {
   color: var(--acc);
+}
+
+/* The chrome stays mounted on the venue screens so that the single pass of
+   desktop.js keeps its bindings; those screens only hide it. The attribute
+   alone is not enough for .mascot, which sets its own display. */
+.mb[hidden],
+.fb[hidden],
+.mascot[hidden] {
+  display: none !important;
 }

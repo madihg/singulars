@@ -248,6 +248,16 @@ export default function VotingPoemPair({
             >
               <p className="sg-poem__t">{poem.text}</p>
 
+              {canVote && (
+                <span className="sg-poem__pick">
+                  {isSelected
+                    ? "chosen"
+                    : isTrained
+                      ? "pick this one"
+                      : "vote for this one"}
+                </span>
+              )}
+
               {/* Vote results - only after the visitor has acted. Hidden
                   pre-vote so the running tally cannot anchor the next
                   voter's choice. */}
