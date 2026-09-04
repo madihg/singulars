@@ -296,7 +296,7 @@ export default function ControlView({
             marginBottom: "0.5rem",
           }}
         >
-          phase ( press 1–3 )
+          phase ( press 1-3 )
         </div>
         <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
           {PHASES.map((p, i) => {
@@ -644,7 +644,7 @@ export default function ControlView({
           lineHeight: 1.6,
         }}
       >
-        shortcuts: 1–3 phase · Cmd/Ctrl+L video url · Cmd/Ctrl+Enter save textarea
+        shortcuts: 1-3 phase · Cmd/Ctrl+L video url · Cmd/Ctrl+Enter save textarea
         <br />
         last updated:{" "}
         {state?.updated_at ? new Date(state.updated_at).toLocaleTimeString() : " - "}

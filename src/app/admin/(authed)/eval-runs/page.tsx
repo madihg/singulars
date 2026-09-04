@@ -11,12 +11,8 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
-import {
-  FONT_MONO,
-  btnSmallStyle,
-  statusPillStyle,
-  formatDate,
-} from "@/lib/admin-styles";
+import { formatDate } from "@/lib/admin-format";
+import Win from "@/components/desktop/Win";
 
 type Run = {
   id: string;
@@ -116,184 +112,116 @@ export default function EvalRunsPage() {
   }
 
   return (
-    <div>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "baseline",
-          justifyContent: "space-between",
-          marginBottom: "1.5rem",
-          gap: "1rem",
-          flexWrap: "wrap",
-        }}
+    <>
+      <Win
+        file="eval-runs/"
+        span="w--eight"
+        meta={loading ? "loading" : `${runs.length} runs`}
       >
-        <h1
-          style={{
-            fontFamily: '"Terminal Grotesque", sans-serif',
-            fontSize: "3.5rem",
-            lineHeight: 0.9,
-            margin: 0,
-          }}
-        >
-          eval runs
-        </h1>
-        <Link
-          href="/admin/eval-runs/new"
-          style={{ ...btnSmallStyle, textDecoration: "none" }}
-        >
-          + run new eval
-        </Link>
-      </div>
-
-      {/* Filter chips */}
-      <div
-        style={{
-          display: "flex",
-          gap: "0.5rem",
-          flexWrap: "wrap",
-          marginBottom: "1.5rem",
-        }}
-      >
-        <Chip active={status === ""} onClick={() => setFilter("status", null)}>
-          all
-        </Chip>
-        {STATUSES.map((s) => (
-          <Chip
-            key={s}
-            active={status === s}
-            onClick={() => setFilter("status", s)}
-          >
-            {s}
-          </Chip>
-        ))}
-        <span style={{ marginLeft: "auto" }} />
-        <Chip
-          active={!!perf || !!model}
-          onClick={() => {
-            setFilter("perf", null);
-            setFilter("model", null);
-          }}
-        >
-          {perf || model
-            ? `clear: ${perf || ""} ${model || ""}`
-            : "no perf/model filter"}
-        </Chip>
-      </div>
-
-      {pollError ? (
-        <div
-          style={{
-            ...statusPillStyle("failed"),
-            marginBottom: "1rem",
-          }}
-        >
-          {pollError}
-        </div>
-      ) : null}
-
-      {loading ? (
-        <p style={{ fontFamily: FONT_MONO, color: "var(--text-secondary)" }}>
-          loading...
-        </p>
-      ) : error ? (
-        <p style={{ fontFamily: FONT_MONO, color: "#dc2626" }}>{error}</p>
-      ) : runs.length === 0 ? (
-        <p style={{ fontFamily: FONT_MONO, color: "var(--text-secondary)" }}>
-          no eval runs match these filters.{" "}
-          <Link
-            href="/admin/eval-runs"
-            style={{ color: "var(--text-primary)" }}
-          >
-            clear filters
-          </Link>
-        </p>
-      ) : (
-        <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-          {runs.map((r) => (
-            <li
-              key={r.id}
-              style={{
-                borderTop: "1px solid var(--border-light)",
-                padding: "1rem 0",
+        <div className="sg-row sg-row--between" style={{ marginBottom: "0.9rem" }}>
+          <div className="sg-row sg-row--tight">
+            <Chip active={status === ""} onClick={() => setFilter("status", null)}>
+              all
+            </Chip>
+            {STATUSES.map((st) => (
+              <Chip
+                key={st}
+                active={status === st}
+                onClick={() => setFilter("status", st)}
+              >
+                {st}
+              </Chip>
+            ))}
+            <Chip
+              active={!!perf || !!model}
+              onClick={() => {
+                setFilter("perf", null);
+                setFilter("model", null);
               }}
             >
+              {perf || model
+                ? `clear: ${perf || ""} ${model || ""}`
+                : "no perf or model filter"}
+            </Chip>
+          </div>
+          <Link className="btn btn--send" href="/admin/eval-runs/new">
+            run new eval
+          </Link>
+        </div>
+
+        {pollError ? <p className="sg-err">{pollError}</p> : null}
+
+        {loading ? (
+          <p className="note" style={{ marginTop: 0 }}>
+            Loading.
+          </p>
+        ) : error ? (
+          <p className="sg-err" style={{ marginTop: 0 }}>
+            {error}
+          </p>
+        ) : runs.length === 0 ? (
+          <p className="note" style={{ marginTop: 0 }}>
+            No eval runs match these filters.{" "}
+            <Link href="/admin/eval-runs">clear filters</Link>
+          </p>
+        ) : (
+          <>
+            <div className="hdr">
+              <span className="k">run</span>
+              <span className="k">status</span>
+              <span className="k">result</span>
+              <span className="k">when</span>
+            </div>
+            {runs.map((r) => (
               <Link
+                className="sg-line sg-line--4"
+                key={r.id}
                 href={`/admin/eval-runs/${r.id}`}
-                style={{
-                  textDecoration: "none",
-                  color: "inherit",
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: "0.75rem",
-                  alignItems: "baseline",
-                }}
               >
-                {r.candidate_model ? (
-                  <div
-                    aria-hidden
-                    style={{
-                      width: 12,
-                      height: 12,
-                      background: r.candidate_model.color,
-                      flexShrink: 0,
-                      marginTop: 4,
-                    }}
-                  />
-                ) : null}
-                <span
-                  style={{
-                    fontFamily: '"Standard", sans-serif',
-                    fontSize: "1rem",
-                    fontWeight: 500,
-                    flex: "1 1 200px",
-                  }}
-                >
-                  {r.candidate_model?.name || "?"}{" "}
-                  <span
-                    style={{
-                      fontFamily: FONT_MONO,
-                      fontSize: "0.85rem",
-                      color: "var(--text-tertiary)",
-                    }}
-                  >
-                    on {r.performance?.name || "?"}
+                <span className="sg-line__n">
+                  {r.candidate_model ? (
+                    <i
+                      className="cdot"
+                      style={{ ["--c" as string]: r.candidate_model.color }}
+                    />
+                  ) : null}
+                  {r.candidate_model?.name || "?"} on{" "}
+                  {r.performance?.name || "?"}
+                </span>
+                <span className="fr__s">
+                  <span className="sg-pill" data-state={r.status}>
+                    {r.status}
                   </span>
                 </span>
-                <span style={statusPillStyle(r.status)}>{r.status}</span>
-                <span style={{ fontFamily: FONT_MONO, fontSize: "0.85rem" }}>
+                <span className="fr__w">
                   {r.win_rate !== null
                     ? `${(Number(r.win_rate) * 100).toFixed(0)}%`
                     : "-"}
                   {r.n_themes > 0
-                    ? ` · ${r.n_themes_completed}/${r.n_themes}`
+                    ? ` · ${r.n_themes_completed}/${r.n_themes} themes`
                     : ""}
-                </span>
-                <span
-                  style={{
-                    fontFamily: FONT_MONO,
-                    fontSize: "0.8rem",
-                    color: "var(--text-tertiary)",
-                  }}
-                >
                   {r.cost_usd !== null
-                    ? `$${Number(r.cost_usd).toFixed(2)}`
-                    : ""}{" "}
-                  · {formatDate(r.created_at)}
+                    ? ` · $${Number(r.cost_usd).toFixed(2)}`
+                    : ""}
+                  {" · "}
+                  <span
+                    className="sg-pill"
+                    data-state={r.published ? "published" : "draft"}
+                  >
+                    {r.published ? "published" : "draft"}
+                  </span>
                 </span>
-                {r.published ? (
-                  <span style={statusPillStyle("published")}>published</span>
-                ) : (
-                  <span style={statusPillStyle("draft")}>draft</span>
-                )}
+                <span className="fr__d">{formatDate(r.created_at)}</span>
               </Link>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+            ))}
+          </>
+        )}
+      </Win>
+    </>
   );
 }
 
+/** A filter chip: a .btn that reports its own pressed state. */
 function Chip({
   active,
   onClick,
@@ -304,20 +232,7 @@ function Chip({
   children: React.ReactNode;
 }) {
   return (
-    <button
-      onClick={onClick}
-      style={{
-        fontFamily: FONT_MONO,
-        fontSize: "0.85rem",
-        padding: "0.25rem 0.7rem",
-        border: "1px solid var(--border-light)",
-        borderRadius: "2px",
-        background: active ? "rgba(0,0,0,0.06)" : "transparent",
-        color: active ? "var(--text-primary)" : "var(--text-secondary)",
-        opacity: active ? 1 : 0.6,
-        cursor: "pointer",
-      }}
-    >
+    <button type="button" className="btn" aria-pressed={active} onClick={onClick}>
       {children}
     </button>
   );

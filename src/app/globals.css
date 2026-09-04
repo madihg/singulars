@@ -1,4 +1,14 @@
-/* Cargo Fonts - matching oulipo.xyz */
+/* globals.css - reset and font faces only.
+ *
+ * The look of this app is the Desktop language of halimmadi.com. It arrives
+ * through src/app/desktop/tokens.css and src/app/desktop/desktop.css (copies of
+ * the canon, kept honest by scripts/sync-desktop.mjs) plus the page-scoped
+ * rules in src/app/desktop/pages.css. Keep this file minimal so those rules
+ * win: nothing here may set colour, type scale, or layout beyond the reset.
+ *
+ * Font files are the same Cargo faces halimmadi.com uses.
+ */
+
 @font-face {
   font-display: block;
   font-family: "Standard";
@@ -38,19 +48,9 @@
   font-weight: 200 700;
 }
 
-/* Oulipo brand CSS variables */
-:root {
-  --background: #ffffff;
-  --text-primary: rgba(0, 0, 0, 0.85);
-  --text-hover: rgba(0, 0, 0, 0.7);
-  --text-secondary: rgba(0, 0, 0, 0.6);
-  --text-tertiary: rgba(0, 0, 0, 0.5);
-  --text-hint: rgba(0, 0, 0, 0.4);
-  --border: rgba(0, 0, 0, 0.75);
-  --border-light: rgba(0, 0, 0, 0.12);
-}
-
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -68,153 +68,22 @@ html {
 body {
   margin: 0;
   padding: 0;
-  background-color: var(--background);
-  color: var(--text-primary);
-  font-family: "Standard", sans-serif;
-  font-size: 1.3rem;
-  line-height: 1.2;
+  font-family: "Standard", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 1.0625rem;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-a {
-  color: var(--text-primary);
-  text-decoration: none;
-  transition: opacity 0.3s ease;
+img,
+video {
+  max-width: 100%;
 }
 
-a:hover {
-  opacity: 0.7;
-}
-
-hr {
-  height: 1px;
-  background: var(--border);
-  border: none;
-  margin: 2rem 0;
-}
-
-/* Keyboard accessibility: visible focus rings on interactive elements */
-[data-voteable="true"]:focus-visible {
-  outline: 3px solid var(--performance-color, rgba(0, 0, 0, 0.85));
-  outline-offset: 2px;
-}
-
-[data-voteable="true"]:focus {
-  outline: 3px solid var(--performance-color, rgba(0, 0, 0, 0.85));
-  outline-offset: 2px;
-}
-
-/* Images that open the full-screen carousel (see ImageLightbox). */
-img[data-lightbox]:focus-visible {
-  outline: 3px solid var(--performance-color, rgba(0, 0, 0, 0.85));
-  outline-offset: 3px;
-}
-
-/* Hero image: B&W by default, color on hover, green dot cursor */
-.hero-image-container img {
-  transition: filter 0.5s ease;
-  filter: grayscale(100%);
-}
-.hero-image-container:hover img {
-  filter: grayscale(0%);
-}
-.hero-image-container:hover {
-  cursor:
-    url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20'><circle cx='10' cy='10' r='8' fill='%2300c853'/></svg>")
-      10 10,
-    pointer;
-}
-
-/* Landing page performance cards: B&W by default, color on hover */
-.perf-card-img {
-  transition: filter 0.5s ease;
-}
-.perf-card-img:hover {
-  filter: grayscale(0%) !important;
-}
-
-/* Chat page: sidebar visible on desktop, hidden on mobile */
-.chat-sidebar {
-  display: flex;
-}
-.chat-mobile-selector {
-  display: none;
-}
-@media (max-width: 768px) {
-  .chat-sidebar {
-    display: none !important;
-  }
-  .chat-mobile-selector {
-    display: flex !important;
-    align-items: center;
-  }
-}
-
-/* /evolution layout: container width + grid scale up with screen size so
- * big monitors actually use the space instead of leaving huge side
- * margins. Breakpoints climb in three steps:
- *
- *   < 1100px: single column, title above charts, max 900px container.
- *   >= 1100px: 2-column outer (title sticky left, charts stacked right).
- *   >= 1280px: charts split into 2-column grid (graphs sit side by side).
- *   >= 1600px: wider container so the 2-col charts cells stop being tight.
- *   >= 1900px: even wider for 4K monitors.
- */
-.evolution-page {
-  max-width: 900px;
-}
-.evolution-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 2.5rem;
-}
-.evolution-charts {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 2.5rem;
-}
-.evolution-charts > section {
-  margin-bottom: 0 !important;
-  min-width: 0; /* let charts shrink into their cells */
-}
-@media (min-width: 1100px) {
-  .evolution-page {
-    max-width: 1200px;
-  }
-  .evolution-grid {
-    grid-template-columns: minmax(200px, 240px) 1fr;
-    gap: 4.5rem;
-  }
-  .evolution-meta {
-    position: sticky;
-    top: 3rem;
-    align-self: start;
-  }
-}
-@media (min-width: 1280px) {
-  .evolution-page {
-    max-width: 1400px;
-  }
-  .evolution-charts {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 3rem 2rem;
-  }
-}
-@media (min-width: 1600px) {
-  .evolution-page {
-    max-width: 1700px;
-  }
-  .evolution-grid {
-    grid-template-columns: minmax(240px, 280px) 1fr;
-    gap: 6rem;
-  }
-  .evolution-charts {
-    gap: 3.5rem 2.5rem;
-  }
-}
-@media (min-width: 1900px) {
-  .evolution-page {
-    max-width: 1900px;
-  }
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
 }

@@ -1,12 +1,13 @@
 /**
- * /admin (authed) layout (US-102).
+ * /admin (authed) layout.
  *
- * Route group (authed) wraps every admin page that needs the nav. The login
- * page lives at /admin/login (outside this group) so it renders without nav
- * chrome - mirroring /theme-voting/admin's centred login.
+ * Route group (authed) wraps every admin page that needs the nav window. The
+ * login page lives at /admin/login (outside this group) so it renders without
+ * it, while still getting the site chrome from /admin/layout.tsx.
  *
- * Auth gating happens in src/middleware.ts before this layout renders.
- * Layout's job is to add the nav + page chrome around children.
+ * Auth gating happens in src/middleware.ts before this layout renders. This
+ * layout's only job is the desk: the "admin/" nav window, then the page's own
+ * windows as siblings on the same 12-column grid.
  */
 
 import { AdminNav } from "./AdminNav";
@@ -18,12 +19,10 @@ export default function AuthedAdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Shell = left sidebar (AdminNav) + main content column. The flex/responsive
-  // rules live in AdminNav's scoped <style> (.admin-shell / .admin-main).
   return (
-    <div className="admin-shell">
+    <main className="desk">
       <AdminNav />
-      <main className="admin-main">{children}</main>
-    </div>
+      {children}
+    </main>
   );
 }

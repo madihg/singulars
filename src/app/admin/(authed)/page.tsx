@@ -12,13 +12,8 @@
 
 import Link from "next/link";
 import { getServiceClient } from "@/lib/supabase";
-import {
-  FONT_MONO,
-  sectionHeadingStyle,
-  statCardStyle,
-  statValueStyle,
-  statLabelStyle,
-} from "@/lib/admin-styles";
+import Win from "@/components/desktop/Win";
+
 
 export const dynamic = "force-dynamic";
 
@@ -199,6 +194,7 @@ async function fetchCounts(): Promise<Counts> {
   };
 }
 
+/** One count, as a tile. Links where there is somewhere to go. */
 function StatCard({
   label,
   value,
@@ -211,38 +207,20 @@ function StatCard({
   hint?: string;
 }) {
   const inner = (
-    <div style={{ ...statCardStyle, height: "100%" }}>
-      <div style={statValueStyle}>
-        {value === null ? <span style={{ opacity: 0.4 }}>-</span> : value}
-      </div>
-      <div style={statLabelStyle}>{label}</div>
-      {hint ? (
-        <div
-          style={{
-            ...statLabelStyle,
-            marginTop: "0.5rem",
-            textTransform: "none",
-            letterSpacing: 0,
-            color: "var(--text-secondary)",
-            fontSize: "0.75rem",
-          }}
-        >
-          {hint}
-        </div>
-      ) : null}
-    </div>
+    <>
+      <div className="sg-tile__v">{value === null ? "-" : value}</div>
+      <span className="k sg-tile__k">{label}</span>
+      {hint ? <span className="sg-tile__n">{hint}</span> : null}
+    </>
   );
   if (href) {
     return (
-      <Link
-        href={href}
-        style={{ textDecoration: "none", color: "inherit", display: "block" }}
-      >
+      <Link href={href} className="sg-tile">
         {inner}
       </Link>
     );
   }
-  return inner;
+  return <div className="sg-tile">{inner}</div>;
 }
 
 export default async function AdminDashboardPage() {
@@ -252,110 +230,84 @@ export default async function AdminDashboardPage() {
   const monthOverBudget = combinedMonth > TYPICAL_MONTH_USD * 2;
 
   return (
-    <div>
-      <h1
-        style={{
-          fontFamily: '"Terminal Grotesque", sans-serif',
-          fontSize: "4rem",
-          lineHeight: 0.9,
-          fontWeight: 400,
-          margin: "0 0 0.5rem 0",
-        }}
-      >
-        admin
-      </h1>
-      <p
-        style={{
-          fontFamily: FONT_MONO,
-          fontSize: "0.95rem",
-          color: "var(--text-secondary)",
-          margin: "0 0 2.5rem 0",
-        }}
-      >
-        post-show ritual: enter votes, flip status, run eval, publish.
-      </p>
+    <>
+      <Win file="dashboard.txt" span="w--eight">
+        <p className="k">singulars &middot; admin</p>
+        <h1 className="disp">dashboard</h1>
+        <p className="sub">
+          Post-show ritual: enter votes, flip status, run eval, publish.
+        </p>
+      </Win>
 
-      <h2 style={{ ...sectionHeadingStyle, marginBottom: "1rem" }}>data</h2>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
-          gap: "1rem",
-          marginBottom: "2.5rem",
-        }}
-      >
-        <StatCard
-          label="performances"
-          value={counts.performances}
-          href="/admin/performances"
-        />
-        <StatCard
-          label="themes"
-          value={counts.themes}
-          href="/admin/themes"
-        />
-        <StatCard
-          label="poems"
-          value={counts.poems}
-          hint={`${counts.poemsByHuman} halim · ${counts.poemsByMachine} machine`}
-        />
-        <StatCard
-          label="audience votes"
-          value={counts.votes}
-          hint={`${counts.votesOnline} online · ${counts.votes - counts.votesOnline} paper ballots`}
-        />
-      </div>
+      <Win file="data/" span="w--seven" meta="the archive">
+        <div className="sg-tiles">
+          <StatCard
+            label="performances"
+            value={counts.performances}
+            href="/admin/performances"
+          />
+          <StatCard label="themes" value={counts.themes} href="/admin/themes" />
+          <StatCard
+            label="poems"
+            value={counts.poems}
+            hint={`${counts.poemsByHuman} halim · ${counts.poemsByMachine} machine`}
+          />
+          <StatCard
+            label="audience votes"
+            value={counts.votes}
+            hint={`${counts.votesOnline} online · ${counts.votes - counts.votesOnline} paper ballots`}
+          />
+        </div>
+      </Win>
 
-      <h2 style={{ ...sectionHeadingStyle, marginBottom: "1rem" }}>
-        eval pipeline
-      </h2>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
-          gap: "1rem",
-          marginBottom: "1rem",
-        }}
-      >
-        <StatCard
-          label="candidate models"
-          value={counts.candidateModels}
-          href={migrationApplied ? "/admin/models" : undefined}
-        />
-        <StatCard
-          label="eval runs"
-          value={counts.evalRuns}
-          href={migrationApplied ? "/admin/eval-runs" : undefined}
-        />
-        <StatCard
-          label="fine-tune jobs"
-          value={counts.fineTuneJobs}
-          href={counts.fineTuneJobs !== null ? "/admin/fine-tunes" : undefined}
-        />
-      </div>
+      <Win file="pipeline/" span="w--five" meta="eval">
+        <div className="sg-tiles">
+          <StatCard
+            label="candidate models"
+            value={counts.candidateModels}
+            href={migrationApplied ? "/admin/models" : undefined}
+          />
+          <StatCard
+            label="eval runs"
+            value={counts.evalRuns}
+            href={migrationApplied ? "/admin/eval-runs" : undefined}
+          />
+          <StatCard
+            label="fine-tune jobs"
+            value={counts.fineTuneJobs}
+            href={counts.fineTuneJobs !== null ? "/admin/fine-tunes" : undefined}
+          />
+        </div>
 
-      {/* Cost cards (US-120, US-125) */}
+        {!migrationApplied ? (
+          <p className="note">
+            The eval pipeline migration is not applied yet. Run{" "}
+            <code>planning/research/06-migration-evals.sql</code> via the
+            supabase mcp or psql.
+          </p>
+        ) : counts.evalRuns === 0 ? (
+          <p className="note">
+            No eval runs yet.{" "}
+            <Link href="/admin/eval-runs/new">start one &rarr;</Link>
+          </p>
+        ) : null}
+      </Win>
+
       {migrationApplied ? (
-        <>
-          <h2 style={{ ...sectionHeadingStyle, marginBottom: "1rem" }}>
-            spend
-          </h2>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-              gap: "1rem",
-              marginBottom: "0.75rem",
-            }}
-          >
+        <Win
+          file="spend/"
+          span="w--eight"
+          meta={`month to date ${fmtUsd(combinedMonth)}`}
+        >
+          <div className="sg-tiles">
             <StatCard
-              label="eval - this month"
+              label="eval, this month"
               value={fmtUsd(costs.evalMonth)}
               hint={`year ${fmtUsd(costs.evalYear)} · latest ${fmtUsd(costs.evalLatest)}`}
               href="/admin/eval-runs"
             />
             <StatCard
-              label="fine-tune - this month"
+              label="fine-tune, this month"
               value={fmtUsd(costs.finetuneMonth)}
               hint={`year ${fmtUsd(costs.finetuneYear)} · latest ${fmtUsd(costs.finetuneLatest)}`}
               href={
@@ -363,62 +315,14 @@ export default async function AdminDashboardPage() {
               }
             />
           </div>
-          <p
-            style={{
-              fontFamily: FONT_MONO,
-              fontSize: "0.85rem",
-              color: monthOverBudget ? "#92400e" : "var(--text-secondary)",
-              border: monthOverBudget ? "1px solid #d97706" : "none",
-              padding: monthOverBudget ? "0.5rem 0.75rem" : 0,
-              marginTop: 0,
-              marginBottom: "2.5rem",
-            }}
-          >
-            combined month-to-date: {fmtUsd(combinedMonth)}
+          <p className={monthOverBudget ? "sg-err" : "note"}>
+            Combined month to date: {fmtUsd(combinedMonth)}
             {monthOverBudget
-              ? ` · 2x typical (~${fmtUsd(TYPICAL_MONTH_USD)}/month). check eval-runs and fine-tunes.`
+              ? `. Twice the typical ${fmtUsd(TYPICAL_MONTH_USD)} a month. Check eval runs and fine-tunes.`
               : ""}
           </p>
-        </>
+        </Win>
       ) : null}
-
-      {!migrationApplied ? (
-        <div
-          style={{
-            border: "1px solid var(--border-light)",
-            padding: "1rem 1.25rem",
-            fontFamily: FONT_MONO,
-            fontSize: "0.85rem",
-            color: "var(--text-secondary)",
-            marginBottom: "2.5rem",
-          }}
-        >
-          eval pipeline migration not yet applied. run{" "}
-          <code style={{ color: "var(--text-primary)" }}>
-            planning/research/06-migration-evals.sql
-          </code>{" "}
-          via the supabase mcp or psql.
-        </div>
-      ) : counts.evalRuns === 0 ? (
-        <div
-          style={{
-            border: "1px solid var(--border-light)",
-            padding: "1rem 1.25rem",
-            fontFamily: FONT_MONO,
-            fontSize: "0.85rem",
-            color: "var(--text-secondary)",
-            marginBottom: "2.5rem",
-          }}
-        >
-          no eval runs yet.{" "}
-          <Link
-            href="/admin/eval-runs/new"
-            style={{ color: "var(--text-primary)" }}
-          >
-            start one →
-          </Link>
-        </div>
-      ) : null}
-    </div>
+    </>
   );
 }

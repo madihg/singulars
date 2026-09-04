@@ -9,7 +9,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import { FONT_MONO, btnSmallStyle, statusPillStyle } from "@/lib/admin-styles";
+import Win from "@/components/desktop/Win";
 import { ConfirmModal } from "../_components/ConfirmModal";
 import { Toaster, useToasts } from "../_components/Toaster";
 
@@ -82,128 +82,90 @@ export default function ModelsPage() {
   }
 
   return (
-    <div>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "baseline",
-          justifyContent: "space-between",
-          marginBottom: "1.5rem",
-        }}
+    <>
+      <Win
+        file="models/"
+        span="w--eight"
+        meta={loading ? "loading" : `${models.length} candidates`}
       >
-        <h1
-          style={{
-            fontFamily: '"Terminal Grotesque", sans-serif',
-            fontSize: "3.5rem",
-            lineHeight: 0.9,
-            margin: 0,
-          }}
-        >
-          models
-        </h1>
-        <Link
-          href="/admin/models/new"
-          style={{ ...btnSmallStyle, textDecoration: "none" }}
-        >
-          + new model
-        </Link>
-      </div>
+        <div className="sg-row sg-row--between" style={{ marginBottom: "1rem" }}>
+          <button
+            type="button"
+            className="btn"
+            aria-pressed={includeArchived}
+            onClick={() => setIncludeArchived((v) => !v)}
+          >
+            show archived
+          </button>
+          <Link className="btn btn--send" href="/admin/models/new">
+            new model
+          </Link>
+        </div>
 
-      <button
-        onClick={() => setIncludeArchived((v) => !v)}
-        style={{
-          fontFamily: FONT_MONO,
-          fontSize: "0.8rem",
-          background: "none",
-          border: "none",
-          padding: 0,
-          cursor: "pointer",
-          opacity: includeArchived ? 1 : 0.5,
-          color: "var(--text-secondary)",
-          marginBottom: "1.5rem",
-        }}
-      >
-        show archived {includeArchived ? "·" : ""}
-      </button>
-
-      {loading ? (
-        <p style={{ fontFamily: FONT_MONO, color: "var(--text-secondary)" }}>
-          loading...
-        </p>
-      ) : models.length === 0 ? (
-        <p style={{ fontFamily: FONT_MONO, color: "var(--text-secondary)" }}>
-          no candidate models yet.
-        </p>
-      ) : (
-        <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-          {models.map((m) => (
-            <li
-              key={m.id}
-              style={{
-                borderTop: "1px solid var(--border-light)",
-                padding: "1rem 0",
-                opacity: m.archived ? 0.5 : 1,
-                display: "flex",
-                gap: "1rem",
-                alignItems: "center",
-                flexWrap: "wrap",
-              }}
-            >
+        {loading ? (
+          <p className="note" style={{ marginTop: 0 }}>
+            Loading.
+          </p>
+        ) : models.length === 0 ? (
+          <p className="note" style={{ marginTop: 0 }}>
+            No candidate models yet.
+          </p>
+        ) : (
+          <>
+            <div className="hdr">
+              <span className="k">model</span>
+              <span className="k">visibility</span>
+              <span className="k">family</span>
+              <span className="k">actions</span>
+            </div>
+            {models.map((m) => (
               <div
-                aria-label={`color ${m.color}`}
-                style={{
-                  width: 24,
-                  height: 24,
-                  background: m.color,
-                  flexShrink: 0,
-                }}
-              />
-              <div style={{ flex: "1 1 200px", minWidth: 0 }}>
-                <div
-                  style={{
-                    fontFamily: '"Standard", sans-serif',
-                    fontSize: "1rem",
-                    fontWeight: 500,
-                  }}
-                >
+                className="sg-line sg-line--4"
+                key={m.id}
+                style={{ opacity: m.archived ? 0.55 : 1 }}
+              >
+                <span className="sg-line__n">
+                  <i className="cdot" style={{ ["--c" as string]: m.color }} />
                   {m.name}
-                </div>
-                <div
-                  style={{
-                    fontFamily: FONT_MONO,
-                    fontSize: "0.8rem",
-                    color: "var(--text-tertiary)",
-                  }}
-                >
+                </span>
+                <span className="fr__s">
+                  <span
+                    className="sg-pill"
+                    data-state={m.is_public ? "published" : "draft"}
+                  >
+                    {m.is_public ? "public" : "private"}
+                  </span>
+                </span>
+                <span className="fr__w">
                   {m.family} · {m.slug}
-                </div>
+                </span>
+                <span className="sg-line__a">
+                  <button
+                    type="button"
+                    className="btn"
+                    aria-pressed={m.is_public}
+                    onClick={() => togglePublic(m)}
+                  >
+                    {m.is_public ? "make private" : "make public"}
+                  </button>
+                  <Link className="btn" href={`/admin/models/${m.id}`}>
+                    edit
+                  </Link>
+                  {!m.archived ? (
+                    <button
+                      type="button"
+                      className="btn btn--danger"
+                      onClick={() => setConfirmArchive(m)}
+                    >
+                      archive
+                    </button>
+                  ) : null}
+                </span>
               </div>
-              <span
-                style={statusPillStyle(m.is_public ? "published" : "draft")}
-              >
-                {m.is_public ? "public" : "private"}
-              </span>
-              <button onClick={() => togglePublic(m)} style={btnSmallStyle}>
-                {m.is_public ? "make private" : "make public"}
-              </button>
-              <Link
-                href={`/admin/models/${m.id}`}
-                style={{ ...btnSmallStyle, textDecoration: "none" }}
-              >
-                edit
-              </Link>
-              {!m.archived ? (
-                <button
-                  onClick={() => setConfirmArchive(m)}
-                  style={btnSmallStyle}
-                >
-                  archive
-                </button>
-              ) : null}
-            </li>
-          ))}
-        </ul>
-      )}
+            ))}
+          </>
+        )}
+      </Win>
 
       {confirmArchive ? (
         <ConfirmModal
@@ -217,6 +179,6 @@ export default function ModelsPage() {
         />
       ) : null}
       <Toaster toasts={toasts} dismiss={dismiss} />
-    </div>
+    </>
   );
 }

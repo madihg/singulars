@@ -355,6 +355,7 @@ export default function ImageLightbox({ accent }: { accent?: string }) {
           <img
             src={current.src}
             alt={current.alt}
+            decoding="async"
             style={{
               maxWidth: "100%",
               maxHeight: "100%",

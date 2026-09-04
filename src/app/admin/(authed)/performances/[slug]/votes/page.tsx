@@ -13,12 +13,7 @@
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import {
-  FONT_MONO,
-  inputStyle,
-  btnSmallStyle,
-  backLinkStyle,
-} from "@/lib/admin-styles";
+import Win from "@/components/desktop/Win";
 import { ConfirmModal } from "../../../_components/ConfirmModal";
 import { Toaster, useToasts } from "../../../_components/Toaster";
 
@@ -190,75 +185,45 @@ export default function VoteEntryPage() {
   const changes = changedThemes();
 
   return (
-    <div>
-      <Link href="/admin/performances" style={backLinkStyle}>
-        ← performances
-      </Link>
-      <h1
-        style={{
-          fontFamily: '"Terminal Grotesque", sans-serif',
-          fontSize: "3.5rem",
-          lineHeight: 0.9,
-          margin: "1rem 0 0.5rem 0",
-        }}
+    <>
+      <Win
+        file={`${slug}/votes.txt`}
+        span="w--eight"
+        meta={changes.length > 0 ? `${changes.length} unsaved` : undefined}
       >
-        {perfName || slug}
-      </h1>
-      <p
-        style={{
-          fontFamily: FONT_MONO,
-          fontSize: "0.85rem",
-          color: "var(--text-secondary)",
-          margin: "0 0 2rem 0",
-        }}
-      >
-        vote entry · paper-ballot reconciliation
-      </p>
-
-      {/* CSV import */}
-      <div
-        style={{
-          border: "1px dashed rgba(0,0,0,0.18)",
-          padding: "1rem",
-          marginBottom: "2rem",
-        }}
-      >
-        <div
-          style={{
-            fontFamily: FONT_MONO,
-            fontSize: "0.8rem",
-            color: "var(--text-secondary)",
-            marginBottom: "0.75rem",
-          }}
-        >
-          drop a csv with columns theme_slug, human_votes, machine_votes - or
-          pick a file
+        <p className="k">vote entry &middot; paper ballot reconciliation</p>
+        <h1 className="h2">{perfName || slug}</h1>
+        <div className="sg-row" style={{ marginTop: "0.7rem" }}>
+          <Link className="btn" href="/admin/performances">
+            all performances
+          </Link>
         </div>
-        <input
-          type="file"
-          accept=".csv,text/csv"
-          onChange={(e) => setCsvFile(e.target.files?.[0] || null)}
-          style={{
-            fontFamily: FONT_MONO,
-            fontSize: "0.85rem",
-            marginRight: "0.75rem",
-          }}
-        />
-        {csvFile ? (
-          <button onClick={handleCsv} style={btnSmallStyle}>
-            commit {csvFile.name}
-          </button>
-        ) : null}
+
+        <div className="rule" />
+
+        <p className="k">csv import</p>
+        <p className="note" style={{ marginTop: "0.35rem" }}>
+          Drop a csv with columns theme_slug, human_votes, machine_votes, or
+          pick a file.
+        </p>
+        <div className="sg-row" style={{ marginTop: "0.6rem" }}>
+          <input
+            type="file"
+            accept=".csv,text/csv"
+            aria-label="csv file"
+            onChange={(e) => setCsvFile(e.target.files?.[0] || null)}
+            style={{ fontFamily: "var(--font-mono)", fontSize: "0.8rem" }}
+          />
+          {csvFile ? (
+            <button type="button" className="btn" onClick={handleCsv}>
+              commit {csvFile.name}
+            </button>
+          ) : null}
+        </div>
         {csvErrors.length > 0 ? (
           <ul
-            style={{
-              listStyle: "none",
-              padding: 0,
-              margin: "0.75rem 0 0 0",
-              fontFamily: FONT_MONO,
-              fontSize: "0.8rem",
-              color: "#dc2626",
-            }}
+            className="sg-err"
+            style={{ listStyle: "none", padding: 0, margin: "0.6rem 0 0" }}
           >
             {csvErrors.map((e) => (
               <li key={`${e.row}-${e.theme_slug}`}>
@@ -267,60 +232,47 @@ export default function VoteEntryPage() {
             ))}
           </ul>
         ) : null}
-      </div>
 
-      {/* Save all bar */}
-      {changes.length > 0 ? (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            background: "#fafafa",
-            border: "1px solid var(--border-light)",
-            padding: "0.75rem 1rem",
-            position: "sticky",
-            top: 0,
-            zIndex: 10,
-            marginBottom: "1rem",
-            fontFamily: FONT_MONO,
-            fontSize: "0.85rem",
-          }}
-        >
-          <span>
-            {changes.length} theme{changes.length === 1 ? "" : "s"} changed
-          </span>
-          <button
-            onClick={() => setConfirmingAll(true)}
-            disabled={savingAll}
-            style={btnSmallStyle}
-          >
-            save all
-          </button>
-        </div>
-      ) : null}
+        {changes.length > 0 ? (
+          <>
+            <div className="rule" />
+            <div className="sg-row sg-row--between">
+              <span className="k">
+                {changes.length} theme{changes.length === 1 ? "" : "s"} changed
+              </span>
+              <button
+                type="button"
+                className="btn btn--send"
+                onClick={() => setConfirmingAll(true)}
+                disabled={savingAll}
+              >
+                save all
+              </button>
+            </div>
+          </>
+        ) : null}
+      </Win>
 
-      {loading ? (
-        <p
-          style={{
-            fontFamily: FONT_MONO,
-            color: "var(--text-secondary)",
-          }}
-        >
-          loading...
-        </p>
-      ) : error ? (
-        <p style={{ fontFamily: FONT_MONO, color: "#dc2626" }}>{error}</p>
-      ) : themes.length === 0 ? (
-        <p style={{ fontFamily: FONT_MONO, color: "var(--text-secondary)" }}>
-          no themes for this performance yet.{" "}
-          <Link href="/theme-voting/admin" style={{ color: "inherit" }}>
-            add some →
-          </Link>
-        </p>
-      ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
-          {themes.map((t) => {
+      <Win
+        file="themes/"
+        span="w--eight"
+        meta={loading ? "loading" : `${themes.length} themes`}
+      >
+        {loading ? (
+          <p className="note" style={{ marginTop: 0 }}>
+            Loading.
+          </p>
+        ) : error ? (
+          <p className="sg-err" style={{ marginTop: 0 }}>
+            {error}
+          </p>
+        ) : themes.length === 0 ? (
+          <p className="note" style={{ marginTop: 0 }}>
+            No themes for this performance yet.{" "}
+            <Link href="/admin/themes">add some &rarr;</Link>
+          </p>
+        ) : (
+          themes.map((t) => {
             const e = edits[t.theme_slug] || {};
             const isExpanded = expanded[t.theme_slug];
             const dirty =
@@ -331,112 +283,91 @@ export default function VoteEntryPage() {
                 t.machine &&
                 e.machine !== t.machine.vote_count);
             return (
-              <div
-                key={t.theme_slug}
-                style={{
-                  borderTop: "1px solid var(--border-light)",
-                  paddingTop: "1.25rem",
-                }}
-              >
-                <h3
-                  style={{
-                    fontFamily: '"Diatype Variable", sans-serif',
-                    fontSize: "1.1rem",
-                    fontWeight: 700,
-                    margin: "0 0 0.75rem 0",
-                  }}
-                >
-                  {t.theme}
-                </h3>
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-                    gap: "1.5rem",
-                  }}
-                >
-                  <PoemBlock
-                    label="human"
-                    poem={t.human}
-                    expanded={!!isExpanded}
-                    onToggle={() =>
-                      setExpanded((s) => ({
-                        ...s,
-                        [t.theme_slug]: !s[t.theme_slug],
-                      }))
-                    }
-                    value={e.human ?? t.human?.vote_count ?? 0}
-                    onChange={(n) => setHumanVotes(t.theme_slug, n)}
-                  />
-                  <PoemBlock
-                    label="machine"
-                    poem={t.machine}
-                    expanded={!!isExpanded}
-                    onToggle={() =>
-                      setExpanded((s) => ({
-                        ...s,
-                        [t.theme_slug]: !s[t.theme_slug],
-                      }))
-                    }
-                    value={e.machine ?? t.machine?.vote_count ?? 0}
-                    onChange={(n) => setMachineVotes(t.theme_slug, n)}
-                  />
-                </div>
-                <div
-                  style={{
-                    display: "flex",
-                    flexWrap: "wrap",
-                    gap: "0.5rem",
-                    marginTop: "1rem",
-                    alignItems: "center",
-                  }}
-                >
-                  <input
-                    type="text"
-                    placeholder="optional - why this change?"
-                    value={e.reason || ""}
-                    onChange={(ev) => setReason(t.theme_slug, ev.target.value)}
-                    style={{
-                      ...inputStyle,
-                      fontSize: "0.8rem",
-                      flex: "1 1 240px",
-                    }}
-                  />
-                  <button
-                    onClick={() => saveRow(t)}
-                    disabled={!dirty}
-                    style={btnSmallStyle}
-                  >
-                    save row
-                  </button>
-                </div>
-                {/* History disclosure (US §9.4): override audit trail per poem. */}
-                <div
-                  style={{
-                    display: "flex",
-                    gap: "1.5rem",
-                    marginTop: "0.5rem",
-                    flexWrap: "wrap",
-                  }}
-                >
-                  {t.human ? (
-                    <HistoryDisclosure
-                      label="human history"
-                      poemId={t.human.id}
+              <details className="file" key={t.theme_slug} open={!!dirty}>
+                <summary>
+                  <span className="fr__n">
+                    <i className="tri" aria-hidden="true" />
+                    {t.theme}
+                  </span>
+                  <span className="fr__s">
+                    {(t.human?.vote_count ?? 0) + (t.machine?.vote_count ?? 0)}{" "}
+                    votes
+                  </span>
+                  <span className="fr__w">
+                    {dirty ? "unsaved changes" : ""}
+                  </span>
+                  <span className="fr__d">enter votes</span>
+                </summary>
+                <div className="fr__b">
+                  <div className="sg-duel">
+                    <PoemBlock
+                      label="human"
+                      poem={t.human}
+                      expanded={!!isExpanded}
+                      onToggle={() =>
+                        setExpanded((s) => ({
+                          ...s,
+                          [t.theme_slug]: !s[t.theme_slug],
+                        }))
+                      }
+                      value={e.human ?? t.human?.vote_count ?? 0}
+                      onChange={(n) => setHumanVotes(t.theme_slug, n)}
                     />
-                  ) : null}
-                  {t.machine ? (
-                    <HistoryDisclosure
-                      label="machine history"
-                      poemId={t.machine.id}
+                    <PoemBlock
+                      label="machine"
+                      poem={t.machine}
+                      expanded={!!isExpanded}
+                      onToggle={() =>
+                        setExpanded((s) => ({
+                          ...s,
+                          [t.theme_slug]: !s[t.theme_slug],
+                        }))
+                      }
+                      value={e.machine ?? t.machine?.vote_count ?? 0}
+                      onChange={(n) => setMachineVotes(t.theme_slug, n)}
                     />
-                  ) : null}
+                  </div>
+                  <div className="sg-row" style={{ marginTop: "0.8rem" }}>
+                    <label className="dk-input" style={{ flex: "1 1 16rem" }}>
+                      <span>reason (optional)</span>
+                      <input
+                        type="text"
+                        placeholder="why this change"
+                        value={e.reason || ""}
+                        onChange={(ev) =>
+                          setReason(t.theme_slug, ev.target.value)
+                        }
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      className="btn btn--send"
+                      onClick={() => saveRow(t)}
+                      disabled={!dirty}
+                    >
+                      save row
+                    </button>
+                  </div>
+                  <div className="sg-row" style={{ marginTop: "0.6rem" }}>
+                    {t.human ? (
+                      <HistoryDisclosure
+                        label="human history"
+                        poemId={t.human.id}
+                      />
+                    ) : null}
+                    {t.machine ? (
+                      <HistoryDisclosure
+                        label="machine history"
+                        poemId={t.machine.id}
+                      />
+                    ) : null}
+                  </div>
                 </div>
-              </div>
+              </details>
             );
-          })}
-        </div>
-      )}
+          })
+        )}
+      </Win>
 
       {confirmingAll ? (
         <ConfirmModal
@@ -466,7 +397,7 @@ export default function VoteEntryPage() {
         />
       ) : null}
       <Toaster toasts={toasts} dismiss={dismiss} />
-    </div>
+    </>
   );
 }
 
@@ -481,6 +412,7 @@ type Override = {
   created_at: string;
 };
 
+/** The override audit trail for one poem, fetched on first open. */
 function HistoryDisclosure({
   label,
   poemId,
@@ -509,71 +441,42 @@ function HistoryDisclosure({
   }
 
   return (
-    <div style={{ flex: "1 1 240px" }}>
+    <div style={{ flex: "1 1 16rem", minWidth: 0 }}>
       <button
+        type="button"
+        className="btn"
+        aria-expanded={open}
         onClick={toggle}
-        style={{
-          background: "transparent",
-          border: "none",
-          padding: 0,
-          fontFamily: FONT_MONO,
-          fontSize: "0.75rem",
-          color: "var(--text-tertiary)",
-          cursor: "pointer",
-        }}
       >
-        {open ? "- " : "+ "}
         {label}
         {rows ? ` (${rows.length})` : ""}
       </button>
       {open ? (
-        <div
-          style={{
-            marginTop: "0.5rem",
-            padding: "0.5rem 0.75rem",
-            border: "1px solid var(--border-light)",
-            fontFamily: FONT_MONO,
-            fontSize: "0.75rem",
-          }}
-        >
+        <div style={{ marginTop: "0.5rem" }}>
           {loading ? (
-            <span style={{ color: "var(--text-secondary)" }}>loading...</span>
+            <p className="k">loading</p>
           ) : rows === null || rows.length === 0 ? (
-            <span style={{ color: "var(--text-secondary)" }}>no overrides</span>
+            <p className="k">no overrides</p>
           ) : (
-            <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-              {rows.map((r) => (
-                <li
-                  key={r.id}
-                  style={{
-                    paddingTop: "0.4rem",
-                    paddingBottom: "0.4rem",
-                    borderTop: "1px solid var(--border-light)",
-                    opacity: r.active ? 1 : 0.5,
-                  }}
-                >
-                  <div>
-                    {new Date(r.created_at)
-                      .toISOString()
-                      .slice(0, 16)
-                      .replace("T", " ")}{" "}
-                    · {r.online_count_at_override} online + {r.manual_delta}{" "}
-                    manual = {r.new_total}
-                    {r.active ? " · active" : ""}
-                  </div>
-                  {r.reason ? (
-                    <div style={{ color: "var(--text-secondary)" }}>
-                      reason: {r.reason}
-                    </div>
-                  ) : null}
-                  {r.by ? (
-                    <div style={{ color: "var(--text-tertiary)" }}>
-                      by {r.by}
-                    </div>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
+            rows.map((r) => (
+              <div
+                className="sg-line"
+                key={r.id}
+                style={{ opacity: r.active ? 1 : 0.55 }}
+              >
+                <span className="fr__w">
+                  {new Date(r.created_at)
+                    .toISOString()
+                    .slice(0, 16)
+                    .replace("T", " ")}{" "}
+                  · {r.online_count_at_override} online + {r.manual_delta}{" "}
+                  manual = {r.new_total}
+                  {r.active ? " · active" : ""}
+                  {r.reason ? ` · ${r.reason}` : ""}
+                  {r.by ? ` · by ${r.by}` : ""}
+                </span>
+              </div>
+            ))
           )}
         </div>
       ) : null}
@@ -581,6 +484,7 @@ function HistoryDisclosure({
   );
 }
 
+/** One side of a pair: the poem, and the count to enter for it. */
 function PoemBlock({
   label,
   poem,
@@ -600,62 +504,41 @@ function PoemBlock({
     ? poem.text.slice(0, 60) + (poem.text.length > 60 ? "..." : "")
     : "(missing)";
   return (
-    <div>
-      <div
-        style={{
-          fontFamily: FONT_MONO,
-          fontSize: "0.7rem",
-          textTransform: "uppercase",
-          letterSpacing: "0.05em",
-          color: "var(--text-tertiary)",
-          marginBottom: "0.5rem",
-        }}
-      >
-        {label}
-      </div>
+    <div className="sg-poem" style={{ cursor: "default" }}>
+      <span className="k">{label}</span>
       <button
+        type="button"
         onClick={onToggle}
+        aria-expanded={expanded}
         style={{
+          display: "block",
+          width: "100%",
+          textAlign: "left",
           background: "transparent",
           border: "none",
           padding: 0,
-          textAlign: "left",
-          fontFamily: '"Standard", sans-serif',
-          fontSize: "0.95rem",
-          color: "var(--text-primary)",
+          margin: "0.4rem 0 0",
           cursor: poem ? "pointer" : "default",
-          marginBottom: "0.75rem",
         }}
       >
-        {expanded && poem ? (
-          <span style={{ whiteSpace: "pre-line", lineHeight: 1.7 }}>
-            {poem.text}
-          </span>
-        ) : (
-          snippet
-        )}
+        <span className="sg-poem__t">
+          {expanded && poem ? poem.text : snippet}
+        </span>
       </button>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "0.5rem",
-          fontFamily: FONT_MONO,
-          fontSize: "0.85rem",
-        }}
-      >
-        <input
-          type="number"
-          min={0}
-          inputMode="numeric"
-          value={value}
-          onChange={(e) =>
-            onChange(Math.max(0, Math.floor(Number(e.target.value) || 0)))
-          }
-          disabled={!poem}
-          style={{ ...inputStyle, width: 80, padding: "0.4rem 0.6rem" }}
-        />
-        <span style={{ color: "var(--text-tertiary)" }}>votes</span>
+      <div className="sg-poem__f">
+        <label className="dk-input" style={{ maxWidth: "7rem" }}>
+          <span>votes</span>
+          <input
+            type="number"
+            min={0}
+            inputMode="numeric"
+            value={value}
+            onChange={(e) =>
+              onChange(Math.max(0, Math.floor(Number(e.target.value) || 0)))
+            }
+            disabled={!poem}
+          />
+        </label>
       </div>
     </div>
   );

@@ -9,12 +9,7 @@
  */
 
 import { useEffect, useState, useCallback } from "react";
-import {
-  FONT_MONO,
-  inputStyle,
-  btnPrimaryStyle,
-  btnSecondaryStyle,
-} from "@/lib/admin-styles";
+import Win from "@/components/desktop/Win";
 import { DEFAULT_SYSTEM_PROMPT } from "@/lib/training-data";
 
 type Perf = {
@@ -101,100 +96,62 @@ export default function TrainingDataPage() {
   }
 
   return (
-    <div>
-      <h1
-        style={{
-          fontFamily: '"Terminal Grotesque", sans-serif',
-          fontSize: "3.5rem",
-          lineHeight: 0.9,
-          margin: "0 0 0.5rem 0",
-        }}
-      >
-        training data
-      </h1>
-      <p
-        style={{
-          fontFamily: FONT_MONO,
-          fontSize: "0.9rem",
-          color: "var(--text-secondary)",
-          margin: "0 0 2rem 0",
-        }}
-      >
-        export jsonl for openai, together, or any other provider.
-      </p>
+    <>
+      <Win file="training-data.txt" span="w--five">
+        <p className="k">fine-tune pipeline</p>
+        <h1 className="h2">training data</h1>
+        <p className="note">
+          Export jsonl for openai, together, or any other provider.
+        </p>
+        <div className="rule" />
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "minmax(280px, 1fr) minmax(280px, 1fr)",
-          gap: "2rem",
-        }}
-      >
         <form
           onSubmit={(e) => e.preventDefault()}
-          style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}
+          className="sg-stack sg-stack--tight"
         >
-          <Field label="source performances">
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+          <div>
+            <span className="k">source performances</span>
+            <div className="sg-row sg-row--tight" style={{ marginTop: "0.4rem" }}>
               {perfs
                 .filter((p) => p.status === "trained")
                 .map((p) => (
                   <button
                     key={p.id}
                     type="button"
+                    className="btn"
+                    aria-pressed={selected.includes(p.slug)}
                     onClick={() => toggle(p.slug)}
-                    style={{
-                      fontFamily: FONT_MONO,
-                      fontSize: "0.85rem",
-                      padding: "0.4rem 0.75rem",
-                      border: `1px solid ${selected.includes(p.slug) ? "var(--text-primary)" : "var(--border-light)"}`,
-                      background: selected.includes(p.slug)
-                        ? "var(--text-primary)"
-                        : "transparent",
-                      color: selected.includes(p.slug)
-                        ? "#fff"
-                        : "var(--text-primary)",
-                      cursor: "pointer",
-                    }}
                   >
                     {p.name}
                   </button>
                 ))}
             </div>
-          </Field>
+          </div>
 
-          <Field label="format">
-            <div style={{ display: "flex", gap: "0.5rem" }}>
+          <div>
+            <span className="k">format</span>
+            <div className="sg-row sg-row--tight" style={{ marginTop: "0.4rem" }}>
               {(["sft", "dpo"] as const).map((f) => (
                 <button
                   key={f}
                   type="button"
+                  className="btn"
+                  aria-pressed={format === f}
                   onClick={() => setFormat(f)}
-                  style={{
-                    fontFamily: FONT_MONO,
-                    fontSize: "0.85rem",
-                    padding: "0.4rem 0.75rem",
-                    border: `1px solid ${format === f ? "var(--text-primary)" : "var(--border-light)"}`,
-                    background:
-                      format === f ? "var(--text-primary)" : "transparent",
-                    color: format === f ? "#fff" : "var(--text-primary)",
-                    cursor: "pointer",
-                  }}
                 >
                   {f.toUpperCase()}
                 </button>
               ))}
             </div>
-          </Field>
+          </div>
 
           <Field
             label="hold-out performance"
-            hint="excluded from training; sibling _holdout.jsonl available"
+            hint="excluded from training. a sibling _holdout.jsonl is available."
           >
             <select
               value={holdout}
               onChange={(e) => setHoldout(e.target.value)}
-              style={{ ...inputStyle, padding: "0.65rem 0.75rem" }}
             >
               <option value="">none</option>
               {perfs
@@ -214,72 +171,46 @@ export default function TrainingDataPage() {
               value={systemPrompt}
               onChange={(e) => setSystemPrompt(e.target.value)}
               rows={6}
-              style={{
-                ...inputStyle,
-                fontFamily: FONT_MONO,
-                resize: "vertical",
-              }}
             />
           </Field>
 
-          <a
-            href={downloadUrl()}
-            style={{
-              ...btnPrimaryStyle,
-              textDecoration: "none",
-              display: "inline-block",
-              textAlign: "center",
-            }}
-          >
-            download jsonl
-          </a>
-        </form>
-
-        <div
-          style={{
-            border: "1px solid var(--border-light)",
-            padding: "1rem",
-            fontFamily: FONT_MONO,
-            fontSize: "0.8rem",
-            display: "flex",
-            flexDirection: "column",
-            gap: "0.75rem",
-            minHeight: 240,
-          }}
-        >
-          <div
-            style={{
-              color: "var(--text-secondary)",
-              fontSize: "0.85rem",
-            }}
-          >
-            {loading
-              ? "computing..."
-              : preview
-                ? `${preview.rows} rows · ~${preview.approxTokens} tokens${preview.holdoutRows ? ` · ${preview.holdoutRows} holdout` : ""}`
-                : "select at least one performance"}
+          <div className="sg-row sg-row--end">
+            <a className="btn btn--send" href={downloadUrl()}>
+              download jsonl
+            </a>
           </div>
-          {preview && preview.preview.length > 0 ? (
-            <pre
-              style={{
-                fontFamily: FONT_MONO,
-                fontSize: "0.7rem",
-                whiteSpace: "pre-wrap",
-                margin: 0,
-                color: "var(--text-primary)",
-                overflow: "auto",
-                maxHeight: 480,
-              }}
-            >
-              {preview.preview.join("\n\n")}
-            </pre>
-          ) : null}
-        </div>
-      </div>
-    </div>
+        </form>
+      </Win>
+
+      <Win
+        file="preview.jsonl"
+        span="w--seven"
+        meta={
+          loading
+            ? "computing"
+            : preview
+              ? `${preview.rows} rows`
+              : "nothing selected"
+        }
+      >
+        <p className="k">
+          {loading
+            ? "computing"
+            : preview
+              ? `${preview.rows} rows · ~${preview.approxTokens} tokens${preview.holdoutRows ? ` · ${preview.holdoutRows} holdout` : ""}`
+              : "select at least one performance"}
+        </p>
+        {preview && preview.preview.length > 0 ? (
+          <pre className="sg-pre" style={{ marginTop: "0.6rem" }}>
+            {preview.preview.join("\n\n")}
+          </pre>
+        ) : null}
+      </Win>
+    </>
   );
 }
 
+/** A labelled field in the desk register. */
 function Field({
   label,
   hint,
@@ -290,33 +221,14 @@ function Field({
   children: React.ReactNode;
 }) {
   return (
-    <label style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
-      <span
-        style={{
-          fontFamily: FONT_MONO,
-          fontSize: "0.75rem",
-          textTransform: "uppercase",
-          letterSpacing: "0.05em",
-          color: "var(--text-tertiary)",
-        }}
-      >
-        {label}
-      </span>
+    <label className="dk-input">
+      <span>{label}</span>
       {children}
       {hint ? (
-        <span
-          style={{
-            fontFamily: FONT_MONO,
-            fontSize: "0.75rem",
-            color: "var(--text-tertiary)",
-          }}
-        >
+        <span className="k" style={{ marginTop: "0.3rem" }}>
           {hint}
         </span>
       ) : null}
     </label>
   );
 }
-
-// Suppress unused import (btnSecondaryStyle reserved for future cancel button)
-void btnSecondaryStyle;

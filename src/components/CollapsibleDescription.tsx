@@ -15,26 +15,22 @@ interface Props {
 }
 
 /**
- * Collapsible wrapper around <PerformanceContentBlocks>.
+ * The "about this performance" window.
  *
- * Default state: EXPANDED - content stays in the DOM so search engines and
- * screen readers can read it. The toggle is for returning visitors who
- * already know the description and want to scroll past it without using
- * the "read the poems ↓" jump anchor at the top.
- *
- * Animation: simple max-height transition via CSS. The chevron rotates.
+ * Content stays in the DOM whether the window is open or shut, so search
+ * engines and screen readers read it either way. The bar doubles as the
+ * toggle, the way a window titlebar does. Linking to #<id> opens it and
+ * scrolls to it.
  */
 export default function CollapsibleDescription({
   content,
-  performanceColor,
-  a11yColor,
   defaultOpen = true,
   id,
 }: Props) {
   const [open, setOpen] = useState(defaultOpen);
 
   // Auto-expand when linked to via #<id> (e.g. a "read more about the piece"
-  // CTA → "#about"), and scroll it into view. Covers both initial load with
+  // CTA -> "#about"), and scroll it into view. Covers both initial load with
   // the hash and in-page hash changes.
   useEffect(() => {
     if (!id) return;
@@ -54,68 +50,38 @@ export default function CollapsibleDescription({
 
   return (
     <section
+      className="win w--seven"
       id={id}
-      style={{ marginBottom: "3rem", scrollMarginTop: "1.5rem" }}
-      aria-label="About this performance"
+      aria-label="about this performance"
     >
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        aria-expanded={open}
-        aria-controls="performance-description-body"
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          width: "100%",
-          padding: "0.85rem 0",
-          background: "transparent",
-          border: "none",
-          borderBottom: `1px solid ${open ? performanceColor : "rgba(0,0,0,0.12)"}`,
-          cursor: "pointer",
-          fontFamily: '"Diatype Mono Variable", monospace',
-          fontSize: "0.85rem",
-          letterSpacing: "0.05em",
-          textTransform: "uppercase",
-          color: open ? a11yColor : "rgba(0,0,0,0.6)",
-          textAlign: "left",
-          transition: "color 0.2s ease, border-color 0.2s ease",
-        }}
-      >
-        <span>about this performance</span>
-        <span
-          aria-hidden="true"
-          style={{
-            display: "inline-block",
-            transform: open ? "rotate(180deg)" : "rotate(0deg)",
-            transition: "transform 0.2s ease",
-            fontSize: "0.75rem",
-            lineHeight: 1,
-          }}
-        >
-          ▾
+      <div className="win__bar">
+        <span className="dots">
+          <i />
+          <i />
+          <i />
         </span>
-      </button>
+        <h2 className="win__t">about-this-performance.txt</h2>
+        <button
+          type="button"
+          className="btn"
+          onClick={() => setOpen((o) => !o)}
+          aria-expanded={open}
+          aria-controls="performance-description-body"
+          style={{ marginLeft: "auto" }}
+        >
+          {open ? "collapse" : "expand"}
+        </button>
+      </div>
 
       <div
+        className="win__b"
         id="performance-description-body"
         hidden={!open}
-        style={{ paddingTop: open ? "1.5rem" : 0 }}
       >
         <PerformanceContentBlocks content={content} />
-        <div style={{ textAlign: "right", marginTop: "1rem" }}>
-          <a
-            href="#themes"
-            style={{
-              fontFamily: '"Diatype Mono Variable", monospace',
-              fontSize: "0.8rem",
-              color: a11yColor,
-              textDecoration: "none",
-              borderBottom: `1px solid ${performanceColor}`,
-              paddingBottom: "2px",
-            }}
-          >
-            read the poems ↓
+        <div className="sg-row sg-row--end" style={{ marginTop: "0.9rem" }}>
+          <a className="btn" href="#themes">
+            read the poems &darr;
           </a>
         </div>
       </div>

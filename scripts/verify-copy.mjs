@@ -2,9 +2,10 @@
 /**
  * verify-copy - copy-law check, run by `npm run verify`.
  *
- * 1. FAILS the build on an em dash (U+2014) anywhere under src/. The hosted
- *    voice uses a spaced hyphen ( - ) instead, in prose, alt text, titles and
- *    JSX strings alike.
+ * 1. FAILS the build on a long dash - em (U+2014) or en (U+2013) - anywhere
+ *    under src/. The hosted voice uses a spaced hyphen ( - ) instead, in prose,
+ *    alt text, titles and JSX strings alike. Both dashes are banned by the same
+ *    law (halim-madi DESIGN-DESKTOP.md), so both are checked here.
  *
  *    EXEMPTION - model prompts. The fine-tune system prompts and the
  *    in-context DPO block are training data, not site copy: their exact bytes
@@ -41,7 +42,8 @@ import path from "node:path";
 import process from "node:process";
 
 const ROOT = path.resolve(process.argv[2] ?? "src");
-const EM_DASH = "\u2014"; // written escaped so this file stays em-dash-free
+// Written escaped so this file itself stays free of the characters it bans.
+const LONG_DASHES = ["\u2014", "\u2013"]; // em, en
 
 const FILE_EXEMPT = [/^lib\/prompts/, /^lib\/system-prompts\.ts$/];
 const EXEMPT_DECL =
@@ -85,7 +87,7 @@ for (const file of files) {
       inExemptLiteral = !after.includes("`");
       return;
     }
-    if (!fileExempt && line.includes(EM_DASH)) {
+    if (!fileExempt && LONG_DASHES.some((d) => line.includes(d))) {
       emDashHits.push(`${path.join("src", rel)}:${i + 1}: ${line.trim()}`);
     }
   });
@@ -136,7 +138,7 @@ if (bareAnchorHits.length > 0) {
 
 if (emDashHits.length > 0) {
   console.error(
-    `\nverify-copy: FAIL - ${emDashHits.length} em dash(es) (U+2014) found. Use a spaced hyphen ( - ).`,
+    `\nverify-copy: FAIL - ${emDashHits.length} long dash(es) (U+2014 or U+2013) found. Use a spaced hyphen ( - ).`,
   );
   for (const hit of emDashHits) console.error(`  ${hit}`);
 }
@@ -144,5 +146,5 @@ if (emDashHits.length > 0) {
 if (emDashHits.length > 0 || bareAnchorHits.length > 0) process.exit(1);
 
 console.log(
-  "verify-copy: OK - no em dashes outside the prompt exemption, no unprefixed href/src.",
+  "verify-copy: OK - no long dashes outside the prompt exemption, no unprefixed href/src.",
 );

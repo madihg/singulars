@@ -3,13 +3,11 @@
 /**
  * Toast manager (US-103, US-104, US-105, US-108).
  *
- * Top-right on desktop, top-center on mobile. Single line, Diatype Mono, white
- * bg, hairline border, optional 4px left bar in accent color. Auto-dismiss
- * after 4s, click to dismiss earlier. Stacks vertically.
+ * A small stack of windows in the bottom corner, above the mascot. One line
+ * each, in the mono register. Auto-dismiss after 4s, click to dismiss earlier.
  */
 
-import { useState, useCallback, useEffect } from "react";
-import { FONT_MONO } from "@/lib/admin-styles";
+import { useState, useCallback } from "react";
 
 export type Toast = {
   id: number;
@@ -52,56 +50,47 @@ export function Toaster({
   toasts: Toast[];
   dismiss: (id: number) => void;
 }) {
-  const [isMobile, setIsMobile] = useState(false);
-  useEffect(() => {
-    const mq = window.matchMedia("(max-width: 600px)");
-    const onChange = () => setIsMobile(mq.matches);
-    onChange();
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
-  }, []);
-
   if (toasts.length === 0) return null;
-
   return (
-    <div
-      role="status"
-      aria-live="polite"
-      style={{
-        position: "fixed",
-        top: "1rem",
-        right: isMobile ? "1rem" : "1.5rem",
-        left: isMobile ? "1rem" : "auto",
-        display: "flex",
-        flexDirection: "column",
-        gap: "0.5rem",
-        zIndex: 1100,
-        maxWidth: 360,
-        marginLeft: "auto",
-      }}
-    >
-      {toasts.map((t) => (
-        <button
-          key={t.id}
-          onClick={() => dismiss(t.id)}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.75rem",
-            background: "#fff",
-            border: `1px solid ${t.variant === "error" ? "#dc2626" : "rgba(0,0,0,0.75)"}`,
-            borderLeft: `4px solid ${t.accentColor || (t.variant === "error" ? "#dc2626" : "#171717")}`,
-            padding: "0.6rem 0.9rem",
-            fontFamily: FONT_MONO,
-            fontSize: "0.8rem",
-            color: t.variant === "error" ? "#dc2626" : "var(--text-primary)",
-            cursor: "pointer",
-            textAlign: "left",
-          }}
-        >
-          {t.text}
-        </button>
-      ))}
+    <div className="sg-toast" aria-live="polite">
+      <div className="sg-stack sg-stack--tight">
+        {toasts.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            className="win"
+            onClick={() => dismiss(t.id)}
+            style={{
+              display: "block",
+              width: "100%",
+              textAlign: "left",
+              cursor: "pointer",
+              padding: "0.6rem 0.75rem",
+              font: "inherit",
+            }}
+          >
+            <span
+              className="k"
+              style={{
+                color: t.variant === "error" ? "var(--error)" : "var(--ink-50)",
+              }}
+            >
+              {t.variant === "error" ? "error" : "done"}
+            </span>
+            <span
+              style={{
+                display: "block",
+                fontFamily: "var(--font-body)",
+                fontSize: "0.92rem",
+                color: "var(--ink-85)",
+                marginTop: "0.2rem",
+              }}
+            >
+              {t.text}
+            </span>
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

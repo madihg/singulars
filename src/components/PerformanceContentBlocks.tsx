@@ -4,33 +4,22 @@ interface PerformanceContentBlocksProps {
   content: PerformanceDescription["content"];
 }
 
+/**
+ * The long-form description of a performance, rendered in the Desktop
+ * register: .prose paragraphs, .h2 headings, a hairline-ruled quote, and
+ * stills that keep the canon's bordered .shot treatment. Every image stays a
+ * lightbox target (data-lightbox), which ImageLightbox discovers.
+ */
 export default function PerformanceContentBlocks({
   content,
 }: PerformanceContentBlocksProps) {
   return (
     <>
-      <style>{`
-        @media (max-width: 600px) {
-          .desc-gallery { grid-template-columns: 1fr !important; }
-          .desc-gallery-dense { grid-template-columns: repeat(2, 1fr) !important; }
-        }
-        @media (max-width: 900px) {
-          .desc-gallery { grid-template-columns: repeat(2, 1fr) !important; }
-        }
-      `}</style>
       {content.map((block, i) => {
         switch (block.type) {
           case "paragraph":
             return (
-              <p
-                key={i}
-                style={{
-                  fontSize: "1.1rem",
-                  lineHeight: 1.7,
-                  color: "rgba(0,0,0,0.85)",
-                  marginBottom: "1.5rem",
-                }}
-              >
+              <p key={i} className="prose">
                 {block.text}
               </p>
             );
@@ -39,15 +28,8 @@ export default function PerformanceContentBlocks({
             return (
               <h3
                 key={i}
-                style={{
-                  fontFamily: '"Diatype Variable", sans-serif',
-                  fontSize: "1.4rem",
-                  fontWeight: 600,
-                  lineHeight: 1.2,
-                  color: "rgba(0,0,0,0.85)",
-                  marginTop: "2.5rem",
-                  marginBottom: "1rem",
-                }}
+                className="h2"
+                style={{ margin: "1.6rem 0 0.7rem" }}
               >
                 {block.text}
               </h3>
@@ -57,14 +39,13 @@ export default function PerformanceContentBlocks({
             return (
               <blockquote
                 key={i}
+                className="prose"
                 style={{
                   fontStyle: "italic",
-                  fontSize: "1.1rem",
-                  lineHeight: 1.7,
-                  color: "rgba(0,0,0,0.6)",
-                  borderLeft: "2px solid rgba(0,0,0,0.12)",
-                  paddingLeft: "1.5rem",
-                  margin: "2rem 0",
+                  color: "var(--ink-60)",
+                  borderLeft: "1px solid var(--metal)",
+                  paddingLeft: "1rem",
+                  margin: "1.2rem 0",
                 }}
               >
                 {block.text}
@@ -73,37 +54,32 @@ export default function PerformanceContentBlocks({
 
           case "image":
             return (
-              <figure key={i} style={{ margin: "2rem 0" }}>
+              <figure key={i} className="shot" style={{ margin: "1.2rem 0" }}>
                 <img
                   src={block.src}
                   alt={block.alt}
                   loading="lazy"
+                  decoding="async"
+                  width={1600}
+                  height={1067}
                   data-lightbox=""
                   role="button"
                   tabIndex={0}
-                  style={{
-                    width: "100%",
-                    height: "auto",
-                    display: "block",
-                    cursor: "zoom-in",
-                  }}
+                  style={{ cursor: "zoom-in", height: "auto" }}
                 />
               </figure>
             );
 
-          case "gallery":
+          case "gallery": {
             const isDense = block.items.length > 5;
             return (
               <div
                 key={i}
-                className={isDense ? "desc-gallery-dense" : "desc-gallery"}
+                className="sg-cards"
                 style={{
-                  display: "grid",
-                  gridTemplateColumns: isDense
-                    ? `repeat(${Math.min(block.items.length, 4)}, 1fr)`
-                    : `repeat(${Math.min(block.items.length, 3)}, 1fr)`,
-                  gap: isDense ? "0.5rem" : "1rem",
-                  margin: "2rem 0",
+                  gridTemplateColumns: `repeat(auto-fill, minmax(${isDense ? "8rem" : "12rem"}, 1fr))`,
+                  gap: isDense ? "0.5rem" : "0.9rem",
+                  margin: "1.2rem 0",
                 }}
               >
                 {block.items.map((item, j) => (
@@ -112,6 +88,9 @@ export default function PerformanceContentBlocks({
                     src={item.src}
                     alt={item.alt}
                     loading="lazy"
+                    decoding="async"
+                    width={800}
+                    height={800}
                     data-lightbox=""
                     role="button"
                     tabIndex={0}
@@ -121,12 +100,15 @@ export default function PerformanceContentBlocks({
                       display: "block",
                       aspectRatio: isDense ? "1" : "auto",
                       objectFit: isDense ? "cover" : "contain",
+                      border: "1px solid var(--metal)",
+                      borderRadius: 4,
                       cursor: "zoom-in",
                     }}
                   />
                 ))}
               </div>
             );
+          }
 
           default:
             return null;

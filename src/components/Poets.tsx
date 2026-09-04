@@ -1,19 +1,11 @@
 /**
- * Landing "Poets" section - short profiles of the humans who have dueled the
- * machine. Rendered below Performances on the Singulars landing page.
+ * The poets window: short profiles of the humans who have written against the
+ * machine. Data-driven (POETS) so the list grows as more poets take part.
  *
- * Data-driven (POETS array) so the list grows as more poets take part. Photos
- * live in /public/images/poets and render grayscale to match the monochrome
- * site treatment; a poet with no photo falls back to a monogram tile so the
- * grid stays even.
- *
- * The grid uses grid-template-columns inside <section> so it inherits the
- * landing's responsive rules (3 -> 2 -> 1 columns), defined in page.tsx.
+ * Photos live in /public/images/poets and stay grayscale until hover, the way
+ * every other still on this surface behaves. A poet with no photo falls back to
+ * a monogram tile so the grid stays even.
  */
-
-const MONO = '"Diatype Mono Variable", monospace';
-const HEADING = '"Diatype Variable", sans-serif';
-const DISPLAY = '"Terminal Grotesque", sans-serif';
 
 type Poet = {
   name: string;
@@ -57,30 +49,19 @@ function initials(name: string): string {
 
 function PoetCard({ poet }: { poet: Poet }) {
   return (
-    <div>
-      <div
-        style={{
-          width: "100%",
-          aspectRatio: "1 / 1",
-          marginBottom: "1rem",
-          overflow: "hidden",
-          background: "#f1f1f1",
-        }}
-      >
+    <div className="sg-card">
+      <span className="sg-card__thumb" style={{ aspectRatio: "1 / 1" }}>
         {poet.img ? (
           <img
             src={poet.img}
             alt={poet.name}
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              display: "block",
-              filter: "grayscale(100%)",
-            }}
+            width={520}
+            height={520}
+            loading="lazy"
+            decoding="async"
           />
         ) : (
-          <div
+          <span
             aria-label={poet.name}
             style={{
               width: "100%",
@@ -88,63 +69,25 @@ function PoetCard({ poet }: { poet: Poet }) {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              fontFamily: DISPLAY,
+              fontFamily: "var(--font-display)",
               fontSize: "3rem",
-              color: "rgba(0,0,0,0.35)",
-              letterSpacing: "0.05em",
+              color: "var(--ink-40)",
             }}
           >
             {initials(poet.name)}
-          </div>
+          </span>
         )}
-      </div>
-
-      <h3
-        style={{
-          fontFamily: HEADING,
-          fontSize: "1.1rem",
-          fontWeight: 600,
-          margin: "0 0 0.25rem 0",
-          lineHeight: 1.2,
-        }}
-      >
-        {poet.name}
-      </h3>
-      <p
-        style={{
-          fontFamily: MONO,
-          fontSize: "0.78rem",
-          letterSpacing: "0.02em",
-          color: "rgba(0,0,0,0.5)",
-          margin: "0 0 0.75rem 0",
-        }}
-      >
-        {poet.role}
-      </p>
-      <p
-        style={{
-          fontSize: "0.9rem",
-          color: "rgba(0,0,0,0.7)",
-          lineHeight: 1.55,
-          margin: 0,
-        }}
-      >
-        {poet.bio}
-      </p>
+      </span>
+      <h3 className="sg-card__t">{poet.name}</h3>
+      <span className="k">{poet.role}</span>
+      <p className="sg-card__w">{poet.bio}</p>
       {poet.link && (
         <a
+          className="btn"
           href={poet.link.href}
           target="_blank"
           rel="noopener noreferrer"
-          style={{
-            display: "inline-block",
-            marginTop: "0.6rem",
-            fontFamily: MONO,
-            fontSize: "0.78rem",
-            color: "rgba(0,0,0,0.85)",
-            textDecoration: "none",
-            borderBottom: "1px solid rgba(0,0,0,0.25)",
-          }}
+          style={{ marginTop: "0.6rem" }}
         >
           {poet.link.label} &rarr;
         </a>
@@ -155,39 +98,25 @@ function PoetCard({ poet }: { poet: Poet }) {
 
 export default function Poets() {
   return (
-    <section style={{ marginBottom: "3rem" }}>
-      <h2
-        style={{
-          fontFamily: HEADING,
-          fontSize: "2rem",
-          fontWeight: 700,
-          marginBottom: "0.75rem",
-          lineHeight: 1.2,
-        }}
-      >
-        Participating Poets
-      </h2>
-      <p
-        style={{
-          fontSize: "1rem",
-          color: "rgba(0,0,0,0.6)",
-          lineHeight: 1.5,
-          marginBottom: "2rem",
-        }}
-      >
-        The humans who have dueled the machine so far.
-      </p>
-
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(3, 1fr)",
-          gap: "2rem",
-        }}
-      >
-        {POETS.map((poet) => (
-          <PoetCard key={poet.name} poet={poet} />
-        ))}
+    <section className="win" id="poets">
+      <div className="win__bar">
+        <span className="dots">
+          <i />
+          <i />
+          <i />
+        </span>
+        <h2 className="win__t">poets/</h2>
+        <span className="win__meta">{POETS.length} so far</span>
+      </div>
+      <div className="win__b">
+        <p className="note" style={{ margin: "0 0 1.1rem" }}>
+          The humans who have dueled the machine so far.
+        </p>
+        <div className="sg-cards">
+          {POETS.map((poet) => (
+            <PoetCard key={poet.name} poet={poet} />
+          ))}
+        </div>
       </div>
     </section>
   );

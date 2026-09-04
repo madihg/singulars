@@ -11,13 +11,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  FONT_MONO,
-  inputStyle,
-  btnPrimaryStyle,
-  btnSecondaryStyle,
-  backLinkStyle,
-} from "@/lib/admin-styles";
+import Win from "@/components/desktop/Win";
 import { DEFAULT_SYSTEM_PROMPT } from "@/lib/training-data";
 import { estimateFinetuneCostUsd } from "@/lib/eval-cost";
 
@@ -179,54 +173,33 @@ export default function NewFinetunePage() {
   }
 
   return (
-    <div style={{ maxWidth: 560 }}>
-      <Link href="/admin/fine-tunes" style={backLinkStyle}>
-        ← fine-tunes
-      </Link>
-      <h1
-        style={{
-          fontFamily: '"Terminal Grotesque", sans-serif',
-          fontSize: "3.5rem",
-          lineHeight: 0.9,
-          margin: "1rem 0 2rem 0",
-        }}
-      >
-        new fine-tune
-      </h1>
+    <Win file="fine-tunes/new.txt" span="w--eight">
+      <p className="k">fine-tune pipeline</p>
+      <h1 className="h2">new fine-tune</h1>
+      <div className="rule" />
 
-      <form
-        onSubmit={submit}
-        style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}
-      >
-        <Field label="provider">
-          <div style={{ display: "flex", gap: "0.5rem" }}>
+      <form onSubmit={submit} className="sg-form sg-form--2">
+        <div className="sg-span2">
+          <span className="k">provider</span>
+          <div className="sg-row sg-row--tight" style={{ marginTop: "0.4rem" }}>
             {(["openai", "together", "huggingface"] as Provider[]).map((p) => (
               <button
                 key={p}
                 type="button"
+                className="btn"
+                aria-pressed={provider === p}
                 onClick={() => setProvider(p)}
-                style={{
-                  fontFamily: FONT_MONO,
-                  fontSize: "0.85rem",
-                  padding: "0.4rem 0.75rem",
-                  border: `1px solid ${provider === p ? "var(--text-primary)" : "var(--border-light)"}`,
-                  background:
-                    provider === p ? "var(--text-primary)" : "transparent",
-                  color: provider === p ? "#fff" : "var(--text-primary)",
-                  cursor: "pointer",
-                }}
               >
                 {p}
               </button>
             ))}
           </div>
-        </Field>
+        </div>
 
         <Field label="base model">
           <select
             value={baseModel}
             onChange={(e) => setBaseModel(e.target.value)}
-            style={{ ...inputStyle, padding: "0.65rem 0.75rem" }}
           >
             {BASE_MODELS[provider].map((m) => (
               <option key={m} value={m}>
@@ -236,27 +209,19 @@ export default function NewFinetunePage() {
           </select>
         </Field>
 
-        <Field label="format">
-          <div style={{ display: "flex", gap: "0.5rem" }}>
+        <div>
+          <span className="k">format</span>
+          <div className="sg-row sg-row--tight" style={{ marginTop: "0.4rem" }}>
             {(["sft", "dpo"] as Format[]).map((f) => {
               const disabled = f === "dpo" && !SUPPORTS_DPO[provider];
               return (
                 <button
                   key={f}
                   type="button"
+                  className="btn"
+                  aria-pressed={format === f}
                   disabled={disabled}
                   onClick={() => setFormat(f)}
-                  style={{
-                    fontFamily: FONT_MONO,
-                    fontSize: "0.85rem",
-                    padding: "0.4rem 0.75rem",
-                    border: `1px solid ${format === f ? "var(--text-primary)" : "var(--border-light)"}`,
-                    background:
-                      format === f ? "var(--text-primary)" : "transparent",
-                    color: format === f ? "#fff" : "var(--text-primary)",
-                    cursor: disabled ? "not-allowed" : "pointer",
-                    opacity: disabled ? 0.4 : 1,
-                  }}
                 >
                   {f.toUpperCase()}
                   {disabled ? " (provider unsupported)" : ""}
@@ -264,45 +229,34 @@ export default function NewFinetunePage() {
               );
             })}
           </div>
-        </Field>
+        </div>
 
-        <Field label="source performances">
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+        <div className="sg-span2">
+          <span className="k">source performances</span>
+          <div className="sg-row sg-row--tight" style={{ marginTop: "0.4rem" }}>
             {perfs
               .filter((p) => p.status === "trained")
               .map((p) => (
                 <button
                   key={p.id}
                   type="button"
+                  className="btn"
+                  aria-pressed={sourceSlugs.includes(p.slug)}
                   onClick={() => toggleSource(p.slug)}
-                  style={{
-                    fontFamily: FONT_MONO,
-                    fontSize: "0.85rem",
-                    padding: "0.4rem 0.75rem",
-                    border: `1px solid ${sourceSlugs.includes(p.slug) ? "var(--text-primary)" : "var(--border-light)"}`,
-                    background: sourceSlugs.includes(p.slug)
-                      ? "var(--text-primary)"
-                      : "transparent",
-                    color: sourceSlugs.includes(p.slug)
-                      ? "#fff"
-                      : "var(--text-primary)",
-                    cursor: "pointer",
-                  }}
                 >
                   {p.name}
                 </button>
               ))}
           </div>
-        </Field>
+        </div>
 
         <Field
           label="hold out performance"
-          hint="becomes the test set; excluded from training"
+          hint="becomes the test set, excluded from training"
         >
           <select
             value={holdoutSlug}
             onChange={(e) => setHoldoutSlug(e.target.value)}
-            style={{ ...inputStyle, padding: "0.65rem 0.75rem" }}
           >
             <option value="">none</option>
             {perfs
@@ -317,33 +271,51 @@ export default function NewFinetunePage() {
           </select>
         </Field>
 
-        <Field label="system prompt">
-          <textarea
-            value={systemPrompt}
-            onChange={(e) => setSystemPrompt(e.target.value)}
-            rows={4}
-            style={{ ...inputStyle, fontFamily: FONT_MONO, resize: "vertical" }}
+        <Field label="cost cap (usd)">
+          <input
+            type="number"
+            min={1}
+            step={1}
+            value={costCap}
+            onChange={(e) => setCostCap(Number(e.target.value))}
           />
         </Field>
 
-        <button
-          type="button"
-          onClick={() => setShowAdvanced((v) => !v)}
-          style={{
-            fontFamily: FONT_MONO,
-            fontSize: "0.8rem",
-            background: "transparent",
-            border: "none",
-            padding: 0,
-            color: "var(--text-secondary)",
-            cursor: "pointer",
-            textAlign: "left",
-          }}
-        >
-          {showAdvanced ? "- advanced" : "+ advanced"}
-        </button>
+        <div className="sg-span2">
+          <Field label="system prompt">
+            <textarea
+              value={systemPrompt}
+              onChange={(e) => setSystemPrompt(e.target.value)}
+              rows={4}
+            />
+          </Field>
+        </div>
+
+        <Field label="candidate model name" hint="auto-registered after success">
+          <input
+            type="text"
+            value={candidateName}
+            onChange={(e) => setCandidateName(e.target.value)}
+            required
+          />
+        </Field>
+
+        <div>
+          <span className="k">advanced</span>
+          <div className="sg-row sg-row--tight" style={{ marginTop: "0.4rem" }}>
+            <button
+              type="button"
+              className="btn"
+              aria-expanded={showAdvanced}
+              onClick={() => setShowAdvanced((v) => !v)}
+            >
+              {showAdvanced ? "hide" : "show"} hyperparameters
+            </button>
+          </div>
+        </div>
+
         {showAdvanced ? (
-          <div style={{ display: "flex", gap: "1rem" }}>
+          <>
             <Field label="epochs">
               <input
                 type="number"
@@ -353,7 +325,6 @@ export default function NewFinetunePage() {
                 onChange={(e) =>
                   setEpochs(Math.max(1, Math.floor(Number(e.target.value))))
                 }
-                style={inputStyle}
               />
             </Field>
             <Field label="lr multiplier">
@@ -363,109 +334,51 @@ export default function NewFinetunePage() {
                 min={0.1}
                 value={lrMultiplier}
                 onChange={(e) => setLrMultiplier(Number(e.target.value))}
-                style={inputStyle}
               />
             </Field>
-          </div>
+          </>
         ) : null}
 
-        <Field label="cost cap (usd)">
-          <input
-            type="number"
-            min={1}
-            step={1}
-            value={costCap}
-            onChange={(e) => setCostCap(Number(e.target.value))}
-            style={inputStyle}
-          />
-        </Field>
-
-        <Field
-          label="candidate model name"
-          hint="auto-registered after success"
-        >
-          <input
-            type="text"
-            value={candidateName}
-            onChange={(e) => setCandidateName(e.target.value)}
-            style={inputStyle}
-            required
-          />
-        </Field>
-
-        <div
-          style={{
-            border: "1px solid var(--border-light)",
-            padding: "1rem 1.25rem",
-          }}
-        >
+        <div className="sg-span2 sg-tile">
           <div
-            style={{
-              fontFamily: '"Diatype Variable", sans-serif',
-              fontSize: "1.6rem",
-              fontWeight: 700,
-              color: overCap ? "#dc2626" : "var(--text-primary)",
-            }}
+            className="sg-tile__v"
+            style={{ color: overCap ? "var(--error)" : undefined }}
           >
-            estimated ${estimate.toFixed(2)}
+            ${estimate.toFixed(2)}
           </div>
-          <div
-            style={{
-              fontFamily: FONT_MONO,
-              fontSize: "0.8rem",
-              color: "var(--text-tertiary)",
-              marginTop: "0.25rem",
-            }}
-          >
-            {previewRows} rows · ~{previewTokens.toLocaleString()} tokens · cap
-            ${costCap.toFixed(2)}
-            {overCap ? " · estimate exceeds cap" : ""}
-          </div>
+          <span className="k sg-tile__k">estimated cost</span>
+          <span className="sg-tile__n">
+            {previewRows} rows · ~{previewTokens.toLocaleString()} tokens · cap $
+            {costCap.toFixed(2)}
+            {overCap ? ". the estimate exceeds the cap." : ""}
+          </span>
         </div>
 
-        {error ? (
-          <p
-            style={{
-              fontFamily: FONT_MONO,
-              fontSize: "0.85rem",
-              color: "#dc2626",
-              margin: 0,
-            }}
-          >
-            {error}
-          </p>
-        ) : null}
+        {error ? <p className="sg-err sg-span2">{error}</p> : null}
 
-        <div style={{ display: "flex", gap: "0.75rem" }}>
+        <div className="sg-row sg-row--end sg-span2">
+          <Link className="btn" href="/admin/fine-tunes">
+            cancel
+          </Link>
           <button
             type="submit"
+            className="btn btn--send"
             disabled={
               submitting ||
               sourceSlugs.length === 0 ||
               !candidateName ||
               overCap
             }
-            style={btnPrimaryStyle}
           >
-            {submitting ? "starting..." : "start fine-tune"}
+            {submitting ? "starting" : "start fine-tune"}
           </button>
-          <Link
-            href="/admin/fine-tunes"
-            style={{
-              ...btnSecondaryStyle,
-              textDecoration: "none",
-              display: "inline-flex",
-              alignItems: "center",
-            }}
-          >
-            cancel
-          </Link>
         </div>
       </form>
-    </div>
+    </Win>
   );
 }
 
+/** A labelled field in the desk register. */
 function Field({
   label,
   hint,
@@ -476,34 +389,11 @@ function Field({
   children: React.ReactNode;
 }) {
   return (
-    <label
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "0.4rem",
-        flex: 1,
-      }}
-    >
-      <span
-        style={{
-          fontFamily: FONT_MONO,
-          fontSize: "0.75rem",
-          textTransform: "uppercase",
-          letterSpacing: "0.05em",
-          color: "var(--text-tertiary)",
-        }}
-      >
-        {label}
-      </span>
+    <label className="dk-input">
+      <span>{label}</span>
       {children}
       {hint ? (
-        <span
-          style={{
-            fontFamily: FONT_MONO,
-            fontSize: "0.75rem",
-            color: "var(--text-tertiary)",
-          }}
-        >
+        <span className="k" style={{ marginTop: "0.3rem" }}>
           {hint}
         </span>
       ) : null}

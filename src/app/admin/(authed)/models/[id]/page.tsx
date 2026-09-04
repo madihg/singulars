@@ -9,13 +9,7 @@
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import {
-  FONT_MONO,
-  inputStyle,
-  btnPrimaryStyle,
-  btnSecondaryStyle,
-  backLinkStyle,
-} from "@/lib/admin-styles";
+import Win from "@/components/desktop/Win";
 import { Toaster, useToasts } from "../../_components/Toaster";
 
 const FAMILIES = [
@@ -165,39 +159,28 @@ export default function ModelEditPage() {
   }
 
   return (
-    <div style={{ maxWidth: 560 }}>
-      <Link href="/admin/models" style={backLinkStyle}>
-        ← models
-      </Link>
-      <h1
-        style={{
-          fontFamily: '"Terminal Grotesque", sans-serif',
-          fontSize: "3.5rem",
-          lineHeight: 0.9,
-          margin: "1rem 0 2rem 0",
-        }}
-      >
-        {isNew ? "new model" : model.name || "model"}
-      </h1>
+    <Win
+      file={isNew ? "models/new.txt" : `models/${model.slug || "model"}.txt`}
+      span="w--eight"
+      meta={model.is_public ? "public" : "private"}
+    >
+      <p className="k">candidate model</p>
+      <h1 className="h2">{isNew ? "new model" : model.name || "model"}</h1>
+      <div className="rule" />
 
-      <form
-        onSubmit={save}
-        style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
-      >
-        <Field label="name" required>
+      <form onSubmit={save} className="sg-form sg-form--2">
+        <Field label="name *">
           <input
             type="text"
             value={model.name}
             onChange={(e) => setModel({ ...model, name: e.target.value })}
-            style={inputStyle}
             required
           />
         </Field>
         <Field
-          label="slug"
-          required
+          label="slug *"
           hint={slugConflict ? `slug taken by ${slugConflict}` : null}
-          hintColor={slugConflict ? "#dc2626" : undefined}
+          hintError={!!slugConflict}
         >
           <input
             type="text"
@@ -206,17 +189,15 @@ export default function ModelEditPage() {
               setSlugTouched(true);
               setModel({ ...model, slug: e.target.value });
             }}
-            style={inputStyle}
             required
           />
         </Field>
-        <Field label="family" required>
+        <Field label="family *">
           <select
             value={model.family}
             onChange={(e) =>
               setModel({ ...model, family: e.target.value as Model["family"] })
             }
-            style={{ ...inputStyle, padding: "0.65rem 0.75rem" }}
           >
             {FAMILIES.map((f) => (
               <option key={f} value={f}>
@@ -232,8 +213,7 @@ export default function ModelEditPage() {
             onChange={(e) =>
               setModel({ ...model, version_label: e.target.value || null })
             }
-            style={inputStyle}
-            placeholder="v0, 4.7, ..."
+            placeholder="v0, 4.7"
           />
         </Field>
         <Field
@@ -246,7 +226,6 @@ export default function ModelEditPage() {
             onChange={(e) =>
               setModel({ ...model, api_endpoint: e.target.value || null })
             }
-            style={inputStyle}
           />
         </Field>
         <Field label="hf repo">
@@ -256,31 +235,8 @@ export default function ModelEditPage() {
             onChange={(e) =>
               setModel({ ...model, hf_repo: e.target.value || null })
             }
-            style={inputStyle}
             placeholder="halim/ground-exe-v1"
           />
-        </Field>
-        <Field label="color">
-          <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-            <input
-              type="color"
-              value={model.color}
-              onChange={(e) => setModel({ ...model, color: e.target.value })}
-              style={{
-                width: 48,
-                height: 38,
-                padding: 0,
-                border: "1px solid var(--border-light)",
-              }}
-            />
-            <input
-              type="text"
-              value={model.color}
-              onChange={(e) => setModel({ ...model, color: e.target.value })}
-              style={{ ...inputStyle, width: 120 }}
-            />
-            <ChartPreview name={model.name || "(name)"} color={model.color} />
-          </div>
         </Field>
         <Field label="fine-tune source">
           <select
@@ -291,7 +247,6 @@ export default function ModelEditPage() {
                 fine_tune_source: e.target.value || null,
               })
             }
-            style={{ ...inputStyle, padding: "0.65rem 0.75rem" }}
           >
             <option value="">none</option>
             {allModels
@@ -303,132 +258,117 @@ export default function ModelEditPage() {
               ))}
           </select>
         </Field>
-        <Field label="notes">
-          <textarea
-            value={model.notes || ""}
-            onChange={(e) =>
-              setModel({ ...model, notes: e.target.value || null })
-            }
-            rows={3}
-            style={{ ...inputStyle, fontFamily: FONT_MONO, resize: "vertical" }}
-          />
-        </Field>
-        <label
-          style={{
-            fontFamily: FONT_MONO,
-            fontSize: "0.85rem",
-            display: "flex",
-            gap: "0.5rem",
-            alignItems: "center",
-          }}
-        >
-          <input
-            type="checkbox"
-            checked={model.is_public}
-            onChange={(e) =>
-              setModel({ ...model, is_public: e.target.checked })
-            }
-          />
-          public on chart
-        </label>
+        <div className="dk-input">
+          <span>colour</span>
+          <div className="sg-row">
+            <input
+              type="color"
+              aria-label="model colour"
+              value={model.color}
+              onChange={(e) => setModel({ ...model, color: e.target.value })}
+              style={{
+                width: 44,
+                height: 34,
+                padding: 0,
+                border: "1px solid var(--metal)",
+                borderRadius: 4,
+                background: "var(--paper)",
+              }}
+            />
+            <input
+              type="text"
+              aria-label="model colour hex"
+              value={model.color}
+              onChange={(e) => setModel({ ...model, color: e.target.value })}
+              style={{
+                width: 110,
+                background: "var(--paper)",
+                border: "1px solid var(--metal)",
+                borderRadius: 4,
+                padding: "0.5rem 0.6rem",
+                fontFamily: "var(--font-mono)",
+                fontSize: "0.85rem",
+              }}
+            />
+            <span className="k">
+              <i className="cdot" style={{ ["--c" as string]: model.color }} />{" "}
+              {model.name || "(name)"}
+            </span>
+          </div>
+        </div>
+        <div className="sg-span2">
+          <Field label="notes">
+            <textarea
+              value={model.notes || ""}
+              onChange={(e) =>
+                setModel({ ...model, notes: e.target.value || null })
+              }
+              rows={3}
+            />
+          </Field>
+        </div>
+        <div className="sg-span2">
+          <label className="dk-check">
+            <input
+              type="checkbox"
+              checked={model.is_public}
+              onChange={(e) =>
+                setModel({ ...model, is_public: e.target.checked })
+              }
+            />
+            public on the chart
+          </label>
+        </div>
 
         {error ? (
-          <p
-            style={{
-              fontFamily: FONT_MONO,
-              fontSize: "0.85rem",
-              color: "#dc2626",
-              margin: 0,
-            }}
-          >
-            {error}
-          </p>
+          <p className="sg-err sg-span2">{error}</p>
         ) : null}
 
-        <div style={{ display: "flex", gap: "0.75rem", marginTop: "0.5rem" }}>
-          <button
-            type="submit"
-            disabled={saving || !!slugConflict}
-            style={btnPrimaryStyle}
-          >
-            {saving ? "..." : isNew ? "create" : "save"}
-          </button>
-          <Link
-            href="/admin/models"
-            style={{
-              ...btnSecondaryStyle,
-              textDecoration: "none",
-              display: "inline-flex",
-              alignItems: "center",
-            }}
-          >
+        <div className="sg-row sg-row--end sg-span2">
+          <Link className="btn" href="/admin/models">
             cancel
           </Link>
+          <button
+            type="submit"
+            className="btn btn--send"
+            disabled={saving || !!slugConflict}
+          >
+            {saving ? "saving" : isNew ? "create" : "save"}
+          </button>
         </div>
       </form>
       <Toaster toasts={toasts} dismiss={dismiss} />
-    </div>
+    </Win>
   );
 }
 
+/** A labelled field in the desk register. */
 function Field({
   label,
-  required,
   hint,
-  hintColor,
+  hintError,
   children,
 }: {
   label: string;
-  required?: boolean;
   hint?: string | null;
-  hintColor?: string;
+  hintError?: boolean;
   children: React.ReactNode;
 }) {
   return (
-    <label style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
-      <span
-        style={{
-          fontFamily: FONT_MONO,
-          fontSize: "0.75rem",
-          textTransform: "uppercase",
-          letterSpacing: "0.05em",
-          color: "var(--text-tertiary)",
-        }}
-      >
-        {label}
-        {required ? " *" : ""}
-      </span>
+    <label className="dk-input">
+      <span>{label}</span>
       {children}
       {hint ? (
         <span
+          className="k"
           style={{
-            fontFamily: FONT_MONO,
-            fontSize: "0.75rem",
-            color: hintColor || "var(--text-tertiary)",
+            marginTop: "0.3rem",
+            color: hintError ? "var(--error)" : undefined,
           }}
         >
           {hint}
         </span>
       ) : null}
     </label>
-  );
-}
-
-function ChartPreview({ name, color }: { name: string; color: string }) {
-  return (
-    <div
-      style={{
-        flex: 1,
-        height: 36,
-        display: "flex",
-        alignItems: "center",
-        gap: "0.5rem",
-        padding: "0 0.5rem",
-        borderLeft: "1px solid var(--border-light)",
-      }}
-    >
-      <div style={{ width: 12, height: 12, background: color }} />
-      <span style={{ fontFamily: FONT_MONO, fontSize: "0.75rem" }}>{name}</span>
-    </div>
   );
 }

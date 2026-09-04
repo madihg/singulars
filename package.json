@@ -7,9 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "verify": "next build && tsc --noEmit && node scripts/verify-copy.mjs",
+    "verify": "next build && tsc --noEmit && node scripts/verify-copy.mjs && node scripts/sync-desktop.mjs",
     "eval": "tsx scripts/run-eval.ts",
-    "finetune": "tsx scripts/run-finetune.ts"
+    "finetune": "tsx scripts/run-finetune.ts",
+    "sync:desktop": "node scripts/sync-desktop.mjs"
   },
   "dependencies": {
     "@fingerprintjs/fingerprintjs": "^4.6.2",
@@ -31,8 +32,6 @@
     "@types/react-dom": "^18",
     "eslint": "^8",
     "eslint-config-next": "14.2.35",
-    "postcss": "^8",
-    "tailwindcss": "^3.4.1",
     "tsx": "^4.19.2",
     "typescript": "^5"
   }
