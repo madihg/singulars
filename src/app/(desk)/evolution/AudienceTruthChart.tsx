@@ -215,6 +215,8 @@ export function AudienceTruthChart() {
                   }}
                 >
                   {p.pending ? (
+                    /* A column here is narrower than the word, so "pending"
+                       runs up the dashed box instead of spilling out of it. */
                     <div
                       style={{
                         width: "70%",
@@ -227,6 +229,9 @@ export function AudienceTruthChart() {
                         fontFamily: MONO,
                         fontSize: "0.7rem",
                         color: "var(--text-tertiary)",
+                        writingMode: "vertical-rl",
+                        transform: "rotate(180deg)",
+                        overflow: "hidden",
                       }}
                     >
                       pending
@@ -347,15 +352,25 @@ export function AudienceTruthChart() {
                       marginBottom: 4,
                     }}
                   />
+                  {/* The label is held inside its own grid column: a name
+                      wider than the column wraps and hyphenates rather than
+                      spilling over its neighbours. The window is five of
+                      twelve columns, so a column is narrower than the word
+                      "reinforcement". */}
                   <div
                     style={{
                       fontFamily: STANDARD,
-                      fontSize: "0.78rem",
+                      fontSize: "0.72rem",
                       fontWeight: 500,
                       textAlign: "center",
                       lineHeight: 1.1,
                       color: "var(--text-primary)",
+                      width: "100%",
+                      minWidth: 0,
+                      overflowWrap: "anywhere",
+                      hyphens: "auto",
                     }}
+                    lang="en"
                   >
                     {p.perf_name.replace(".exe", "")}
                   </div>

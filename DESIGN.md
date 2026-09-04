@@ -46,7 +46,7 @@ Two files in this app are ours, not the canon's:
 ## The bones of a page
 
 The root layout puts `class="desktop acc-machine"` on `<body>`: machine poetry
-is the vermilion tribe. Cobalt stays the one bold note, spent on the
+wears vermilion. Cobalt stays the one bold note, spent on the
 start-a-conversation CTA (menu bar, footer, and the landing's enquiry window
 are the same standing control).
 
@@ -94,3 +94,9 @@ Components: `src/components/desktop/Chrome.tsx` (menu bar, footer, mascot),
   wide, and they are what the cards and heroes load. They should be resized and
   re-encoded (a 1600px wide variant would cover every use on the site). The
   reskin left the files alone on purpose so the change is reviewable on its own.
+  The two heroes above the fold are `loading="eager"` because they are the
+  largest paint; every other still is lazy.
+- `machine vs me` on /evolution is a hand-drawn bar chart in a five-column
+  window, so a column is narrower than the word "reinforcement". The names wrap
+  and hyphenate inside their column and "pending" runs vertically up its dashed
+  box. If the window ever gets more columns, both can go back to one line.

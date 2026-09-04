@@ -310,7 +310,8 @@ export default async function PerformancePage({
                 alt={heroImg.alt}
                 width={1600}
                 height={900}
-                loading="lazy"
+                /* the hero is the largest paint above the fold: never deferred */
+                loading="eager"
                 decoding="async"
                 data-lightbox=""
                 role="button"

@@ -7,8 +7,8 @@ import "./desktop/pages.css";
 
 /*
  * Singulars wears the Desktop language of halimmadi.com (halim-madi:
- * DESIGN-DESKTOP.md). The body carries "desktop acc-machine": machine poetry is
- * the vermilion tribe, and cobalt stays the one bold note on the
+ * DESIGN-DESKTOP.md). The body carries "desktop acc-machine": machine poetry
+ * wears vermilion, and cobalt stays the one bold note on the
  * start-a-conversation CTA.
  *
  * Stylesheet order is load-bearing: globals.css is reset and font faces only,

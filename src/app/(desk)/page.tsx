@@ -136,7 +136,8 @@ export default async function SingularsPage() {
                 alt={HERO_IMAGES.landing.alt}
                 width={1600}
                 height={900}
-                loading="lazy"
+                /* the hero is the largest paint above the fold: never deferred */
+                loading="eager"
                 decoding="async"
               />
             </div>
@@ -229,8 +230,7 @@ export default async function SingularsPage() {
           <div className="win__b">
             <p className="prose">
               Singulars travels. If you run a festival, a venue, a lab or a
-              conference and want the duel in your room, the desk is one click
-              away.
+              conference and want the duel in your room, write to me.
             </p>
             <a className="btn btn--send" href={CONNECT_URL}>
               start a conversation
