@@ -216,8 +216,22 @@ body.desktop .cta,
   background: rgba(28, 57, 232, 0.05);
 }
 @media (max-width: 759px) {
+  /* "connect" is three characters longer than the old label, and the bar is
+     a fixed row: without giving the space back, the page anchors beside it
+     lose about 22px and the last one falls off the strip. */
   .cta .cta__t { display: none; }
-  .cta::after { content: "talk"; }
+  .cta::after { content: "connect"; }
+  .cta {
+    font-size: 0.6rem;
+    gap: 0.3rem;
+    padding: 0.28rem 0.4rem;
+  }
+  .mb__in { gap: 0.7rem; }
+  .mb__menu { flex: 1 1 auto; }
+  body.desktop .mb__app,
+  .mb__app { font-size: 0.62rem; letter-spacing: 0.07em; }
+  .mb__more { padding: 0.26rem 0.4rem; margin-left: 0; }
+  .mb__appwrap { gap: 0.25rem; }
 }
 
 /* ── the desktop grid ───────────────────────────────────────── */
