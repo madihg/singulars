@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * The Desktop chrome, ported verbatim from the halimmadi.com canon
  * (halim-madi: DESIGN-DESKTOP.md, index.html, connect/index.html).
@@ -7,14 +9,26 @@
  * human/machine mascot are the same furniture with the same markup. Behaviour
  * comes from /singulars/desktop/desktop.js (the canon's Assets/js/desktop.js).
  *
+ * That script runs once and binds what it finds, so every piece of it lives in
+ * the root layout via SiteShell and is never unmounted. The one part that has
+ * to change per page - the page-local anchors in the middle of the bar - is
+ * written into the bar's slot with a portal, so the bar element itself, and
+ * with it the site-map button desktop.js bound, survives every navigation.
+ *
  * Cross-site links are absolute www.halimmadi.com URLs: those pages are served
  * by the halim-madi repo, not by this Next app, so next/link and the basePath
  * must stay out of them.
  */
 
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+
 const SITE = "https://www.halimmadi.com";
 
 export const CONNECT_URL = `${SITE}/connect/#start`;
+
+/** Marks the one element MenuBar writes its anchors into. */
+const SLOT = "[data-menu-slot]";
 
 export interface MenuLink {
   href: string;
@@ -24,10 +38,10 @@ export interface MenuLink {
 }
 
 /**
- * The sticky menu bar. `menu` holds the page-local anchors; every page passes
- * its own, the way each canon page does.
+ * The sticky menu bar itself: the wordmark, the site map behind it, the empty
+ * slot each page fills, and the CTA. Rendered once by SiteShell.
  */
-export function MenuBar({ menu = [] }: { menu?: MenuLink[] }) {
+export function MenuBarShell() {
   return (
     <nav className="mb">
       <div className="mb__in">
@@ -82,23 +96,43 @@ export function MenuBar({ menu = [] }: { menu?: MenuLink[] }) {
             </a>
           </div>
         </div>
-        <div className="mb__menu">
-          {menu.map((m) => (
-            <a
-              key={m.href + m.label}
-              href={m.href}
-              aria-current={m.current ? "page" : undefined}
-            >
-              {m.label}
-            </a>
-          ))}
-        </div>
+        <div className="mb__menu" data-menu-slot />
         <a className="cta" href={CONNECT_URL}>
           <i />
           <span className="cta__t">start a conversation</span>
         </a>
       </div>
     </nav>
+  );
+}
+
+/**
+ * A page's own anchors in the bar. Every page renders one, the way each canon
+ * page does; the links land in the persistent bar rather than in a bar of
+ * their own, so navigating never replaces the element desktop.js bound.
+ */
+export function MenuBar({ menu = [] }: { menu?: MenuLink[] }) {
+  const [slot, setSlot] = useState<Element | null>(null);
+
+  useEffect(() => {
+    setSlot(document.querySelector(SLOT));
+  }, []);
+
+  if (!slot) return null;
+
+  return createPortal(
+    <>
+      {menu.map((m) => (
+        <a
+          key={m.href + m.label}
+          href={m.href}
+          aria-current={m.current ? "page" : undefined}
+        >
+          {m.label}
+        </a>
+      ))}
+    </>,
+    slot,
   );
 }
 
@@ -148,21 +182,5 @@ export function Mascot() {
       </button>
       <span className="mascot__line" aria-live="polite" />
     </div>
-  );
-}
-
-/**
- * The page shell used by every layout that carries chrome: content, then the
- * footer and the mascot. The menu bar is NOT here - each page renders its own
- * <MenuBar> with its own anchors, the way each canon page does. The venue
- * screens (/[slug]/stage, /[slug]/control, /timer) use no shell at all.
- */
-export default function Chrome({ children }: { children: React.ReactNode }) {
-  return (
-    <>
-      {children}
-      <Footer />
-      <Mascot />
-    </>
   );
 }

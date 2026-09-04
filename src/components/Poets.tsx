@@ -1,11 +1,17 @@
+"use client";
+
 /**
- * The poets window: short profiles of the humans who have written against the
- * machine. Data-driven (POETS) so the list grows as more poets take part.
+ * Participating Poets: short profiles of the humans who have written against
+ * the machine. Data-driven (POETS) so the list grows as more poets take part.
  *
- * Photos live in /public/images/poets and stay grayscale until hover, the way
- * every other still on this surface behaves. A poet with no photo falls back to
- * a monogram tile so the grid stays even.
+ * The window opens as a carousel - one snapping rail, Elise Liu first - with a
+ * grid view a click away, the same two-view vocabulary the performances window
+ * uses. The photographs are small square portraits, in colour, so the bios do
+ * the work. A poet with no photo falls back to a monogram tile so the rail
+ * stays even. Every bio is the poet's own words, unedited.
  */
+
+import { useState } from "react";
 
 type Poet = {
   name: string;
@@ -17,18 +23,18 @@ type Poet = {
 
 const POETS: Poet[] = [
   {
-    name: "Theory",
-    role: "co-founder, Decentered Arts",
-    img: "/singulars/images/poets/theory.webp",
-    link: { href: "https://decentered.org", label: "decentered.org" },
-    bio: "Theory leads the writing program and film of Decentered Arts. A former resident and volunteer at The Center SF and a recent MFA graduate from the University of San Francisco, he is publishing his first novel. Professionally he is a freelance video editor; in his free time he studies improv and comedy.",
-  },
-  {
     name: "Elise Liu",
     role: "poet, immersive artist, technologist",
     img: "/singulars/images/poets/elise-liu.jpg",
     link: { href: "https://eliseliu.com", label: "eliseliu.com" },
     bio: "Elise Liu is an immigrant third-culture kid poet, immersive artist, and technologist. Her work has appeared in Rattle, The Found Poetry Review, Thought Catalog, The Millions, and corporate digital trashcans around the world. She is the recipient of the 2023 Paper Moon Prize for fiction. She lives in San Francisco with two cats and is working on her first novel.",
+  },
+  {
+    name: "Theory",
+    role: "co-founder, Decentered Arts",
+    img: "/singulars/images/poets/theory.webp",
+    link: { href: "https://decentered.org", label: "decentered.org" },
+    bio: "Theory leads the writing program and film of Decentered Arts. A former resident and volunteer at The Center SF and a recent MFA graduate from the University of San Francisco, he is publishing his first novel. Professionally he is a freelance video editor; in his free time he studies improv and comedy.",
   },
   {
     name: "Halim Madi",
@@ -38,6 +44,9 @@ const POETS: Poet[] = [
     bio: "Halim Madi is a poet and performer who works where language meets software. He created Singulars and is the human in each duel, writing against a machine trained on the poems the audience keeps choosing.",
   },
 ];
+
+const VIEWS = ["carousel", "grid"] as const;
+type ViewMode = (typeof VIEWS)[number];
 
 function initials(name: string): string {
   return name
@@ -49,31 +58,20 @@ function initials(name: string): string {
 
 function PoetCard({ poet }: { poet: Poet }) {
   return (
-    <div className="sg-card">
-      <span className="sg-card__thumb" style={{ aspectRatio: "1 / 1" }}>
+    <div className="sg-card sg-card--poet">
+      <span className="sg-card__thumb sg-card__thumb--poet">
         {poet.img ? (
+          /* eslint-disable-next-line @next/next/no-img-element */
           <img
             src={poet.img}
             alt={poet.name}
-            width={520}
-            height={520}
+            width={220}
+            height={220}
             loading="lazy"
             decoding="async"
           />
         ) : (
-          <span
-            aria-label={poet.name}
-            style={{
-              width: "100%",
-              height: "100%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontFamily: "var(--font-display)",
-              fontSize: "3rem",
-              color: "var(--ink-40)",
-            }}
-          >
+          <span aria-label={poet.name} className="sg-card__mono">
             {initials(poet.name)}
           </span>
         )}
@@ -97,6 +95,8 @@ function PoetCard({ poet }: { poet: Poet }) {
 }
 
 export default function Poets() {
+  const [view, setView] = useState<ViewMode>("carousel");
+
   return (
     <section className="win" id="poets">
       <div className="win__bar">
@@ -105,14 +105,33 @@ export default function Poets() {
           <i />
           <i />
         </span>
-        <h2 className="win__t">poets/</h2>
+        <h2 className="win__t">Participating Poets</h2>
         <span className="win__meta">{POETS.length} so far</span>
       </div>
       <div className="win__b">
-        <p className="note" style={{ margin: "0 0 1.1rem" }}>
+        <p className="note" style={{ margin: "0 0 0.9rem" }}>
           The humans who have dueled the machine so far.
         </p>
-        <div className="sg-cards">
+        <div
+          className="sg-row sg-row--tight"
+          role="group"
+          aria-label="view poets as"
+          style={{ marginBottom: "1.1rem" }}
+        >
+          {VIEWS.map((mode) => (
+            <button
+              key={mode}
+              type="button"
+              className="btn"
+              onClick={() => setView(mode)}
+              aria-pressed={view === mode}
+            >
+              {mode}
+            </button>
+          ))}
+        </div>
+
+        <div className={view === "carousel" ? "sg-rail sg-rail--poets" : "sg-cards"}>
           {POETS.map((poet) => (
             <PoetCard key={poet.name} poet={poet} />
           ))}

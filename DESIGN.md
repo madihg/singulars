@@ -16,23 +16,44 @@ changing anything visual. What follows does not replace it.
 | `src/app/desktop/tokens.css`  | `Assets/css/tokens.css`    |
 | `src/app/desktop/desktop.css` | `Assets/css/desktop.css`   |
 | `public/desktop/desktop.js`   | `Assets/js/desktop.js`     |
+| `public/desktop/machine.js`   | `Assets/js/machine.js`     |
+| `public/desktop/machine.css`  | `Assets/css/machine.css`   |
 
-Those three files are copies, byte for byte. Never edit them here. Change the
-canon in halim-madi, then run:
+Those five files are copies. Never edit them here. Change the canon in
+halim-madi, then run:
 
 ```
 node scripts/sync-desktop.mjs --write /path/to/halim-madi
 ```
 
+The two scripts are copies with a declared exception. This app is served from
+a basePath on another host, so `sync-desktop.mjs` applies a short table of
+literal string swaps on the way in: assets this app serves become
+`/singulars/desktop/...`, and everything belonging to halimmadi.com (the
+`/api/machine` and `/api/chat` endpoints, `works.json`, `llms.txt`, `/cv/`,
+`/connect/`, and the links the model writes into its answers) becomes an
+absolute `www.halimmadi.com` URL. The table lives at the top of the script and
+each swap must match exactly once, so a canon edit that moves one of those
+strings fails the check instead of drifting quietly. Nothing else may differ.
+
 `npm run verify` runs the same script in check mode. Given a checkout path
-(argument or `HALIM_MADI_PATH`) it exits non-zero if any of the three files has
+(argument or `HALIM_MADI_PATH`) it exits non-zero if any of the five files has
 drifted; with no path it prints a note and exits 0, so a machine without the
 halim-madi checkout is not blocked.
 
 `desktop.js` sits under `public/` rather than `src/app/desktop/` only because
 Next serves static scripts from `public/`. The root layout loads it with
 `next/script` at `/singulars/desktop/desktop.js` (`next/script` does not apply
-basePath, so the prefix is written by hand).
+basePath, so the prefix is written by hand). `machine.js` and `machine.css` are
+never loaded by the app itself: desktop.js imports the module, and the module
+injects its own stylesheet, the first time anyone presses MACHINE.
+
+`machine.txt` talks to `https://www.halimmadi.com/api/machine`. Reached the way
+visitors reach this app, at `halimmadi.com/singulars`, that call is same-origin
+and answers. Reached directly at `singulars.oulipo.xyz` it is cross-origin, and
+that endpoint sends no `Access-Control-Allow-Origin`, so the browser blocks it
+and the window falls back to the poem lines the pill already speaks. Allowing
+the origin on the halim-madi side is what removes the fallback.
 
 Two files in this app are ours, not the canon's:
 
@@ -63,12 +84,27 @@ src/app/
   admin/                menu bar + footer, and the "admin/" nav window
 ```
 
-Each page renders its own `<MenuBar menu={...}>` so the bar can carry that
-page's anchors; the layouts supply the footer and the mascot. The venue screens
-opt out of the ground with `<BodyClass>`, which is the only way a nested route
-can reach the body element the root layout owns.
+The chrome is mounted once, by the root layout, and is never unmounted while
+the tab lives. This matters because `desktop.js` runs once after hydration and
+binds the nodes it finds then. When each route group rendered its own bar,
+footer and mascot, a client-side navigation out of the group replaced those
+nodes with unbound copies and the pill and the site map went dead: voting in
+vote.exe does exactly that navigation, which is how the bug reached a visitor.
 
-Components: `src/components/desktop/Chrome.tsx` (menu bar, footer, mascot),
+So `SiteShell` renders the bar, the footer and the mascot from the root layout,
+and drops them on the venue screens by pathname. Each page still renders its own
+`<MenuBar menu={...}>`; those links are written into the persistent bar with a
+portal, so the element desktop.js bound is never the element that changes. The
+venue screens also opt out of the ground with `<BodyClass>`, which is the only
+way a nested route can reach the body element the root layout owns.
+
+Still true of page content: a window that mounts after load is not draggable,
+because `.win__bar` handlers are bound in the same single pass. Making that
+survive a navigation needs an idempotent re-arm in the canon's desktop.js, not
+a fork of it here.
+
+Components: `src/components/desktop/SiteShell.tsx` (the chrome that outlives a
+route change), `Chrome.tsx` (bar, footer, mascot, and the MenuBar portal),
 `Win.tsx` (one window), `BodyClass.tsx`.
 
 ## Rules that bite

@@ -1,9 +1,12 @@
 /* desktop.js v1 - shared behaviors for the desktop language.
-   1. Mascot: the HUMAN / MACHINE toggle. MACHINE mode cycles lines
-      drawn from the reverse.exe poetry material (no invented copy).
+   1. Mascot: the HUMAN / MACHINE toggle. MACHINE opens machine.txt,
+      one more window on the desk, and keeps cycling the lines drawn
+      from the reverse.exe poetry material (no invented copy). HUMAN
+      closes the window and the page is as it was.
    2. Rotator: any .rot element cycles its child images every 5s.
    Progressive: with JS off the mascot sits quiet and the rotator
-   shows its first image (mark it .is-on in markup). */
+   shows its first image (mark it .is-on in markup). The machine
+   window is a dynamic import, so nobody who stays HUMAN pays for it. */
 (function () {
   // ── mascot ────────────────────────────────────────────────
   var LINES = [
@@ -39,13 +42,44 @@
         }, 3600);
       }
     }
+
+    /* machine.txt lives in its own module and its own stylesheet; both
+       arrive only on the first MACHINE press. If the import fails the
+       pill still speaks, which is exactly what it did before. */
+    var machineMod = null;
+    var loading = false;
+    function openMachine() {
+      if (machineMod) {
+        machineMod.open({ lines: LINES, onClose: closeMachine });
+        return;
+      }
+      if (loading) return;
+      loading = true;
+      import("/singulars/desktop/machine.js?v=1")
+        .then(function (mod) {
+          machineMod = mod;
+          loading = false;
+          if (mascot.classList.contains("is-machine")) {
+            mod.open({ lines: LINES, onClose: closeMachine });
+          }
+        })
+        .catch(function () {
+          loading = false;
+        });
+    }
+    function closeMachine() {
+      if (machineMod) machineMod.close();
+      setMode(false);
+    }
+
     if (humanBtn)
       humanBtn.addEventListener("click", function () {
-        setMode(false);
+        closeMachine();
       });
     if (machineBtn)
       machineBtn.addEventListener("click", function () {
         setMode(true);
+        openMachine();
       });
     setMode(false);
   }

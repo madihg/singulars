@@ -10,7 +10,8 @@
     "verify": "next build && tsc --noEmit && node scripts/verify-copy.mjs && node scripts/sync-desktop.mjs",
     "eval": "tsx scripts/run-eval.ts",
     "finetune": "tsx scripts/run-finetune.ts",
-    "sync:desktop": "node scripts/sync-desktop.mjs"
+    "sync:desktop": "node scripts/sync-desktop.mjs",
+    "check:desk": "node scripts/check-desk.mjs"
   },
   "dependencies": {
     "@fingerprintjs/fingerprintjs": "^4.6.2",
